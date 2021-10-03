@@ -1,6 +1,6 @@
-import { IronSessionKey } from "@constants/session";
-import { LoginPayload } from "@models/request-response/Login";
-import fetcher from "@services/config";
+import { IronSessionKey } from "constants/session";
+import { LoginPayload } from "models/request-response/Login";
+import fetcher from "services/config";
 import withSession from "utils/session";
 
 export default withSession(async (req, res) => {

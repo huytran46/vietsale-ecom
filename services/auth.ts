@@ -1,6 +1,6 @@
-import { HOST_URL } from "@constants/platform";
-import { LoginPayload } from "@models/request-response/Login";
-import { User } from "@models/User";
+import { HOST_URL } from "constants/platform";
+import { LoginPayload } from "models/request-response/Login";
+import { User } from "models/User";
 
 export const LOGIN_URI = "/api/login";
 export async function doLogin(payload: LoginPayload): Promise<User> {
