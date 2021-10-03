@@ -1,9 +1,9 @@
 import type { NextPage, GetStaticProps } from "next";
 import { Container, Button } from "@chakra-ui/react";
 import { useMutation } from "react-query";
-import axios from "@services/config";
-import { useUser } from "@hooks/useUser";
-import { doLogin } from "@services/auth";
+
+import { useUser } from "hooks/useUser";
+import { doLogin } from "services/auth";
 
 const Login: NextPage = () => {
   const { mutate } = useMutation({

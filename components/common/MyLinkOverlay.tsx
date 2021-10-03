@@ -1,18 +1,24 @@
 import React from "react";
 import NextLink from "next/link";
-import { Box, LinkOverlay } from "@chakra-ui/layout";
+import { Box, LinkOverlay, BoxProps } from "@chakra-ui/layout";
 
-type Props = {
+type Props = BoxProps & {
   href: string;
 };
 
-const MyLinkOverlay: React.FC<Props> = ({ href, children }) => {
+const MyLinkOverlay: React.FC<Props> = ({ href, children, ...props }) => {
   return (
-    <h2 style={{ position: "relative" }}>
+    <Box
+      as="span"
+      position="relative"
+      w="fit-content"
+      h="fit-content"
+      {...props}
+    >
       <NextLink href={href} passHref>
         <LinkOverlay>{children}</LinkOverlay>
       </NextLink>
-    </h2>
+    </Box>
   );
 };
 export default MyLinkOverlay;
