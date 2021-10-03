@@ -6,7 +6,7 @@ type Props = {
   href: string;
 };
 
-export const MyLinkOverlay: React.FC<Props> = ({ href, children }) => {
+const MyLinkOverlay: React.FC<Props> = ({ href, children }) => {
   return (
     <h2 style={{ position: "relative" }}>
       <NextLink href={href} passHref>
@@ -15,3 +15,4 @@ export const MyLinkOverlay: React.FC<Props> = ({ href, children }) => {
     </h2>
   );
 };
+export default MyLinkOverlay;

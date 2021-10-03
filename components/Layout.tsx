@@ -16,7 +16,7 @@ import { BiSearchAlt } from "react-icons/bi";
 import { TiShoppingCart } from "react-icons/ti";
 import { brandRing } from "utils";
 import { Button } from "@chakra-ui/button";
-import { MyLinkOverlay } from "./common/MyLinkOverlay";
+import MyLinkOverlay from "./common/MyLinkOverlay";
 
 const headerBarHeight = 131;
 const highestZIndex = 3;

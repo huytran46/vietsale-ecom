@@ -15,9 +15,11 @@ import {
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper";
 import { dehydrate, QueryClient, useQuery } from "react-query";
-import { fetchHome, FETCH_HOME_URI } from "@services/home";
-import { HomeInfo } from "@models/request-response/Home";
-import { ProductCategory } from "@models/ProductCategory";
+import { fetchHome, FETCH_HOME_URI } from "services/home";
+import { HomeInfo } from "models/request-response/Home";
+import { ProductCategory } from "models/ProductCategory";
+import MetaCard from "components/MetaCard";
+import ProductItem from "components/ProductItem";
 
 const Home: NextPage = () => {
   const { data, isLoading, isFetching } = useQuery<HomeInfo>(
@@ -98,17 +100,7 @@ const Home: NextPage = () => {
 
       {/* Hot deals */}
 
-      <VStack
-        divider={<StackDivider />}
-        alignItems="flex-start"
-        w="full"
-        bg="gray.100"
-        p={3}
-        rounded="md"
-      >
-        <Heading p={2} size="sm">
-          Danh mục sản phẩm
-        </Heading>
+      <MetaCard title="Danh mục sản phẩm">
         <SimpleGrid columns={[4, 6, 8]} w="full">
           {productCategories.map((cate, idx) => (
             <Box
@@ -118,7 +110,6 @@ const Home: NextPage = () => {
               flexDir="column"
               alignItems="center"
               justifyContent="center"
-              w="120px"
             >
               <Avatar
                 size="md"
@@ -132,16 +123,24 @@ const Home: NextPage = () => {
             </Box>
           ))}
         </SimpleGrid>
-      </VStack>
+      </MetaCard>
 
       {/* Highlight products */}
+      <MetaCard title="Sản phẩm nổi bật" noBody>
+        <SimpleGrid gap={3} columns={[1, 2, 4, 6]}>
+          {data?.highlight_products &&
+            data?.highlight_products.map((prod, idx) => (
+              <ProductItem key={idx} product={prod} />
+            ))}
+        </SimpleGrid>
+      </MetaCard>
 
       {/* All products */}
     </VStack>
   );
 };
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(FETCH_HOME_URI, fetchHome);
   return {
