@@ -18,7 +18,8 @@
       "@components/*": ["components/*"],
       "@hooks/*": ["hooks/*"],
       "@models/*": ["models/*"],
-      "@constants/*": ["constants/*"]
+      "@constants/*": ["constants/*"],
+      "@services/*": ["services/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "pages/_document.js"],
