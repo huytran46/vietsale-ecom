@@ -6,6 +6,7 @@ import { Product } from "models/Product";
 
 import TextWithLines from "components/common/TextWithLines";
 import { formatCcy } from "utils";
+import MyLinkOverlay from "./common/MyLinkOverlay";
 
 type Props = {
   product: Product;
@@ -38,98 +39,109 @@ const ProductItem: React.FC<Props> = ({ product }) => {
       borderColor="gray.300"
       boxShadow="none"
       transitionDuration="0.2s"
-      cursor="pointer"
       _hover={{
         transform: "scale(.98)",
       }}
       overflow="hidden"
     >
-      <Image
-        src={product.edges?.cover?.file_thumbnail}
-        w="full"
-        h="180px"
-        alt={product.name}
-      />
-
-      <Box
-        h="full"
-        d="flex"
-        flexDir="column"
-        alignItems="flex-start"
-        justifyContent="space-between"
-        flex="1"
-        borderTopWidth="1px"
-        borderTopColor="gray.300"
-        p={2}
-      >
-        {isDiscount && (
-          <Badge
-            position="absolute"
-            top={0}
-            right={0}
-            color="white"
-            borderRadius="none"
-            borderBottomLeftRadius="md"
-            px="2"
-            py={0.5}
-            bgColor="red.500"
-            colorScheme="red"
-          >
-            Giảm giá
-          </Badge>
-        )}
-
-        <TextWithLines
-          fontWeight="semibold"
-          fontSize="xs"
-          as="h4"
-          lineHeight="tight"
-          textTransform="capitalize"
-          text={product.name}
+      <MyLinkOverlay href="/login">
+        <Image
+          src={product.edges?.cover?.file_thumbnail}
+          w="full"
+          h="180px"
+          alt={product.name}
         />
 
-        <Box w="full" d="flex" alignItems="flex-end" mt={3}>
-          {isDiscount ? (
-            <>
-              <Text mr={0.5} lineHeight="tall" color="brand.700" fontSize="xs">
-                đ
-              </Text>
-              <Text
-                lineHeight="tight"
-                color="brand.700"
-                fontWeight="medium"
-                fontSize="sm"
-              >
-                {formatCcy(product.discount_price)}
-              </Text>
-
-              <Text
-                textDecorationLine="line-through"
-                ml={2}
-                color="gray.400"
-                fontWeight="medium"
-                fontSize="xs"
-              >
-                {formatCcy(product.orig_price)}
-              </Text>
-            </>
-          ) : (
-            <>
-              <Text mr={0.5} lineHeight="tall" color="brand.700" fontSize="xs">
-                đ
-              </Text>
-              <Text
-                lineHeight="tight"
-                color="brand.700"
-                fontWeight="medium"
-                fontSize="sm"
-              >
-                {formatCcy(product.orig_price)}
-              </Text>
-            </>
+        <Box
+          h="full"
+          d="flex"
+          flexDir="column"
+          alignItems="flex-start"
+          justifyContent="space-between"
+          flex="1"
+          borderTopWidth="1px"
+          borderTopColor="gray.300"
+          p={2}
+        >
+          {isDiscount && (
+            <Badge
+              position="absolute"
+              top={0}
+              right={0}
+              color="white"
+              borderRadius="none"
+              borderBottomLeftRadius="md"
+              px="2"
+              py={0.5}
+              bgColor="red.500"
+              colorScheme="red"
+            >
+              Giảm giá
+            </Badge>
           )}
+
+          <TextWithLines
+            fontWeight="semibold"
+            fontSize="xs"
+            as="h4"
+            lineHeight="tight"
+            textTransform="capitalize"
+            text={product.name}
+          />
+
+          <Box w="full" d="flex" alignItems="flex-end" mt={3}>
+            {isDiscount ? (
+              <>
+                <Text
+                  mr={0.5}
+                  lineHeight="tall"
+                  color="brand.700"
+                  fontSize="xs"
+                >
+                  đ
+                </Text>
+                <Text
+                  lineHeight="tight"
+                  color="brand.700"
+                  fontWeight="medium"
+                  fontSize="sm"
+                >
+                  {formatCcy(product.discount_price)}
+                </Text>
+
+                <Text
+                  textDecorationLine="line-through"
+                  ml={2}
+                  color="gray.400"
+                  fontWeight="medium"
+                  fontSize="xs"
+                >
+                  {formatCcy(product.orig_price)}
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text
+                  mr={0.5}
+                  lineHeight="tall"
+                  color="brand.700"
+                  fontSize="xs"
+                >
+                  đ
+                </Text>
+                <Text
+                  lineHeight="tight"
+                  color="brand.700"
+                  fontWeight="medium"
+                  fontSize="sm"
+                >
+                  {formatCcy(product.orig_price)}
+                </Text>
+              </>
+            )}
+          </Box>
         </Box>
-      </Box>
+      </MyLinkOverlay>
     </Box>
   );
 };
