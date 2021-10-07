@@ -44,9 +44,9 @@ const MainHeader: React.FC = ({}) => {
               w="full"
               p="1"
             >
-              <Text fontSize="sm">Tải ứng dụng</Text>
-              <Text fontSize="sm">Trở thành người bán</Text>
-              <Text fontSize="sm">Kênh người bán</Text>
+              <Text fontSize="xs">Tải ứng dụng</Text>
+              <Text fontSize="xs">Trở thành người bán</Text>
+              <Text fontSize="xs">Kênh người bán</Text>
             </HStack>
             <HStack
               isInline
@@ -56,14 +56,12 @@ const MainHeader: React.FC = ({}) => {
               w="full"
               p="1"
             >
-              <Text fontSize="sm">Thông báo</Text>
-              <Text fontSize="sm">Hỗ trợ</Text>
-              <Text fontSize="sm">
-                <HStack divider={<StackDivider borderColor="gray.200" />}>
-                  <Text fontSize="sm"> Đăng kí</Text>
-                  <Text fontSize="sm">Đăng nhập</Text>
-                </HStack>
-              </Text>
+              <Text fontSize="xs">Thông báo</Text>
+              <Text fontSize="xs">Hỗ trợ</Text>
+              <HStack divider={<StackDivider borderColor="gray.200" />}>
+                <Text fontSize="xs"> Đăng kí</Text>
+                <Text fontSize="xs">Đăng nhập</Text>
+              </HStack>
             </HStack>
           </SimpleGrid>
           <HStack w="full" flex={3} alignItems="flex-start" spacing={2}>
