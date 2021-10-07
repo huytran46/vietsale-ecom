@@ -118,16 +118,26 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
             </>
           ) : (
             <>
-              <Text mr={0.5} lineHeight="tall" color="brand.700" fontSize="xs">
-                đ
-              </Text>
+              {product.orig_price && (
+                <Text
+                  mr={0.5}
+                  lineHeight="tall"
+                  color="brand.700"
+                  fontSize="xs"
+                >
+                  đ
+                </Text>
+              )}
+
               <Text
                 lineHeight="tight"
                 color="brand.700"
                 fontWeight="medium"
                 fontSize="sm"
               >
-                {formatCcy(product.orig_price)}
+                {product.orig_price
+                  ? formatCcy(product.orig_price)
+                  : "Liên hệ cửa hàng"}
               </Text>
             </>
           )}
