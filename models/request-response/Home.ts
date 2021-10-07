@@ -1,5 +1,5 @@
-import { Product } from "@models/Product";
-import { ProductCategory } from "@models/ProductCategory";
+import { Product } from "models/Product";
+import { ProductCategory } from "models/ProductCategory";
 
 export type HomeInfo = {
   banners: Product[];
