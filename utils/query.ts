@@ -1,3 +1,6 @@
+import { HOST_URL } from "constants/platform";
+import { HttpQueryParam } from "models/common/SearchQuery";
+import { stringifyUrl } from "query-string";
 import { dehydrate, QueryClient } from "react-query";
 
 type OtherOptions = {
@@ -20,3 +23,9 @@ export async function withQuery(
     },
   };
 }
+
+export const urlWithQuery = (baseUrl: string, param?: HttpQueryParam) =>
+  stringifyUrl(
+    { url: HOST_URL + baseUrl, query: param },
+    { skipEmptyString: true, skipNull: true }
+  );

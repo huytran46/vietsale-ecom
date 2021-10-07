@@ -1,0 +1,24 @@
+.shinyBagde {
+  position: relative;
+  overflow: hidden;
+}
+.shinyBagde::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.568);
+  top: 0;
+  left: 0;
+  transform: skew(45deg) translate(-200%);
+  animation: shiny 1s infinite;
+}
+
+@keyframes shiny {
+  0% {
+    transform: skew(45deg) translate(-200%);
+  }
+  100% {
+    transform: skew(45deg) translate(200%);
+  }
+}

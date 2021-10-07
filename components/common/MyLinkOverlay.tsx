@@ -1,12 +1,23 @@
 import React from "react";
 import NextLink from "next/link";
-import { Box, LinkOverlay, BoxProps } from "@chakra-ui/layout";
+import {
+  Box,
+  LinkOverlay,
+  BoxProps,
+  LinkOverlayProps,
+} from "@chakra-ui/layout";
 
 type Props = BoxProps & {
   href: string;
+  innerProp?: LinkOverlayProps;
 };
 
-const MyLinkOverlay: React.FC<Props> = ({ href, children, ...props }) => {
+const MyLinkOverlay: React.FC<Props> = ({
+  href,
+  children,
+  innerProp,
+  ...props
+}) => {
   return (
     <Box
       as="span"
@@ -16,7 +27,7 @@ const MyLinkOverlay: React.FC<Props> = ({ href, children, ...props }) => {
       {...props}
     >
       <NextLink href={href} passHref>
-        <LinkOverlay>{children}</LinkOverlay>
+        <LinkOverlay {...innerProp}>{children}</LinkOverlay>
       </NextLink>
     </Box>
   );

@@ -6,26 +6,45 @@ import {
   Grid,
   GridItem,
   Image,
-  Heading,
-  StackDivider,
   Avatar,
   SimpleGrid,
   Text,
+  Button,
+  Spinner,
+  Stack,
 } from "@chakra-ui/react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper";
 import { dehydrate, QueryClient, useQuery } from "react-query";
-import { fetchHome, FETCH_HOME_URI } from "services/home";
+import VisibilitySensor from "react-visibility-sensor";
+
+import { fetchHome, FETCH_HOME_URI } from "services/public";
 import { HomeInfo } from "models/request-response/Home";
 import { ProductCategory } from "models/ProductCategory";
 import MetaCard from "components/MetaCard";
 import ProductItem from "components/ProductItem";
+import { fetchProducts, FETCH_PRODUCT_URI } from "services/product";
+import { Product } from "models/Product";
+
+const PAGE_SIZE = 60;
+const ALLOWED_FETCH_MORE_TIME = 3;
 
 const Home: NextPage = () => {
-  const { data, isLoading, isFetching } = useQuery<HomeInfo>(
-    FETCH_HOME_URI,
-    fetchHome
+  const [isBottom, setBottomState] = React.useState(false);
+  const [productPage, setProductPage] = React.useState(1);
+  const { data, isLoading } = useQuery<HomeInfo>(FETCH_HOME_URI, fetchHome);
+
+  const {
+    data: products,
+    isLoading: productsLoading,
+    isPreviousData: isOldProductData,
+    isRefetching: isProductRefetching,
+    refetch: doFetchProducts,
+  } = useQuery(FETCH_PRODUCT_URI, () =>
+    fetchProducts({ page: productPage, pageSize: PAGE_SIZE })
   );
+
+  const [productData, setProductData] = React.useState<Product[]>([]);
 
   const productCategories = React.useMemo(() => {
     if (!data?.product_categories) return [];
@@ -40,11 +59,41 @@ const Home: NextPage = () => {
     );
   }, [data?.product_categories]);
 
-  if (isLoading || isFetching) return null;
-  if (!data) return null;
+  const totalAvailableProducts = React.useMemo(
+    () => productData?.length ?? 0,
+    [productData?.length]
+  );
+
+  const isReachedLimit = React.useMemo(
+    () => totalAvailableProducts / PAGE_SIZE >= ALLOWED_FETCH_MORE_TIME,
+    [totalAvailableProducts]
+  );
+
+  React.useEffect(() => {
+    if (!isBottom) return;
+    setProductPage((prev) => prev + 1);
+  }, [isBottom]);
+
+  React.useEffect(() => {
+    if (productPage === 1 || isReachedLimit) return;
+    doFetchProducts();
+  }, [productPage, doFetchProducts, isReachedLimit]);
+
+  React.useEffect(() => {
+    if (isOldProductData || isProductRefetching || !products || isReachedLimit)
+      return;
+    setProductData((prev) => prev.concat(products));
+  }, [isProductRefetching, isOldProductData, products, isReachedLimit]);
+
+  function triggerBottomState(isVisible: boolean) {
+    setBottomState(isVisible);
+  }
+
+  if (isLoading || productsLoading) return null;
+  if (!data || !products) return null;
 
   return (
-    <VStack h="100vh" w="full" spacing={10} py={10}>
+    <VStack h="fit-content" w="full" spacing={10} py={10}>
       {/* Banner */}
       {data?.banners && (
         <Grid columnGap={2} templateColumns="repeat(4, 1fr)" w="full" h="auto">
@@ -99,6 +148,41 @@ const Home: NextPage = () => {
       )}
 
       {/* Hot deals */}
+      <MetaCard
+        title="Hot deals"
+        titleBg="red.500"
+        titleColor="white"
+        noBody
+        bodyProps={{
+          position: "relative",
+          bgGradient: "linear(to-b, brand.100, brand.300, brand.500)",
+          border: "1px solid",
+          borderColor: "gray.300",
+          borderBottomRadius: "md",
+          borderTopRightRadius: "md",
+        }}
+      >
+        <>
+          <Box
+            bg={"url(/fire-gif.gif)"}
+            bgSize="cover"
+            bgPosition={"center"}
+            bgRepeat={"no-repeat"}
+            position="absolute"
+            top="-50px"
+            left="100px"
+            w="24px"
+            h="24px"
+            transform="rotate(25deg)"
+          />
+          <SimpleGrid px={3} gap={3} columns={[1, 2, 4, 6]}>
+            {data?.hot_deals &&
+              data?.hot_deals.map((prod, idx) => (
+                <ProductItem isHot key={idx} product={prod} />
+              ))}
+          </SimpleGrid>
+        </>
+      </MetaCard>
 
       <MetaCard title="Danh mục sản phẩm">
         <SimpleGrid columns={[4, 6, 8]} w="full">
@@ -126,7 +210,12 @@ const Home: NextPage = () => {
       </MetaCard>
 
       {/* Highlight products */}
-      <MetaCard title="Sản phẩm nổi bật" noBody>
+      <MetaCard
+        title="Sản phẩm nổi bật"
+        titleBg="brand.500"
+        titleColor="white"
+        noBody
+      >
         <SimpleGrid gap={3} columns={[1, 2, 4, 6]}>
           {data?.highlight_products &&
             data?.highlight_products.map((prod, idx) => (
@@ -136,6 +225,35 @@ const Home: NextPage = () => {
       </MetaCard>
 
       {/* All products */}
+      <MetaCard title="Gợi ý hôm nay" noBody>
+        <SimpleGrid gap={3} columns={[1, 2, 4, 6]}>
+          {productData &&
+            productData.map((prod, idx) => (
+              <ProductItem key={idx} product={prod} />
+            ))}
+        </SimpleGrid>
+      </MetaCard>
+
+      <VisibilitySensor onChange={triggerBottomState}>
+        <Stack direction="row" h={2}>
+          {isProductRefetching ? (
+            <Spinner
+              colorScheme="brand"
+              color="brand.500"
+              speed="1s"
+              size="sm"
+            />
+          ) : (
+            <Text color="transparent">Cuối trang</Text>
+          )}
+        </Stack>
+      </VisibilitySensor>
+
+      {isReachedLimit && (
+        <Button p={3} fontWeight="medium" w="25%" size="lg">
+          Xem thêm
+        </Button>
+      )}
     </VStack>
   );
 };
@@ -143,6 +261,9 @@ const Home: NextPage = () => {
 export async function getServerSideProps() {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(FETCH_HOME_URI, fetchHome);
+  await queryClient.prefetchQuery(FETCH_PRODUCT_URI, () =>
+    fetchProducts({ pageSize: 60 })
+  );
   return {
     props: {
       dehydratedState: dehydrate(queryClient),

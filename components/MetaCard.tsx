@@ -1,17 +1,42 @@
 import React from "react";
-import { Box, Heading, StackDivider, VStack } from "@chakra-ui/layout";
+import {
+  Box,
+  BoxProps,
+  Heading,
+  StackDivider,
+  VStack,
+} from "@chakra-ui/layout";
 
 type Props = {
   title: string;
+  titleColor?: string;
+  titleBg?: string;
+  titleBgGradient?: string;
   noBody?: boolean;
+  bodyProps?: BoxProps;
 };
 
-const MetaCard: React.FC<Props> = ({ children, title, noBody }) => {
+const MetaCard: React.FC<Props> = ({
+  children,
+  title,
+  titleBg,
+  titleBgGradient,
+  titleColor,
+  noBody,
+  bodyProps,
+}) => {
   if (Boolean(noBody)) {
     return (
-      <VStack alignItems="flex-start" w="full" spacing={0}>
+      <VStack
+        alignItems="flex-start"
+        justifyContent="center"
+        w="full"
+        spacing={0}
+      >
         <Heading
-          bg="gray.light"
+          bg={titleBg ?? "gray.light"}
+          bgGradient={titleBgGradient ?? undefined}
+          color={titleColor ?? undefined}
           border="1px solid"
           borderColor="gray.300"
           borderBottomWidth="0"
@@ -24,8 +49,13 @@ const MetaCard: React.FC<Props> = ({ children, title, noBody }) => {
         >
           {title}
         </Heading>
-        <Box mt={0} w="full" borderTopColor="gray.300" borderTopWidth="1px" />
-        <Box w="full" py={3}>
+        <Box
+          w="full"
+          borderTopColor="gray.300"
+          borderTopWidth="1px"
+          py={3}
+          {...bodyProps}
+        >
           {children}
         </Box>
       </VStack>
@@ -42,7 +72,15 @@ const MetaCard: React.FC<Props> = ({ children, title, noBody }) => {
       borderColor="gray.200"
       rounded="md"
     >
-      <Heading textTransform="uppercase" p={3} pb={1} size="sm">
+      <Heading
+        bgGradient={titleBgGradient ?? undefined}
+        bg={titleBg ?? undefined}
+        color={titleColor ?? undefined}
+        textTransform="uppercase"
+        p={3}
+        pb={1}
+        size="sm"
+      >
         {title}
       </Heading>
       {children}

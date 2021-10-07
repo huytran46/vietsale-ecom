@@ -1,6 +1,6 @@
-import { BaseReponse } from "@models/common/BaseResponse";
-import { HomeInfo } from "@models/request-response/Home";
-import fetcher from "@services/config";
+import { BaseReponse } from "models/common/BaseResponse";
+import { HomeInfo } from "models/request-response/Home";
+import fetcher from "services/config";
 import withSession from "utils/session";
 
 export default withSession(async (req, res) => {

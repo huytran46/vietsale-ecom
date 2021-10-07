@@ -6,24 +6,16 @@ import { Product } from "models/Product";
 
 import TextWithLines from "components/common/TextWithLines";
 import { formatCcy } from "utils";
-import MyLinkOverlay from "./common/MyLinkOverlay";
+import MyLinkOverlay from "../common/MyLinkOverlay";
+
+import styles from "./ProductItem.module.css";
 
 type Props = {
   product: Product;
+  isHot?: boolean;
 };
 
-const property = {
-  imageUrl: "https://bit.ly/2Z4KKcF",
-  imageAlt: "Rear view of modern home with pool",
-  beds: 3,
-  baths: 2,
-  title: "Modern home in city center in the heart of historic Los Angeles",
-  formattedPrice: "$1,900.00",
-  reviewCount: 34,
-  rating: 4,
-};
-
-const ProductItem: React.FC<Props> = ({ product }) => {
+const ProductItem: React.FC<Props> = ({ product, isHot }) => {
   const isDiscount = React.useMemo(
     () => product.discount_value > 0,
     [product.discount_value]
@@ -31,38 +23,44 @@ const ProductItem: React.FC<Props> = ({ product }) => {
 
   return (
     <MyLinkOverlay
-      href="/login"
+      href={`/products/${product.id}`}
       position="relative"
       d="flex"
       flexDir="column"
       borderRadius="md"
-      border="1px solid"
+      borderWidth="1px"
       borderColor="gray.300"
       boxShadow="none"
-      transitionDuration="0.2s"
       w="full"
       h="full"
-      _hover={{
-        transform: "scale(.98)",
-      }}
       overflow="hidden"
+      m={0}
+      innerProp={{
+        h: "full",
+        d: "flex",
+        flexDir: "column",
+      }}
     >
       <Image
         src={product.edges?.cover?.file_thumbnail}
         w="full"
         h="180px"
         alt={product.name}
+        borderTopRadius="md"
+        borderWidth="1px"
+        borderColor="gray.300"
       />
 
       <Box
-        h="full"
         d="flex"
         flexDir="column"
         alignItems="flex-start"
         justifyContent="space-between"
         flex="1"
         borderTopWidth="1px"
-        borderTopColor="gray.300"
+        borderColor="gray.300"
+        borderBottomRadius="md"
+        bg="white"
         p={2}
       >
         {isDiscount && (
@@ -77,12 +75,14 @@ const ProductItem: React.FC<Props> = ({ product }) => {
             py={0.5}
             bgColor="red.500"
             colorScheme="red"
+            className={isHot ? styles.shinyBagde : ""}
           >
             Giảm giá
           </Badge>
         )}
 
         <TextWithLines
+          position="relative"
           fontWeight="semibold"
           fontSize="xs"
           as="h4"
