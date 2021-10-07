@@ -116,6 +116,7 @@ const Home: NextPage = () => {
                         w="full"
                         maxH="full"
                         maxW="full"
+                        objectFit="cover"
                       />
                     </Box>
                   </SwiperSlide>
@@ -126,7 +127,10 @@ const Home: NextPage = () => {
             <VStack w="full" h={300}>
               <Box w="full" h="50%">
                 <Image
-                  src="https://fakeimg.pl/300/"
+                  src={
+                    data?.banners[1].edges?.cover?.file_thumbnail ??
+                    "https://fakeimg.pl/300/"
+                  }
                   alt="a-shop-in-vs"
                   maxH="full"
                   maxW="full"
@@ -135,7 +139,10 @@ const Home: NextPage = () => {
               </Box>
               <Box w="full" h="47%">
                 <Image
-                  src="https://fakeimg.pl/300/"
+                  src={
+                    data?.banners[2].edges?.cover?.file_thumbnail ??
+                    "https://fakeimg.pl/300/"
+                  }
                   alt="a-shop-in-vs"
                   maxH="full"
                   maxW="full"
@@ -250,7 +257,7 @@ const Home: NextPage = () => {
       </VisibilitySensor>
 
       {isReachedLimit && (
-        <Button p={3} fontWeight="medium" w="25%" size="lg">
+        <Button p={3} fontWeight="medium" w="25%" size="md">
           Xem thêm
         </Button>
       )}
