@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "next/router";
 import {
   Container,
   HStack,
@@ -10,18 +11,26 @@ import {
   Stack,
   StackDivider,
 } from "@chakra-ui/layout";
-import { MyImage } from "./common/MyImage";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { BiSearchAlt } from "react-icons/bi";
 import { TiShoppingCart } from "react-icons/ti";
+
+import { MyImage } from "./common/MyImage";
 import { brandRing } from "utils";
 import { Button } from "@chakra-ui/button";
 import MyLinkOverlay from "./common/MyLinkOverlay";
+import { useLayoutCtx } from "context/LayoutProvider";
 
 const headerBarHeight = 131;
 const highestZIndex = 3;
 
 const MainHeader: React.FC = ({}) => {
+  const router = useRouter();
+  const { searchKeyword, setSearchKeyword } = useLayoutCtx();
+  // eslint-disable-next-line
+  const updateKeyword = (event: React.ChangeEvent<HTMLInputElement>) =>
+    setSearchKeyword(event.target.value);
+
   return (
     <Box
       bgGradient="linear(to-b, brand.700, brand.300)"
@@ -79,6 +88,7 @@ const MainHeader: React.FC = ({}) => {
                   border="3px solid"
                   borderColor="gray.100"
                   cursor="pointer"
+                  onClick={() => router.push("/products?" + searchKeyword)}
                 >
                   <BiSearchAlt />
                 </InputRightElement>
@@ -90,6 +100,9 @@ const MainHeader: React.FC = ({}) => {
                   color="black"
                   bg="white"
                   {...brandRing}
+                  type="text"
+                  value={searchKeyword}
+                  onChange={updateKeyword}
                 />
               </InputGroup>
               <HStack spacing={10}>

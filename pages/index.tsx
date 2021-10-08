@@ -1,5 +1,6 @@
 import React from "react";
 import type { NextPage } from "next";
+import { useRouter } from "next/router";
 import {
   VStack,
   Box,
@@ -25,11 +26,10 @@ import MetaCard from "components/MetaCard";
 import ProductItem from "components/ProductItem";
 import { fetchProducts, FETCH_PRODUCT_URI } from "services/product";
 import { Product } from "models/Product";
-
-const PAGE_SIZE = 60;
-const ALLOWED_FETCH_MORE_TIME = 3;
+import { ALLOWED_FETCH_MORE_TIME, PAGE_SIZE } from "constants/platform";
 
 const Home: NextPage = () => {
+  const router = useRouter();
   const [isBottom, setBottomState] = React.useState(false);
   const [productPage, setProductPage] = React.useState(1);
   const { data, isLoading } = useQuery<HomeInfo>(FETCH_HOME_URI, fetchHome);
@@ -255,7 +255,13 @@ const Home: NextPage = () => {
       </VisibilitySensor>
 
       {isReachedLimit && (
-        <Button p={3} fontWeight="medium" w="25%" size="md">
+        <Button
+          p={3}
+          fontWeight="medium"
+          w="25%"
+          size="md"
+          onClick={() => router.push("/products")}
+        >
           Xem thêm
         </Button>
       )}
@@ -266,9 +272,9 @@ const Home: NextPage = () => {
 export async function getServerSideProps() {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(FETCH_HOME_URI, fetchHome);
-  await queryClient.prefetchQuery(FETCH_PRODUCT_URI, () =>
-    fetchProducts({ pageSize: 60 })
-  );
+  // await queryClient.prefetchQuery(FETCH_PRODUCT_URI, () =>
+  //   fetchProducts({ pageSize: PAGE_SIZE })
+  // );
   return {
     props: {
       dehydratedState: dehydrate(queryClient),

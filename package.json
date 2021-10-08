@@ -15,6 +15,7 @@
     "@fingerprintjs/fingerprintjs": "^3.3.0",
     "axios": "^0.22.0",
     "framer-motion": "^4",
+    "lodash": "^4.17.21",
     "next": "11.1.2",
     "next-iron-session": "^4.2.0",
     "query-string": "^7.0.1",
@@ -23,6 +24,7 @@
     "react-icons": "^4.2.0",
     "react-query": "^3.24.5",
     "react-visibility-sensor": "5.1.1",
+    "sharp": "^0.29.1",
     "swiper": "^7.0.7"
   },
   "devDependencies": {

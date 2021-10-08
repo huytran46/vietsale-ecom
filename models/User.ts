@@ -1,8 +1,7 @@
-import { Role } from './Rbac';
-import { Shop } from './Shop';
+import { Shop } from "./Shop";
 
 export interface UserEdges {
-  has_roles: Role[];
+  has_roles: any[];
   shops: Shop[];
 }
 

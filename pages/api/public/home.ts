@@ -7,7 +7,7 @@ export default withSession(async (req, res) => {
   const result = await fetcher.get<BaseReponse<HomeInfo>>("/public/home");
 
   if (result.status !== 200) {
-    return res.status(500).json({});
+    return res.status(result.status).json({});
   }
 
   const serverRes = result.data;

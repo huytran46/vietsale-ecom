@@ -1,3 +1,6 @@
 const HOST_URL = process.env.NEXT_PUBLIC_HOST_URL ?? "";
-
-export { HOST_URL };
+const PAGE_SIZE = Number(process.env.NEXT_PUBLIC_PAGE_SIZE) ?? 60;
+const ALLOWED_FETCH_MORE_TIME =
+  Number(process.env.NEXT_PUBLIC_ALLOWED_FETCH_MORE_TIME) ?? 3;
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+export { HOST_URL, PAGE_SIZE, ALLOWED_FETCH_MORE_TIME, BACKEND_URL };

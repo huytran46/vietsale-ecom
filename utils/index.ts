@@ -1,7 +1,13 @@
 export const brandRing = {
   _focus: {
     ringColor: "brand.100",
-    ring: 3,
+    ring: 4,
+    bg: "white",
+  },
+  _hover: {
+    bg: "white",
+    ringColor: "brand.100",
+    ring: 2,
   },
 };
 
