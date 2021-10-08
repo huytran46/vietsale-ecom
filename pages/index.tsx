@@ -243,15 +243,13 @@ const Home: NextPage = () => {
 
       <VisibilitySensor onChange={triggerBottomState}>
         <Stack direction="row" h={2}>
-          {isProductRefetching ? (
+          {(!isReachedLimit || isProductRefetching) && (
             <Spinner
               colorScheme="brand"
               color="brand.500"
               speed="1s"
               size="sm"
             />
-          ) : (
-            <Text color="transparent">Cuối trang</Text>
           )}
         </Stack>
       </VisibilitySensor>

@@ -10,7 +10,7 @@ export default withSession(async (req, res) => {
   if (splits.length > 1) {
     isPhone = false;
   }
-  fetcher.post("/api/v1/auth/user/login", {
+  fetcher.post("/auth/user/login", {
     phone: isPhone ? username : "",
     email: !isPhone ? username : "",
     password,
