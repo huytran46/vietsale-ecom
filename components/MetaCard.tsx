@@ -32,9 +32,10 @@ const MetaCard: React.FC<Props> = ({
         justifyContent="center"
         w="full"
         spacing={0}
+        bg="transparent"
       >
         <Heading
-          bg={titleBg ?? "gray.light"}
+          bg={titleBg ?? "white"}
           bgGradient={titleBgGradient ?? undefined}
           color={titleColor ?? undefined}
           border="1px solid"
@@ -67,10 +68,10 @@ const MetaCard: React.FC<Props> = ({
       divider={<StackDivider />}
       alignItems="flex-start"
       w="full"
-      bg="gray.light"
       border="1px solid"
       borderColor="gray.200"
       rounded="md"
+      bg="white"
     >
       <Heading
         bgGradient={titleBgGradient ?? undefined}

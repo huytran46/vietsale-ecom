@@ -123,12 +123,12 @@ const MainHeader: React.FC = ({}) => {
 
 const Layout: React.FC = ({ children }) => {
   return (
-    <>
+    <Box bg="gray.light" w="full" h="100vh">
       <MainHeader />
       <Container maxW="container.xl" h="full" marginTop={headerBarHeight}>
         {children}
       </Container>
-    </>
+    </Box>
   );
 };
 
