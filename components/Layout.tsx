@@ -85,9 +85,10 @@ const MainHeader: React.FC = ({}) => {
                 <Input
                   outline="none"
                   variant="filled"
-                  // rounded="md"
                   boxShadow="sm"
                   placeholder="Nhập từ khóa để tìm kiếm"
+                  color="black"
+                  bg="white"
                   {...brandRing}
                 />
               </InputGroup>

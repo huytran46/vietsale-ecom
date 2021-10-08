@@ -14,7 +14,7 @@ const UserCtx = React.createContext<UserContext>({} as UserContext);
 const fpPromise =
   typeof window !== "undefined" ? FingerprintJS.load() : undefined;
 
-export const UserUserProvider: React.FC = ({ children }) => {
+export const UserProvider: React.FC = ({ children }) => {
   const [visitorId, setVisitorId] = React.useState("");
   const [platform, setPlatform] = React.useState("");
   const [user, setUser] = React.useState<User>();

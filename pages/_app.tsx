@@ -15,8 +15,9 @@ import "swiper/css/autoplay";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 
-// Custom hooks register
-import { UserUserProvider } from "hooks/useUser";
+// Custom context
+import { UserProvider } from "context/UserProvider";
+import { LayoutProvider } from "context/LayoutProvider";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = React.useState(
@@ -34,15 +35,17 @@ function MyApp({ Component, pageProps }: AppProps) {
     <QueryClientProvider client={queryClient}>
       <Hydrate state={pageProps.dehydratedState}>
         <ChakraProvider theme={theme}>
-          <UserUserProvider>
-            {Boolean(pageProps.noLayout) ? (
-              <Component {...pageProps} />
-            ) : (
-              <Layout>
+          <UserProvider>
+            <LayoutProvider>
+              {Boolean(pageProps.noLayout) ? (
                 <Component {...pageProps} />
-              </Layout>
-            )}
-          </UserUserProvider>
+              ) : (
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              )}
+            </LayoutProvider>
+          </UserProvider>
         </ChakraProvider>
       </Hydrate>
     </QueryClientProvider>

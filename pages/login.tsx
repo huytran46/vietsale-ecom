@@ -2,7 +2,7 @@ import type { NextPage, GetStaticProps } from "next";
 import { Container, Button } from "@chakra-ui/react";
 import { useMutation } from "react-query";
 
-import { useUser } from "hooks/useUser";
+import { useUser } from "context/UserProvider";
 import { doLogin } from "services/auth";
 
 const Login: NextPage = () => {
