@@ -66,7 +66,9 @@ const MainHeader: React.FC = ({}) => {
           </SimpleGrid>
           <HStack w="full" flex={3} alignItems="flex-start" spacing={2}>
             <Center flex={1}>
-              <MyImage flex={1} src="/favicon.png" width="60" height="60" />
+              <MyLinkOverlay href="/">
+                <MyImage flex={1} src="/favicon.png" width="60" height="60" />
+              </MyLinkOverlay>
             </Center>
             <Stack flex={15} direction="column">
               <InputGroup p={0} flex={16}>
