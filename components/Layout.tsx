@@ -86,9 +86,12 @@ const MainHeader: React.FC = ({}) => {
                   borderRightRadius="md"
                   bg="brand.500"
                   border="3px solid"
-                  borderColor="gray.100"
+                  borderColor="white"
                   cursor="pointer"
-                  onClick={() => router.push("/products?" + searchKeyword)}
+                  onClick={() => {
+                    router.push("/products?_q=" + searchKeyword);
+                    setSearchKeyword("");
+                  }}
                 >
                   <BiSearchAlt />
                 </InputRightElement>
@@ -137,7 +140,7 @@ const MainHeader: React.FC = ({}) => {
 
 const Layout: React.FC = ({ children }) => {
   return (
-    <Box bg="gray.light" w="full" h="100vh">
+    <Box bg="gray.light" w="full" h="full">
       <MainHeader />
       <Container maxW="container.xl" h="full" marginTop={headerBarHeight}>
         {children}

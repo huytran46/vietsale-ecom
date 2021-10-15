@@ -221,6 +221,12 @@ const Home: NextPage = () => {
         title="Sản phẩm nổi bật"
         titleBg="brand.500"
         titleColor="white"
+        bodyProps={{
+          bg: "white",
+          border: "1px solid",
+          borderColor: "gray.200",
+          p: 3,
+        }}
         noBody
       >
         <SimpleGrid gap={3} columns={[1, 2, 4, 6]}>
@@ -232,8 +238,14 @@ const Home: NextPage = () => {
       </MetaCard>
 
       {/* All products */}
-      <MetaCard title="Gợi ý hôm nay" noBody>
-        <SimpleGrid gap={3} columns={[1, 2, 4, 6]}>
+      <MetaCard
+        title="Gợi ý hôm nay"
+        bodyProps={{
+          bg: "white",
+        }}
+        noBody
+      >
+        <SimpleGrid rowGap={3} columnGap={1} columns={[1, 2, 4, 6]}>
           {productData &&
             productData.map((prod, idx) => (
               <ProductItem key={idx} product={prod} />

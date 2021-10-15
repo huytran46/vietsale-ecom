@@ -1,7 +1,7 @@
-import { MyFile } from './MyFile';
-import { ProductCategory } from './ProductCategory';
-import { Shop } from './Shop';
-import { UomValue } from './Uom';
+import { MyFile } from "./MyFile";
+import { ProductCategory } from "./ProductCategory";
+import { Shop } from "./Shop";
+import { UomValue } from "./Uom";
 
 export type Product = {
   id: string;
@@ -16,6 +16,7 @@ export type Product = {
   orig_price: number;
   discount_value: number;
   discount_price: number;
+  is_percent_discount: boolean;
   quantity: number;
   sales_volume: number;
   is_approved?: boolean;

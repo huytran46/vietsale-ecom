@@ -27,14 +27,15 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
       position="relative"
       d="flex"
       flexDir="column"
-      borderRadius="md"
-      borderWidth="1px"
-      borderColor="gray.300"
-      boxShadow="none"
       w="full"
+      bg="white"
       h="full"
       overflow="hidden"
       m={0}
+      p={2}
+      _hover={{
+        boxShadow: "rgb(0 0 0 / 10%) 0px 0px 20px",
+      }}
       innerProp={{
         h: "full",
         d: "flex",
@@ -46,9 +47,6 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
         w="full"
         h="180px"
         alt={product.name}
-        borderTopRadius="md"
-        borderWidth="1px"
-        borderColor="gray.300"
       />
 
       <Box
@@ -57,11 +55,8 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
         alignItems="flex-start"
         justifyContent="space-between"
         flex="1"
-        borderTopWidth="1px"
-        borderColor="gray.300"
-        borderBottomRadius="md"
         bg="white"
-        p={2}
+        pt={2}
       >
         {isDiscount && (
           <Badge
@@ -83,9 +78,8 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
 
         <TextWithLines
           position="relative"
-          fontWeight="semibold"
           fontSize="xs"
-          as="h4"
+          as="h5"
           lineHeight="tight"
           textTransform="capitalize"
           text={product.name}
@@ -94,47 +88,43 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
         <Box w="full" d="flex" alignItems="flex-end" mt={3}>
           {isDiscount ? (
             <>
-              <Text mr={0.5} lineHeight="tall" color="brand.700" fontSize="xs">
-                đ
-              </Text>
               <Text
                 lineHeight="tight"
-                color="brand.700"
+                color="red.500"
                 fontWeight="medium"
-                fontSize="sm"
+                fontSize="md"
               >
                 {formatCcy(product.discount_price)}
               </Text>
-
-              <Text
-                textDecorationLine="line-through"
-                ml={2}
-                color="gray.400"
-                fontWeight="medium"
-                fontSize="xs"
-              >
-                {formatCcy(product.orig_price)}
+              <Text lineHeight="tall" color="red.500" fontSize="sm">
+                đ
               </Text>
+              <Badge
+                ml={2}
+                borderWidth="1px"
+                borderColor="red.500"
+                variant="subtle"
+                colorScheme="red"
+              >
+                <Text
+                  textDecorationLine="line-through"
+                  color="red.500"
+                  fontWeight="medium"
+                  fontSize="xs"
+                >
+                  {formatCcy(product.orig_price)}
+                </Text>
+              </Badge>
             </>
           ) : (
             <>
               {product.orig_price && (
-                <Text
-                  mr={0.5}
-                  lineHeight="tall"
-                  color="brand.700"
-                  fontSize="xs"
-                >
+                <Text mr={0.5} lineHeight="tall" fontSize="xs">
                   đ
                 </Text>
               )}
 
-              <Text
-                lineHeight="tight"
-                color="brand.700"
-                fontWeight="medium"
-                fontSize="sm"
-              >
+              <Text lineHeight="tight" fontWeight="medium" fontSize="sm">
                 {product.orig_price
                   ? formatCcy(product.orig_price)
                   : "Liên hệ cửa hàng"}
