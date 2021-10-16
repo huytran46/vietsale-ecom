@@ -14,15 +14,18 @@ import {
   NumberDecrementStepper,
   NumberIncrementStepper,
 } from "@chakra-ui/react";
+import ImageViewer from "react-simple-image-viewer";
 
 import { NextPage, GetServerSidePropsContext } from "next";
 import { useRouter } from "next/router";
 import { dehydrate, QueryClient, useQuery } from "react-query";
+
 import { fetchProductDetail, FETCH_PRODUCT_DETAIL_URI } from "services/product";
 import { formatCcy } from "utils";
 
 const DEFAULT_QTY = 1;
 const MINIMUM_QTY = 0;
+
 const ProductDetail: NextPage = () => {
   const router = useRouter();
   const { pid } = router.query;
@@ -39,9 +42,11 @@ const ProductDetail: NextPage = () => {
   );
 
   const [coverUrl, setCoverUrl] = React.useState<string>(productCoverUrl);
+  const [currentImage, setCurrentImage] = React.useState(0);
+  const [isViewerOpen, setIsViewerOpen] = React.useState(false);
 
   const productFiles = React.useMemo(
-    () => productDetail?.edges?.files || [],
+    () => productDetail?.edges?.files?.map((f) => f.file_thumbnail) || [],
     [productDetail?.edges?.files]
   );
 
@@ -52,11 +57,21 @@ const ProductDetail: NextPage = () => {
     );
   }, [productDetail]);
 
+  const openImageViewer = React.useCallback((index) => {
+    setCurrentImage(index);
+    setIsViewerOpen(true);
+  }, []);
+
   if (isLoading) return <Text>Đang tải trang...</Text>;
   if (!productDetail) return null;
 
   const handleChangeAmt = (valueAsString: string, valueAsNumber: number) =>
     setValue(valueAsNumber);
+
+  const closeImageViewer = () => {
+    setCurrentImage(0);
+    setIsViewerOpen(false);
+  };
 
   return (
     <VStack py={10} h="fit-content" minHeight="full" spacing={10}>
@@ -79,26 +94,34 @@ const ProductDetail: NextPage = () => {
               src={coverUrl}
               alt={productDetail?.name ?? "product-cover"}
             />
+            {isViewerOpen && (
+              <ImageViewer
+                src={productFiles}
+                currentIndex={currentImage}
+                disableScroll={false}
+                closeOnClickOutside={true}
+                onClose={closeImageViewer}
+              />
+            )}
           </Box>
           <Wrap flex={1} direction="row" w="full">
-            {productFiles.map((file, idx) => (
+            {productFiles.map((fileUrl, idx) => (
               <WrapItem
                 key={idx}
                 h="100px"
                 w="100px"
-                borderWidth={coverUrl === file.file_thumbnail ? "2px" : "0px"}
-                borderColor={
-                  coverUrl === file.file_thumbnail ? "brand.700" : "gray.200"
-                }
-                onMouseEnter={() => setCoverUrl(file.file_thumbnail)}
+                borderWidth={coverUrl === fileUrl ? "2px" : "0px"}
+                borderColor={coverUrl === fileUrl ? "brand.700" : "gray.200"}
+                onMouseEnter={() => setCoverUrl(fileUrl)}
+                onClick={() => openImageViewer(idx)}
               >
                 <Image
                   maxH="full"
                   maxW="full"
                   h="full"
                   w="full"
-                  src={file.file_thumbnail}
-                  alt={file.file_name}
+                  src={fileUrl}
+                  alt={fileUrl}
                 />
               </WrapItem>
             ))}
