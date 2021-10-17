@@ -4,7 +4,6 @@ import { Image } from "@chakra-ui/image";
 
 import { Product } from "models/Product";
 
-import TextWithLines from "components/common/TextWithLines";
 import { formatCcy } from "utils";
 import MyLinkOverlay from "../common/MyLinkOverlay";
 
@@ -76,15 +75,17 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
           </Badge>
         )}
 
-        <TextWithLines
+        <Text
           position="relative"
           fontSize="xs"
           as="h5"
           lineHeight="tight"
           textTransform="capitalize"
-          text={product.name}
-        />
-
+          noOfLines={2}
+          maxW="full"
+        >
+          {product.name}
+        </Text>
         <Box w="full" d="flex" alignItems="flex-end" mt={3}>
           {isDiscount ? (
             <>

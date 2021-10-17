@@ -1,9 +1,0 @@
-.linesLimiter {
-  display: inline-block;
-  word-wrap: break-word;
-  overflow: hidden;
-  display: -webkit-box;
-  text-overflow: ellipsis;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
