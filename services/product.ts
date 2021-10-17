@@ -17,3 +17,14 @@ export async function fetchProductDetail(productId: string): Promise<Product> {
   const res = await fetch(url);
   return await res.json();
 }
+
+export const FETCH_PRODUCT_DETAIL_RELATIVE_URI = "/api/product/related/";
+export async function fetchProductDetailRelatives(
+  productId: string
+): Promise<Product[]> {
+  const url = parseUrlWithQueries(
+    FETCH_PRODUCT_DETAIL_RELATIVE_URI + productId
+  );
+  const res = await fetch(url);
+  return await res.json();
+}

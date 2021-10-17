@@ -1,4 +1,5 @@
 export const brandRing = {
+  borderRadius: "md",
   _focus: {
     ringColor: "brand.100",
     ring: 4,
@@ -7,7 +8,7 @@ export const brandRing = {
   _hover: {
     bg: "white",
     ringColor: "brand.100",
-    ring: 2,
+    ring: 3,
   },
 };
 
@@ -37,4 +38,8 @@ export function formatCcy(m: number | string, isReduce?: boolean): string {
     result = `${parts.slice(0, -1).join(seperator)}k`;
   }
   return result;
+}
+
+export function randInt(max: number): number {
+  return Math.floor(Math.random() * max);
 }

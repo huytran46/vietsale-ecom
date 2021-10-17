@@ -222,7 +222,7 @@ const Home: NextPage = () => {
         titleBg="brand.500"
         titleColor="white"
         bodyProps={{
-          bg: "white",
+          bgGradient: "linear(to-t, red.100, red.200, blue.300, blue.400)",
           border: "1px solid",
           borderColor: "gray.200",
           p: 3,
@@ -284,9 +284,9 @@ const Home: NextPage = () => {
 export async function getServerSideProps() {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(FETCH_HOME_URI, fetchHome);
-  // await queryClient.prefetchQuery(FETCH_PRODUCT_URI, () =>
-  //   fetchProducts({ pageSize: PAGE_SIZE })
-  // );
+  await queryClient.prefetchQuery(FETCH_PRODUCT_URI, () =>
+    fetchProducts({ pageSize: PAGE_SIZE })
+  );
   return {
     props: {
       dehydratedState: dehydrate(queryClient),

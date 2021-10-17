@@ -6,13 +6,13 @@ import withSession from "utils/session";
 export default withSession(async (req, res) => {
   const { pid } = req.query;
   if (!pid) return res.status(404).json({ error: "Bad request" });
-  const uri = "/public/product/" + pid;
+  const uri = `/public/product/${pid}/related`;
   try {
-    const result = await fetcher.get<BaseReponse<{ product: Product }>>(uri);
+    const result = await fetcher.get<BaseReponse<{ products: Product[] }>>(uri);
     if (!result.data) {
       return res.status(500).json({});
     }
-    const product = result.data.data.product;
+    const product = result.data.data.products;
     if (product) return res.json(product);
     return res.status(404).json({ error: "Not found" });
   } catch (error) {

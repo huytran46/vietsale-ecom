@@ -1,10 +1,10 @@
-import React from "react";
+import React, { JSXElementConstructor, ReactElement } from "react";
 import { Box, BoxProps } from "@chakra-ui/layout";
 
 import styles from "./TextWithLines.module.css";
 
 type Props = BoxProps & {
-  text: string;
+  text: string | ReactElement<any, string | JSXElementConstructor<any>>[];
 };
 const TextWithLines: React.FC<Props> = ({ text, ...props }) => {
   return (

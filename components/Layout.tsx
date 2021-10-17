@@ -48,7 +48,7 @@ const MainHeader: React.FC = ({}) => {
             <HStack
               divider={<StackDivider borderColor="gray.200" />}
               isInline
-              spacing="4"
+              spacing="2"
               alignItems="center"
               w="full"
               p="1"
@@ -59,7 +59,7 @@ const MainHeader: React.FC = ({}) => {
             </HStack>
             <HStack
               isInline
-              spacing="10"
+              spacing="4"
               alignItems="center"
               justifyContent="flex-end"
               w="full"

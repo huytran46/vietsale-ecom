@@ -3,6 +3,8 @@ interface Location {
   name: string;
   viettel_ref_id: number;
   viettel_ref_name: string;
+  vnpost_ref_id: string;
+  vnpost_ref_name: string;
   created_at: string;
   updated_at: string;
 }

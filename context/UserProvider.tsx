@@ -1,11 +1,13 @@
 import React from "react";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { User } from "models/User";
+import { UserAddress } from "models/UserAddress";
 
 type UserContext = {
   visitorId: string;
   platform: string;
   user?: User;
+  setUser: (nextState: User) => void;
 };
 
 const UserCtx = React.createContext<UserContext>({} as UserContext);
@@ -18,6 +20,7 @@ export const UserProvider: React.FC = ({ children }) => {
   const [visitorId, setVisitorId] = React.useState("");
   const [platform, setPlatform] = React.useState("");
   const [user, setUser] = React.useState<User>();
+  const [userAddress, setUserAddress] = React.useState<UserAddress>();
 
   const fingerPrintResult = React.useMemo(async () => {
     if (typeof window === "undefined" || !fpPromise) return undefined;
@@ -49,6 +52,10 @@ export const UserProvider: React.FC = ({ children }) => {
     setPlatform(pl);
   }, [promiseOfPlatform]);
 
+  const getProvinces = React.useCallback(async () => {}, []);
+  const getDistricts = React.useCallback(async () => {}, []);
+  const getWards = React.useCallback(async () => {}, []);
+
   React.useEffect(() => {
     if (visitorId !== "") return;
     doGetVisitorId();
@@ -56,7 +63,7 @@ export const UserProvider: React.FC = ({ children }) => {
   }, [visitorId, doGetVisitorId, doGetPlatform]);
 
   return (
-    <UserCtx.Provider value={{ visitorId, user, platform }}>
+    <UserCtx.Provider value={{ visitorId, user, setUser, platform }}>
       {children}
     </UserCtx.Provider>
   );
