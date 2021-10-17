@@ -31,6 +31,8 @@ import {
   Accordion,
   SimpleGrid,
   Spinner,
+  useDisclosure,
+  Spacer,
 } from "@chakra-ui/react";
 import { BsStarFill, BsChatDots } from "react-icons/bs";
 import { AiOutlineShop } from "react-icons/ai";
@@ -53,6 +55,7 @@ import { brandRing, formatCcy, randInt } from "utils";
 import { useUser } from "context/UserProvider";
 import MetaCard from "components/MetaCard";
 import ProductItem from "components/ProductItem";
+import UserAddressModal from "components/UserAddressModal";
 
 const DEFAULT_QTY = 1;
 const MINIMUM_QTY = 1;
@@ -81,6 +84,7 @@ const ProductDetail: NextPage = () => {
   const [currentImage, setCurrentImage] = React.useState(0);
   const [isViewerOpen, setIsViewerOpen] = React.useState(false);
   const { user } = useUser();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const shopInfo = React.useMemo(
     () => productDetail?.edges?.owner,
@@ -147,7 +151,8 @@ const ProductDetail: NextPage = () => {
     <VStack py={10} h="fit-content" minHeight="full" spacing={10}>
       <Flex
         borderWidth="1px"
-        borderColor="gray.100"
+        borderColor="gray.200"
+        borderRadius="md"
         p={5}
         bg="white"
         h="fit-content"
@@ -199,6 +204,7 @@ const ProductDetail: NextPage = () => {
             ))}
           </Wrap>
         </VStack>
+
         <VStack alignItems="flex-start" spacing={6} flex={3}>
           <VStack spacing={1} alignItems="flex-start">
             <Text fontSize="2xl">{productDetail.name}</Text>
@@ -216,6 +222,7 @@ const ProductDetail: NextPage = () => {
             </HStack>
           </VStack>
           <Grid
+            h="full"
             w="full"
             templateColumns={[
               "repeat(1, 1fr)",
@@ -262,13 +269,13 @@ const ProductDetail: NextPage = () => {
               </HStack>
               <Box py={3}>
                 <Text fontSize="sm">
-                  {productDetail.short_desc ?? "Không có miêu tả"}
+                  {productDetail.short_desc ?? "Không có miêu tả ngắn"}
                 </Text>
               </Box>
               <Box
                 p={3}
                 borderWidth="1px"
-                borderColor="gray.200"
+                borderColor="gray.300"
                 borderRadius="md"
               >
                 {Boolean(user) && <Text>Giao đến {user?.edges}</Text>}
@@ -278,15 +285,20 @@ const ProductDetail: NextPage = () => {
                       Hãy nhập địa chỉ để nhận báo giá chính xác về phí vận
                       chuyển
                     </Text>
-                    <Text
-                      cursor="pointer"
-                      fontWeight="semibold"
-                      color="brand.500"
-                      fontSize="xs"
-                      onClick={() => console.log("a")}
+                    <UserAddressModal
+                      isOpen={isOpen}
+                      onOpen={onOpen}
+                      onClose={onClose}
                     >
-                      Nhập địa chỉ <Icon fontSize="md" as={FaShippingFast} />
-                    </Text>
+                      <Text
+                        cursor="pointer"
+                        fontWeight="semibold"
+                        color="brand.500"
+                        fontSize="xs"
+                      >
+                        Nhập địa chỉ <Icon fontSize="md" as={FaShippingFast} />
+                      </Text>
+                    </UserAddressModal>
                   </VStack>
                 )}
               </Box>
@@ -298,7 +310,9 @@ const ProductDetail: NextPage = () => {
                   <Table variant="striped" size="sm">
                     <Tbody>
                       <Tr>
-                        <Td borderTopLeftRadius="md">Danh mục</Td>
+                        <Td borderTopLeftRadius="md">
+                          <Text fontSize="xs">Danh mục</Text>
+                        </Td>
                         <Td borderTopRightRadius="md">
                           <Text fontSize="xs">
                             {productCategories.join(", ")}
@@ -306,7 +320,9 @@ const ProductDetail: NextPage = () => {
                         </Td>
                       </Tr>
                       <Tr>
-                        <Td border="none">Số lượng trong kho</Td>
+                        <Td border="none">
+                          <Text fontSize="xs">Số lượng trong kho</Text>
+                        </Td>
                         <Td border="none">
                           <Text fontSize="xs">{productDetail.quantity}</Text>
                         </Td>
@@ -315,6 +331,7 @@ const ProductDetail: NextPage = () => {
                   </Table>
                 </Box>
               </Box>
+              <Spacer />
               <HStack mt={6} spacing={3}>
                 <NumberInput
                   maxW="100px"
@@ -348,7 +365,7 @@ const ProductDetail: NextPage = () => {
             <GridItem colSpan={[1, 1, 2]}>
               <VStack
                 borderWidth="1px"
-                borderColor="gray.100"
+                borderColor="gray.300"
                 borderRadius="md"
                 p={2}
                 spacing={3}
@@ -371,7 +388,7 @@ const ProductDetail: NextPage = () => {
                     <Text fontSize="xs">{shopInfo?.email}</Text>
                   </VStack>
                 </HStack>
-                <VStack spacing={1} alignItems="flex-start">
+                <VStack w="full" spacing={1} alignItems="flex-start">
                   <Text fontWeight="medium" color="brand.700" fontSize="sm">
                     <Icon fontSize="sm" as={HiLocationMarker} />
                     &nbsp;Địa chỉ
@@ -411,11 +428,13 @@ const ProductDetail: NextPage = () => {
       <VStack
         borderWidth="1px"
         borderColor="gray.200"
+        borderRadius="md"
         bg="white"
         w="full"
         alignItems="flex-start"
+        p={3}
       >
-        <Text m={3} mb={1} fontSize="xl" fontWeight="medium">
+        <Text mb={1} fontSize="xl" fontWeight="medium">
           Có thể bạn quan tâm
         </Text>
         <SimpleGrid w="full" rowGap={3} columnGap={1} columns={[1, 2, 4, 6]}>
@@ -436,12 +455,13 @@ const ProductDetail: NextPage = () => {
       <Accordion
         allowMultiple
         w="full"
+        borderRadius="md"
         borderWidth="1px"
         borderColor="gray.100"
         bg="white"
       >
-        <AccordionItem>
-          <AccordionButton>
+        <AccordionItem border="none">
+          <AccordionButton _focus={{ ring: 0 }}>
             <Box flex="1" textAlign="left">
               <Text fontSize="xl" fontWeight="medium">
                 Mô tả chi tiết sản phẩm
@@ -452,6 +472,7 @@ const ProductDetail: NextPage = () => {
           <AccordionPanel pb={4}>{descHTML}</AccordionPanel>
         </AccordionItem>
       </Accordion>
+
       <MetaCard
         title="Sản phẩm tương tự"
         bodyProps={{

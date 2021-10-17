@@ -1,5 +1,6 @@
 import React from "react";
-import { Badge, Box, Text } from "@chakra-ui/layout";
+import { Badge, Box, Text, HStack, Icon, StackDivider } from "@chakra-ui/react";
+import { BsStarFill } from "react-icons/bs";
 import { Image } from "@chakra-ui/image";
 
 import { Product } from "models/Product";
@@ -32,8 +33,10 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
       overflow="hidden"
       m={0}
       p={2}
+      zIndex={0}
       _hover={{
-        boxShadow: "rgb(0 0 0 / 10%) 0px 0px 20px",
+        boxShadow: "rgb(0 0 0 / 10%) 0px 2px 26px",
+        zIndex: 1,
       }}
       innerProp={{
         h: "full",
@@ -86,19 +89,33 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
         >
           {product.name}
         </Text>
-        <Box w="full" d="flex" alignItems="flex-end" mt={3}>
+        <HStack divider={<StackDivider />}>
+          <HStack spacing={1}>
+            <Icon fontSize="xs" color="yellow.300" as={BsStarFill} />
+            <Icon fontSize="xs" color="yellow.300" as={BsStarFill} />
+            <Icon fontSize="xs" color="yellow.300" as={BsStarFill} />
+            <Icon fontSize="xs" color="yellow.300" as={BsStarFill} />
+            <Icon fontSize="xs" color="yellow.300" as={BsStarFill} />
+          </HStack>
+          <Text
+            lineHeight="tight"
+            fontSize="xs"
+            color="gray.400"
+            fontWeight="medium"
+          >
+            Đã bán {product.sales_volume ?? 0}
+          </Text>
+        </HStack>
+        <Box w="full" d="flex" alignItems="flex-end" mt={1}>
           {isDiscount ? (
-            <>
+            <HStack alignItems="center">
               <Text
                 lineHeight="tight"
                 color="red.500"
                 fontWeight="medium"
                 fontSize="md"
               >
-                {formatCcy(product.discount_price)}
-              </Text>
-              <Text lineHeight="tall" color="red.500" fontSize="sm">
-                đ
+                {formatCcy(product.discount_price)}đ
               </Text>
               <Badge
                 ml={2}
@@ -112,25 +129,18 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
                   color="red.500"
                   fontWeight="medium"
                   fontSize="xs"
+                  textTransform="none"
                 >
-                  {formatCcy(product.orig_price)}
+                  {formatCcy(product.orig_price)}đ
                 </Text>
               </Badge>
-            </>
+            </HStack>
           ) : (
-            <>
-              {product.orig_price && (
-                <Text mr={0.5} lineHeight="tall" fontSize="xs">
-                  đ
-                </Text>
-              )}
-
-              <Text lineHeight="tight" fontWeight="medium" fontSize="sm">
-                {product.orig_price
-                  ? formatCcy(product.orig_price)
-                  : "Liên hệ cửa hàng"}
-              </Text>
-            </>
+            <Text lineHeight="tight" fontWeight="medium" fontSize="sm">
+              {product.orig_price
+                ? formatCcy(product.orig_price) + " đ"
+                : "Liên hệ cửa hàng"}
+            </Text>
           )}
         </Box>
       </Box>
