@@ -10,7 +10,8 @@ import {
   Center,
   Stack,
   StackDivider,
-} from "@chakra-ui/layout";
+  Spinner,
+} from "@chakra-ui/react";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { BiSearchAlt } from "react-icons/bi";
 import { TiShoppingCart } from "react-icons/ti";
@@ -26,7 +27,8 @@ const highestZIndex = 3;
 
 const MainHeader: React.FC = ({}) => {
   const router = useRouter();
-  const { searchKeyword, setSearchKeyword } = useLayoutCtx();
+  const { searchKeyword, setSearchKeyword, setGlobalLoadingState } =
+    useLayoutCtx();
   // eslint-disable-next-line
   const updateKeyword = (event: React.ChangeEvent<HTMLInputElement>) =>
     setSearchKeyword(event.target.value);
@@ -41,6 +43,7 @@ const MainHeader: React.FC = ({}) => {
       w="full"
       zIndex={highestZIndex}
       py={2}
+      boxShadow="lg"
     >
       <Container maxW="container.xl" h="full">
         <VStack justifyContent="flex-start" spacing={5} h="full" w="full">
@@ -88,9 +91,15 @@ const MainHeader: React.FC = ({}) => {
                   border="3px solid"
                   borderColor="white"
                   cursor="pointer"
-                  onClick={() => {
-                    router.push("/products?_q=" + searchKeyword);
-                    setSearchKeyword("");
+                  onClick={async () => {
+                    setGlobalLoadingState(true);
+                    const isLoaded = await router.replace(
+                      "/products?_q=" + searchKeyword
+                    );
+                    if (isLoaded) {
+                      setSearchKeyword("");
+                    }
+                    setGlobalLoadingState(false);
                   }}
                 >
                   <BiSearchAlt />
@@ -139,11 +148,24 @@ const MainHeader: React.FC = ({}) => {
 };
 
 const Layout: React.FC = ({ children }) => {
+  const { isGlobalLoading } = useLayoutCtx();
   return (
     <Box bg="gray.light" w="full" h="full">
       <MainHeader />
       <Container maxW="container.xl" h="full" marginTop={headerBarHeight}>
-        {children}
+        {isGlobalLoading ? (
+          <VStack alignItems="center" p={10} w="full" h="100vh">
+            <Spinner
+              thickness="4px"
+              color="brand.500"
+              speed="0.6s"
+              size="lg"
+              emptyColor="gray.300"
+            />
+          </VStack>
+        ) : (
+          children
+        )}
       </Container>
     </Box>
   );

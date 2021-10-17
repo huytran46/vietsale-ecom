@@ -260,7 +260,8 @@ const Home: NextPage = () => {
               colorScheme="brand"
               color="brand.500"
               speed="1s"
-              size="sm"
+              size="md"
+              emptyColor="gray.300"
             />
           )}
         </Stack>

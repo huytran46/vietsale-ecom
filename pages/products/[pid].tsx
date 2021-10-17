@@ -414,9 +414,8 @@ const ProductDetail: NextPage = () => {
         bg="white"
         w="full"
         alignItems="flex-start"
-        p={3}
       >
-        <Text mb={1} fontSize="xl" fontWeight="medium">
+        <Text m={3} mb={1} fontSize="xl" fontWeight="medium">
           Có thể bạn quan tâm
         </Text>
         <SimpleGrid w="full" rowGap={3} columnGap={1} columns={[1, 2, 4, 6]}>
