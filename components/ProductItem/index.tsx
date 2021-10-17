@@ -113,9 +113,9 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
                 lineHeight="tight"
                 color="red.500"
                 fontWeight="medium"
-                fontSize="md"
+                fontSize="sm"
               >
-                {formatCcy(product.discount_price)}đ
+                {formatCcy(product.discount_price)}&nbsp;đ
               </Text>
               <Badge
                 ml={2}
@@ -131,7 +131,7 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
                   fontSize="xs"
                   textTransform="none"
                 >
-                  {formatCcy(product.orig_price)}đ
+                  {formatCcy(product.orig_price)}&nbsp;đ
                 </Text>
               </Badge>
             </HStack>
