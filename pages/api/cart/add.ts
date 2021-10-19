@@ -1,4 +1,6 @@
-import { CartInfo } from "models/Cart";
+import { AxiosResponse } from "axios";
+import { IronSessionKey } from "constants/session";
+import { Cart } from "models/Cart";
 import { BaseReponse } from "models/common/BaseResponse";
 import fetcher from "services/config";
 import withSession from "utils/session";
@@ -9,24 +11,35 @@ type AddToCartBody = {
 };
 
 export default withSession(async (req, res) => {
-  const payload: AddToCartBody = req.body;
+  const token = req.session.get(IronSessionKey.AUTH);
+  if (!token || token === "")
+    return res.status(401).json({ error: "Unauthorized" });
+
+  const payload: AddToCartBody = JSON.parse(req.body);
   if (!payload) return res.status(400).json({ error: "Bad request" });
   const uri = "/user/cart/item";
   try {
-    const result = await fetcher.post<BaseReponse<CartInfo>>(uri);
+    const result = await fetcher.post<
+      AddToCartBody,
+      AxiosResponse<BaseReponse<{ cart: Cart }>>
+    >(uri, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (result.status !== 200 && result.status !== 201) {
+      return res.status(result.status).json({ message: result.data.message });
+    }
 
     if (!result.data) {
       return res.status(500).json({});
     }
 
-    if (result.status !== 200) {
-      return res.status(result.status).json({});
-    }
-
-    const cartInfo = result.data.data;
+    const cartInfo = result.data.data.cart;
     if (cartInfo) return res.json(cartInfo);
-    return res.status(500).json({ error: "Not found" });
-  } catch (error) {
-    return res.status(500).json({ error });
+    return res.status(500).json({ error: "Internal Server Error" });
+  } catch (error: any) {
+    return res.status(500).json({ message: error?.response?.data });
   }
 });

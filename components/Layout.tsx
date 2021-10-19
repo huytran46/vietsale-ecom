@@ -11,6 +11,7 @@ import {
   Stack,
   StackDivider,
   Spinner,
+  Badge,
 } from "@chakra-ui/react";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { BiSearchAlt } from "react-icons/bi";
@@ -21,6 +22,7 @@ import { brandRing } from "utils";
 import { Button } from "@chakra-ui/button";
 import MyLinkOverlay from "./common/MyLinkOverlay";
 import { useLayoutCtx } from "context/LayoutProvider";
+import { useCartCtx } from "context/CartProvider";
 
 const headerBarHeight = 131;
 const highestZIndex = 3;
@@ -32,6 +34,7 @@ const MainHeader: React.FC = ({}) => {
   // eslint-disable-next-line
   const updateKeyword = (event: React.ChangeEvent<HTMLInputElement>) =>
     setSearchKeyword(event.target.value);
+  const { numberOfItems } = useCartCtx();
 
   return (
     <Box
@@ -136,8 +139,16 @@ const MainHeader: React.FC = ({}) => {
               </HStack>
             </Stack>
             <Center flex={2}>
-              <Button fontSize="2xl" size="md" variant="solid">
+              <Button
+                onClick={() => router.push("/cart")}
+                fontSize="2xl"
+                size="md"
+                borderColor="brand.700"
+              >
                 <TiShoppingCart />
+                <Badge bg="red.500" color="white">
+                  {numberOfItems}
+                </Badge>
               </Button>
             </Center>
           </HStack>

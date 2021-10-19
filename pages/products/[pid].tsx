@@ -56,6 +56,7 @@ import { useUser } from "context/UserProvider";
 import MetaCard from "components/MetaCard";
 import ProductItem from "components/ProductItem";
 import UserAddressModal from "components/UserAddressModal";
+import { useCartCtx } from "context/CartProvider";
 
 const DEFAULT_QTY = 1;
 const MINIMUM_QTY = 1;
@@ -72,7 +73,7 @@ const ProductDetail: NextPage = () => {
     ({ queryKey }) => fetchProductDetailRelatives(queryKey[1] as string)
   );
 
-  const [value, setValue] = React.useState(DEFAULT_QTY);
+  const [amt, setValue] = React.useState(DEFAULT_QTY);
 
   const productCoverUrl = React.useMemo(
     () =>
@@ -85,6 +86,7 @@ const ProductDetail: NextPage = () => {
   const [isViewerOpen, setIsViewerOpen] = React.useState(false);
   const { user } = useUser();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { updateCartItem } = useCartCtx();
 
   const shopInfo = React.useMemo(
     () => productDetail?.edges?.owner,
@@ -145,6 +147,11 @@ const ProductDetail: NextPage = () => {
   const closeImageViewer = () => {
     setCurrentImage(0);
     setIsViewerOpen(false);
+  };
+
+  const handleAddToCart = () => {
+    if (!productDetail) return;
+    updateCartItem(productDetail.id, amt);
   };
 
   return (
@@ -335,7 +342,7 @@ const ProductDetail: NextPage = () => {
               <HStack mt={6} spacing={3}>
                 <NumberInput
                   maxW="100px"
-                  value={value}
+                  value={amt}
                   min={MINIMUM_QTY}
                   onChange={handleChangeAmt}
                   {...brandRing}
@@ -357,6 +364,9 @@ const ProductDetail: NextPage = () => {
                   _active={{
                     bg: "red.600",
                   }}
+                  onClick={handleAddToCart}
+                  borderColor="red.700"
+                  textShadow="md"
                 >
                   Chọn mua
                 </Button>

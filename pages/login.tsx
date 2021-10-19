@@ -178,7 +178,7 @@ const Login: NextPage = () => {
 
 const handler: NextSsrIronHandler = async function ({ req, res }) {
   const auth = req.session.get(IronSessionKey.AUTH);
-  if (auth !== undefined || auth !== "") {
+  if (auth !== undefined) {
     res.setHeader("location", "/");
     res.statusCode = 302;
     res.end();
@@ -191,13 +191,5 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
 };
 
 export const getServerSideProps: GetServerSideProps = withSession(handler);
-
-// export const getStaticProps: GetStaticProps = async () => {
-//   return {
-//     props: {
-//       noLayout: true,
-//     },
-//   };
-// };
 
 export default Login;
