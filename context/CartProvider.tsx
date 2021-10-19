@@ -17,16 +17,15 @@ export const CartProvider: React.FC = ({ children }) => {
   });
 
   const [cartInfo, setCartInfo] = React.useState<CartInfo>();
-  const numberOfItems = React.useMemo(() => {
-    console.log("cartInfo:", cartInfo);
-    return cartInfo?.cart.total_items ?? 0;
-  }, [cartInfo]);
+  const numberOfItems = React.useMemo(
+    () => cartInfo?.cart.total_items ?? 0,
+    [cartInfo]
+  );
   const updateCartItem = React.useCallback((productId: string, qty: number) => {
     addToTheCart(
       { productID: productId, qty },
       {
         onSuccess({ total_item, total_price }) {
-          console.log(total_item);
           setCartInfo({
             cart: {
               total_items: total_item,

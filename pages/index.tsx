@@ -273,6 +273,7 @@ const Home: NextPage = () => {
           fontWeight="medium"
           w="25%"
           size="md"
+          borderColor="brand.700"
           onClick={() => router.push("/products")}
         >
           Xem thêm
