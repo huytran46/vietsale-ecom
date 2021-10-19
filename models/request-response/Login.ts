@@ -4,3 +4,13 @@ export type LoginPayload = {
   fcm: string;
   deviceModel: string;
 };
+
+export type LoginResponse = {
+  email: string;
+  token: {
+    access_token: string;
+    refresh_token: string;
+    exp: number;
+  };
+  is_merchant: boolean;
+};

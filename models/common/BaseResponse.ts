@@ -1,3 +1,5 @@
+import { AxiosResponse } from "axios";
+
 export interface BaseReponse<T> {
   success: boolean;
   message: string;
@@ -7,3 +9,5 @@ export interface BaseReponse<T> {
   total_page: number;
   total_items: number;
 }
+
+export type Base<T> = AxiosResponse<BaseReponse<T>>;

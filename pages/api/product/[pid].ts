@@ -5,7 +5,7 @@ import withSession from "utils/session";
 
 export default withSession(async (req, res) => {
   const { pid } = req.query;
-  if (!pid) return res.status(404).json({ error: "Bad request" });
+  if (!pid) return res.status(400).json({ error: "Bad request" });
   const uri = "/public/product/" + pid;
   try {
     const result = await fetcher.get<BaseReponse<{ product: Product }>>(uri);

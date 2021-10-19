@@ -16,8 +16,9 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 
 // Custom context
-import { UserProvider } from "context/UserProvider";
 import { LayoutProvider } from "context/LayoutProvider";
+import { UserProvider } from "context/UserProvider";
+import { CartProvider } from "context/CartProvider";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = React.useState(
@@ -36,15 +37,17 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Hydrate state={pageProps.dehydratedState}>
         <ChakraProvider theme={theme}>
           <UserProvider>
-            <LayoutProvider>
-              {Boolean(pageProps.noLayout) ? (
-                <Component {...pageProps} />
-              ) : (
-                <Layout>
+            <CartProvider>
+              <LayoutProvider>
+                {Boolean(pageProps.noLayout) ? (
                   <Component {...pageProps} />
-                </Layout>
-              )}
-            </LayoutProvider>
+                ) : (
+                  <Layout>
+                    <Component {...pageProps} />
+                  </Layout>
+                )}
+              </LayoutProvider>
+            </CartProvider>
           </UserProvider>
         </ChakraProvider>
       </Hydrate>

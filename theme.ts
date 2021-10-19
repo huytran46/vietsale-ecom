@@ -3,7 +3,6 @@ import {
   ThemeConfig,
   theme as base,
   withDefaultColorScheme,
-  withDefaultVariant,
 } from "@chakra-ui/react";
 
 const config: ThemeConfig = {
@@ -16,6 +15,14 @@ const config: ThemeConfig = {
 // .color-primary-2 { color: #6793F7 }
 // .color-primary-3 { color: #000206 }
 // .color-primary-4 { color: #FBFBFB }
+
+const Button = {
+  baseStyle: {
+    borderWidth: "1px",
+    boxShadow:
+      "inset 0 0 0 1px rgb(255 255 255 / 5%), inset 0 1px 0 0 rgb(255 255 255 / 45%), inset 0 -1px 0 0 rgb(255 255 255 / 15%), 0 1px 0 0 rgb(255 255 255 / 15%)",
+  },
+};
 
 export const theme = extendTheme(
   {
@@ -49,6 +56,9 @@ export const theme = extendTheme(
       body: `Inter, ${base.fonts?.body}`,
     },
     fontSizes: {},
+    components: {
+      Button,
+    },
   },
   withDefaultColorScheme({
     colorScheme: "brand",

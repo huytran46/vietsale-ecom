@@ -29,7 +29,7 @@ function withSession(handler: NextIronHandler | NextSsrIronHandler) {
       httpOnly: true,
       sameSite: "strict",
       path: "/",
-      secure: process.env.NODE_ENV === "production",
+      // secure: process.env.NODE_ENV === "production",
     },
   });
 }

@@ -51,12 +51,7 @@ const Products: NextPage = () => {
   return (
     <VStack h="fit-content" w="full" spacing={10} py={10}>
       {products.length < 1 && NotFound}
-      <SimpleGrid
-        minChildWidth="200px"
-        bg="white"
-        gap={2}
-        columns={[1, 2, 4, 6]}
-      >
+      <SimpleGrid w="full" bg="white" gap={2} columns={[1, 2, 4, 6]}>
         {products.map((p, idx) => (
           <ProductItem key={idx} product={p} />
         ))}

@@ -2,13 +2,13 @@ export const brandRing = {
   borderRadius: "md",
   _focus: {
     ringColor: "brand.100",
-    ring: 4,
+    ring: 2,
     bg: "white",
   },
   _hover: {
     bg: "white",
     ringColor: "brand.100",
-    ring: 3,
+    ring: 1,
   },
 };
 

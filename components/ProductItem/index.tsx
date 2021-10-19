@@ -128,7 +128,7 @@ const ProductItem: React.FC<Props> = ({ product, isHot }) => {
                   textDecorationLine="line-through"
                   color="red.500"
                   fontWeight="medium"
-                  fontSize="xs"
+                  fontSize="xx-small"
                   textTransform="none"
                 >
                   {formatCcy(product.orig_price)}&nbsp;đ
