@@ -48,7 +48,10 @@ const UserAddressModal: React.FC<Props> = ({
                 Hãy chọn địa chỉ nhận hàng để được dự báo thời gian giao hàng
                 cùng phí đóng gói, vận chuyển một cách chính xác nhất.
               </Text>
-              <Button bgGradient="linear(to-r, brand.100, brand.300, brand.500)">
+              <Button
+                borderColor="brand.700"
+                bgGradient="linear(to-r, brand.100, brand.300, brand.500)"
+              >
                 Đăng nhập để chọn địa chỉ giao hàng
               </Button>
             </VStack>

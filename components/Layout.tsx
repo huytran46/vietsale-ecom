@@ -144,6 +144,7 @@ const MainHeader: React.FC = ({}) => {
                 fontSize="2xl"
                 size="md"
                 borderColor="brand.700"
+                bgGradient="linear(to-l, brand.300, brand.500)"
               >
                 <TiShoppingCart />
                 <Badge bg="red.500" color="white">
