@@ -39,7 +39,7 @@ export default withSession(async (req, res) => {
     req.session.set(IronSessionKey.AUTH, token);
     req.session.set(IronSessionKey.REF_TOKEN, refToken);
     await req.session.save();
-    res.status(200).json({ success: true });
+    res.status(200).json({ success: true, email: loginResp.data.data.email });
   } catch (error) {
     res.status(500).json({ error });
   }

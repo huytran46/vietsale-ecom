@@ -17,17 +17,17 @@ export default withSession(async (req, res) => {
         Authorization: "Bearer " + token,
       },
     });
-
     const cartInfo = result.data.data;
     if (cartInfo) return res.status(200).json(cartInfo);
     return res.status(404).json({ error: "Nothing's returned" });
   } catch (error: any) {
-    if (error.response.status === 401) {
+    if (error === 401) {
       req.session.destroy();
       await req.session.save();
       res.setHeader("location", "/login");
       res.statusCode = 302;
       res.end();
+      return;
     }
     return res.status(500).json({ error: error.response.data });
   }

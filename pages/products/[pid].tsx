@@ -344,6 +344,7 @@ const ProductDetail: NextPage = () => {
                   maxW="100px"
                   value={amt}
                   min={MINIMUM_QTY}
+                  max={productDetail.quantity}
                   onChange={handleChangeAmt}
                   {...brandRing}
                 >

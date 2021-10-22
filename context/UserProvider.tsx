@@ -22,6 +22,12 @@ export const UserProvider: React.FC = ({ children }) => {
   const [user, setUser] = React.useState<User>();
   const [userAddress, setUserAddress] = React.useState<UserAddress>();
 
+  React.useEffect(() => {
+    const email = localStorage.getItem("email");
+    if (!email || email === "") return;
+    setUser({ email });
+  }, []);
+
   const fingerPrintResult = React.useMemo(async () => {
     if (typeof window === "undefined" || !fpPromise) return undefined;
     const fp = await fpPromise;

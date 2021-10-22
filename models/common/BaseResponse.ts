@@ -8,6 +8,7 @@ export interface BaseReponse<T> {
   page_no: number;
   total_page: number;
   total_items: number;
+  action: number;
 }
 
 export type Base<T> = AxiosResponse<BaseReponse<T>>;

@@ -14,18 +14,24 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { BsTrash } from "react-icons/bs";
+
 import { formatCcy } from "utils";
 import { CartItem } from "models/Cart";
+import { useCartCtx } from "context/CartProvider";
+import MyLinkOverlay from "components/common/MyLinkOverlay";
 
 const MINIMUM_QTY = 0;
 
 type Props = {
   cartItem: CartItem;
+  isSelected?: boolean;
+  rounded?: boolean;
 };
 
-const CartItemRow: React.FC<Props> = ({ cartItem }) => {
+const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
   const [qty, setQty] = React.useState(cartItem.qty);
   const [isDeleting, setDeleting] = React.useState(cartItem.qty === 0);
+  const { updateCartItem } = useCartCtx();
   const product = React.useMemo(() => cartItem.edges?.is_product, [cartItem]);
   const productCover = React.useMemo(
     () => product.edges?.cover?.file_thumbnail,
@@ -36,12 +42,26 @@ const CartItemRow: React.FC<Props> = ({ cartItem }) => {
     [product]
   );
 
+  const maxStock = React.useMemo(() => product.quantity ?? 0, [product]);
+
+  const updateQty = React.useCallback(
+    (newQty?: number) => {
+      if (!product) return;
+      if (!newQty) return updateCartItem(product.id, qty);
+      updateCartItem(product.id, newQty);
+    },
+    [product, qty, updateCartItem]
+  );
+
   React.useEffect(() => {
     if (qty !== 0) return;
+    if (qty > maxStock) return;
     setDeleting(true);
-  }, [qty]);
+  }, [qty, maxStock]);
 
-  function onDelete() {}
+  function onDelete() {
+    updateQty(0);
+  }
 
   function onNoDelete() {
     setDeleting(false);
@@ -49,9 +69,24 @@ const CartItemRow: React.FC<Props> = ({ cartItem }) => {
   }
 
   return (
-    <HStack mt="0px !important" p={3} w="full" spacing={6}>
+    <HStack
+      bg={isSelected ? "brand.50" : "white"}
+      _hover={{
+        bg: "brand.50",
+      }}
+      borderBottomRadius={rounded ? "md" : ""}
+      mt="0px !important"
+      p={3}
+      w="full"
+      spacing={6}
+    >
       <Checkbox value={cartItem.id} />
-      <Box borderRadius="md" borderWidth="1px" borderColor="gray.400">
+      <MyLinkOverlay
+        href={`/products/${product.id}`}
+        borderRadius="md"
+        borderWidth="1px"
+        borderColor="gray.400"
+      >
         <Image
           borderRadius="md"
           boxSize="104px"
@@ -59,11 +94,11 @@ const CartItemRow: React.FC<Props> = ({ cartItem }) => {
           src={productCover}
           alt={product.name}
         />
-      </Box>
-      <Text flex="1" fontSize="sm">
-        {product.name}
-      </Text>
-      <Text flex="1" textAlign="center" fontSize="sm">
+      </MyLinkOverlay>
+      <MyLinkOverlay flex="1" href={`/products/${product.id}`}>
+        <Text fontSize="xs">{product.name}</Text>
+      </MyLinkOverlay>
+      <Text flex="1" textAlign="center" fontSize="xs">
         {productPrice ? formatCcy(productPrice) + " đ" : "Liên hệ cửa hàng"}
       </Text>
       {isDeleting ? (
@@ -86,30 +121,55 @@ const CartItemRow: React.FC<Props> = ({ cartItem }) => {
           </Button>
         </HStack>
       ) : (
-        <NumberInput
-          flex="1"
-          maxW="100px"
-          value={qty}
-          min={MINIMUM_QTY}
-          onChange={(_, valAsNum) => setQty(valAsNum)}
-          size="sm"
-        >
-          <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput>
+        <HStack>
+          <NumberInput
+            flex="1"
+            maxW="100px"
+            value={qty}
+            min={MINIMUM_QTY}
+            max={maxStock}
+            onChange={(_, newQty) => setQty(newQty)}
+            size="sm"
+            bg="white"
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
+          </NumberInput>
+          {cartItem.qty !== qty && (
+            <Button
+              size="sm"
+              bg="green.500"
+              borderColor="green.700"
+              onClick={() => updateQty()}
+            >
+              Lưu
+            </Button>
+          )}
+        </HStack>
       )}
 
-      <Text flex="1" textAlign="center" fontSize="sm" color="red.500">
+      <Text
+        flex="1"
+        textAlign="center"
+        fontWeight="medium"
+        fontSize="sm"
+        color="red.500"
+      >
         {productPrice
           ? formatCcy(qty === 0 ? productPrice : productPrice * qty) + " đ"
           : "Liên hệ cửa hàng"}
       </Text>
       <Icon
+        color="red.500"
+        transitionDuration="0.2s"
+        _hover={{
+          transform: isDeleting ? "" : "scale(1.2)",
+        }}
         cursor={isDeleting ? "not-allowed" : "pointer"}
-        onClick={isDeleting ? undefined : onDelete}
+        onClick={() => setDeleting(true)}
         as={BsTrash}
       />
     </HStack>

@@ -23,10 +23,15 @@ const Cart: NextPage = () => {
   const { data: cartInfo, isLoading } = useQuery(FETCH_CART_URI, () =>
     fetchCartInfo()
   );
-  const {} = useCartCtx();
+  const { setCartInfo } = useCartCtx();
   const cartItemGroups = React.useMemo(() => {
     return cartInfo?.cart_item_groups ?? [];
   }, [cartInfo]);
+
+  React.useEffect(() => {
+    if (!cartInfo) return;
+    setCartInfo(cartInfo);
+  }, [cartInfo, setCartInfo]);
 
   if (isLoading)
     return (
@@ -67,7 +72,7 @@ const Cart: NextPage = () => {
                     borderBottomWidth="1px"
                     borderTopRadius="md"
                     w="full"
-                    bg="gray.light"
+                    bg="gray.50"
                   >
                     <Checkbox value="" />
                     <Text fontWeight="700" fontSize="sm">
@@ -75,14 +80,18 @@ const Cart: NextPage = () => {
                     </Text>
                   </HStack>
                   {gr.cart_items.map((item, idx) => (
-                    <CartItem key={idx} cartItem={item} />
+                    <CartItem
+                      key={idx}
+                      rounded={idx === gr.cart_items.length - 1}
+                      cartItem={item}
+                    />
                   ))}
                 </VStack>
               </CheckboxGroup>
             ))}
           </VStack>
         </GridItem>
-        <GridItem colSpan={2} bg="papayawhip" />
+        <GridItem colSpan={2} bg="transparent" />
       </Grid>
     </VStack>
   );

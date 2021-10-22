@@ -23,6 +23,7 @@ import { Button } from "@chakra-ui/button";
 import MyLinkOverlay from "./common/MyLinkOverlay";
 import { useLayoutCtx } from "context/LayoutProvider";
 import { useCartCtx } from "context/CartProvider";
+import { useUser } from "context/UserProvider";
 
 const headerBarHeight = 131;
 const highestZIndex = 3;
@@ -35,6 +36,7 @@ const MainHeader: React.FC = ({}) => {
   const updateKeyword = (event: React.ChangeEvent<HTMLInputElement>) =>
     setSearchKeyword(event.target.value);
   const { numberOfItems } = useCartCtx();
+  const { user } = useUser();
 
   return (
     <Box
@@ -73,10 +75,25 @@ const MainHeader: React.FC = ({}) => {
             >
               <Text fontSize="xs">Thông báo</Text>
               <Text fontSize="xs">Hỗ trợ</Text>
-              <HStack divider={<StackDivider borderColor="gray.200" />}>
-                <Text fontSize="xs"> Đăng kí</Text>
-                <Text fontSize="xs">Đăng nhập</Text>
-              </HStack>
+              {!user ? (
+                <HStack divider={<StackDivider />}>
+                  <MyLinkOverlay href="/login">
+                    <Text fontSize="xs"> Đăng kí</Text>
+                  </MyLinkOverlay>
+                  <MyLinkOverlay href="/login">
+                    <Text fontSize="xs">Đăng nhập</Text>
+                  </MyLinkOverlay>
+                </HStack>
+              ) : (
+                <Text fontSize="xs">
+                  Xin chào,{" "}
+                  <b>
+                    {user.email?.split("@") &&
+                      user.email?.split("@").length > 0 &&
+                      user.email?.split("@")[0]}
+                  </b>
+                </Text>
+              )}
             </HStack>
           </SimpleGrid>
           <HStack w="full" flex={3} alignItems="flex-start" spacing={2}>
@@ -121,19 +138,19 @@ const MainHeader: React.FC = ({}) => {
                 />
               </InputGroup>
               <HStack spacing={10}>
-                <MyLinkOverlay href="/login">
+                <MyLinkOverlay href="/products">
                   <Text fontSize="xs">Bánh trung thu</Text>
                 </MyLinkOverlay>
-                <MyLinkOverlay href="/login">
+                <MyLinkOverlay href="/products">
                   <Text fontSize="xs">Voucher</Text>
                 </MyLinkOverlay>
-                <MyLinkOverlay href="/login">
+                <MyLinkOverlay href="/products">
                   <Text fontSize="xs">iPhone 13</Text>
                 </MyLinkOverlay>
-                <MyLinkOverlay href="/login">
+                <MyLinkOverlay href="/products">
                   <Text fontSize="xs">Macbook Air M1</Text>
                 </MyLinkOverlay>
-                <MyLinkOverlay href="/login">
+                <MyLinkOverlay href="/products">
                   <Text fontSize="xs">Galaxy Fold Z3</Text>
                 </MyLinkOverlay>
               </HStack>
@@ -162,7 +179,7 @@ const MainHeader: React.FC = ({}) => {
 const Layout: React.FC = ({ children }) => {
   const { isGlobalLoading } = useLayoutCtx();
   return (
-    <Box bg="gray.light" w="full" h="full">
+    <Box bg="gray.light" w="full" h="auto">
       <MainHeader />
       <Container maxW="container.xl" h="full" marginTop={headerBarHeight}>
         {isGlobalLoading ? (

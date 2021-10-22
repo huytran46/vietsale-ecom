@@ -49,9 +49,9 @@ const Login: NextPage = () => {
     mutationFn: doLogin,
   });
 
-  const { visitorId, platform } = useUser();
+  const { visitorId, platform, setUser } = useUser();
 
-  const { handleSubmit, values, errors, touched, handleChange } =
+  const { handleSubmit, values, errors, touched, handleChange, isSubmitting } =
     useFormik<LoginPayload>({
       initialValues: {
         username: "",
@@ -71,7 +71,9 @@ const Login: NextPage = () => {
             onSettled() {
               actions.setSubmitting(false);
             },
-            onSuccess() {
+            onSuccess(data) {
+              setUser({ email: data?.email });
+              localStorage.setItem("email", data?.email ?? "");
               actions.resetForm();
               router.push("/");
             },
@@ -152,6 +154,7 @@ const Login: NextPage = () => {
               <Button
                 mt={3}
                 bg="red.500"
+                disabled={isSubmitting}
                 borderColor="red.700"
                 _focus={{
                   ringColor: "red.200",

@@ -21,7 +21,7 @@ export interface CartItemGroup {
 }
 
 export interface CartInfo {
-  cart: {
+  cart?: {
     total_items: number;
     total_price: number;
   };
