@@ -7,3 +7,9 @@ services:
       context: .
     env_file:
       - .env.local
+    networks:
+      - common
+networks:
+  common:
+    external: true
+    name: vietsale_default
