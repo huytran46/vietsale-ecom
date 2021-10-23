@@ -126,8 +126,11 @@ const ProductDetail: NextPage = () => {
 
   const descHTML = React.useMemo(
     () =>
-      productDetail?.desc && (
-        <Box fontSize="sm">{ReactHtmlParser(productDetail?.desc)}</Box>
+      productDetail?.desc !==
+      '<p dir="ltr" style="margin-top:0; margin-bottom:0;"></p>' ? (
+        <Box fontSize="sm">{ReactHtmlParser(productDetail?.desc ?? "")}</Box>
+      ) : (
+        <Text fontSize="sm">Không có mô tả cho sản phẩm này.</Text>
       ),
     [productDetail?.desc]
   );
@@ -286,14 +289,24 @@ const ProductDetail: NextPage = () => {
                 borderRadius="md"
               >
                 {Boolean(user) && (
-                  <VStack alignItems="flex-start">
+                  <VStack spacing={1} alignItems="flex-start">
                     <Flex w="full">
-                      <Text fontSize="sm">Giao đến</Text>
-                      <Spacer />
                       <Text fontSize="sm" fontWeight="medium">
-                        {defaultAddress?.fullname}
+                        Giao đến
+                      </Text>
+                      <Spacer />
+                      <Text fontSize="sm" fontWeight="medium" color="brand.500">
+                        Thay đổi
                       </Text>
                     </Flex>
+                    <HStack divider={<StackDivider />} w="full">
+                      <Text fontSize="xs" fontWeight="medium" color="brand.500">
+                        {defaultAddress?.fullname}
+                      </Text>
+                      <Text fontSize="xs" fontWeight="medium">
+                        {defaultAddress?.phone}
+                      </Text>
+                    </HStack>
                     <Text fontSize="xs">{fullDetailAddress}</Text>
                   </VStack>
                 )}

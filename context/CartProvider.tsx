@@ -50,7 +50,7 @@ export const CartProvider: React.FC = ({ children }) => {
               toast({
                 title: ErrorMap[ErrorCode._0],
                 status: "error",
-                variant: "top-accent",
+                // variant: "top-accent",
                 duration: 1000,
                 isClosable: true,
               });
@@ -67,9 +67,9 @@ export const CartProvider: React.FC = ({ children }) => {
             setCartInfo(next);
             queryClient.invalidateQueries(FETCH_CART_URI);
             toast({
-              title: "Thêm vào giỏ hàng thành công",
+              title: "Cập nhật giỏ hàng thành công",
               status: "success",
-              variant: "top-accent",
+              // variant: "top-accent",
               duration: 1000,
               isClosable: true,
             });
@@ -93,7 +93,7 @@ export const CartProvider: React.FC = ({ children }) => {
               toast({
                 title: ErrorMap[ErrorCode._0],
                 status: "error",
-                variant: "top-accent",
+                // variant: "top-accent",
                 duration: 1000,
                 isClosable: true,
               });
@@ -109,6 +109,13 @@ export const CartProvider: React.FC = ({ children }) => {
             };
             setCartInfo(next);
             queryClient.invalidateQueries(FETCH_CART_URI);
+            toast({
+              title: "Cập nhật giỏ hàng thành công",
+              status: "success",
+              // variant: "top-accent",
+              duration: 1000,
+              isClosable: true,
+            });
           },
           onError(error) {
             console.log("error:", error);
@@ -116,7 +123,7 @@ export const CartProvider: React.FC = ({ children }) => {
         }
       );
     },
-    [cartInfo]
+    [cartInfo, queryClient, removeFromTheCart, toast]
   );
 
   return (
