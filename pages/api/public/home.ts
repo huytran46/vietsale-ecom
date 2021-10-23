@@ -6,7 +6,6 @@ import withSession from "utils/session";
 export default withSession(async (req, res) => {
   try {
     const result = await fetcher.get<BaseReponse<HomeInfo>>("/public/home");
-    console.log("[public/home] result:", result);
     if (result?.status !== 200) {
       return res.status(result.status).json({});
     }

@@ -29,6 +29,6 @@ export default withSession(async (req, res) => {
       res.end();
       return;
     }
-    return res.status(500).json({ error: error.response.data });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });

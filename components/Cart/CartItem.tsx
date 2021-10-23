@@ -31,7 +31,7 @@ type Props = {
 const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
   const [qty, setQty] = React.useState(cartItem.qty);
   const [isDeleting, setDeleting] = React.useState(cartItem.qty === 0);
-  const { updateCartItem } = useCartCtx();
+  const { updateCartItem, removeCartItem } = useCartCtx();
   const product = React.useMemo(() => cartItem.edges?.is_product, [cartItem]);
   const productCover = React.useMemo(
     () => product.edges?.cover?.file_thumbnail,
@@ -44,14 +44,12 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
 
   const maxStock = React.useMemo(() => product.quantity ?? 0, [product]);
 
-  const updateQty = React.useCallback(
-    (newQty?: number) => {
-      if (!product) return;
-      if (!newQty) return updateCartItem(product.id, qty);
-      updateCartItem(product.id, newQty);
-    },
-    [product, qty, updateCartItem]
-  );
+  const updateQty = React.useCallback(() => {
+    if (!product) return;
+    const nextQty = qty - cartItem.qty;
+    if (nextQty < 0) removeCartItem(cartItem.id, Math.abs(nextQty));
+    else updateCartItem(product.id, nextQty);
+  }, [product, qty, updateCartItem, removeCartItem, cartItem]);
 
   React.useEffect(() => {
     if (qty !== 0) return;
@@ -60,7 +58,7 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
   }, [qty, maxStock]);
 
   function onDelete() {
-    updateQty(0);
+    updateQty();
   }
 
   function onNoDelete() {
@@ -172,6 +170,7 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
         onClick={() => setDeleting(true)}
         as={BsTrash}
       />
+      <Text>{cartItem.qty}</Text>
     </HStack>
   );
 };

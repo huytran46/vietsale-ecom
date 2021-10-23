@@ -3,11 +3,18 @@ import { useToast } from "@chakra-ui/toast";
 import _isEmpty from "lodash/isEmpty";
 
 import { CartInfo } from "models/Cart";
-import { useMutation } from "react-query";
-import { addToCart, ADD_TO_CART_URI } from "services/cart";
+import { useMutation, useQueryClient } from "react-query";
+import {
+  addToCart,
+  ADD_TO_CART_URI,
+  removeFromCart,
+  REMOVE_FROM_CART_URI,
+  FETCH_CART_URI,
+} from "services/cart";
 import { ErrorCode, ErrorMap } from "constants/error";
 type CartContext = {
   updateCartItem: (productId: string, qty: number) => void;
+  removeCartItem: (cartItemId: string, qty: number) => void;
   numberOfItems: number;
   setCartInfo: (next: CartInfo) => void;
 };
@@ -15,10 +22,16 @@ type CartContext = {
 const CartCtx = React.createContext({} as CartContext);
 
 export const CartProvider: React.FC = ({ children }) => {
+  const queryClient = useQueryClient();
   const toast = useToast();
   const { mutate: addToTheCart } = useMutation({
     mutationKey: ADD_TO_CART_URI,
     mutationFn: addToCart,
+  });
+
+  const { mutate: removeFromTheCart } = useMutation({
+    mutationKey: REMOVE_FROM_CART_URI,
+    mutationFn: removeFromCart,
   });
 
   const [cartInfo, setCartInfo] = React.useState<CartInfo>();
@@ -51,6 +64,7 @@ export const CartProvider: React.FC = ({ children }) => {
             cart_item_groups: curr.cart_item_groups ?? [],
           };
           setCartInfo(next);
+          queryClient.invalidateQueries(FETCH_CART_URI);
         },
         onError(error) {
           console.log("error:", error);
@@ -59,8 +73,45 @@ export const CartProvider: React.FC = ({ children }) => {
     );
   }, []);
 
+  const removeCartItem = React.useCallback(
+    (cartItemId: string, qty: number) => {
+      removeFromTheCart(
+        { cartItemID: cartItemId, qty: qty },
+        {
+          onSuccess(data) {
+            if (_isEmpty(data)) {
+              toast({
+                title: ErrorMap[ErrorCode._0],
+                status: "error",
+                variant: "top-accent",
+                duration: 1000,
+                isClosable: true,
+              });
+              return;
+            }
+            const curr = { ...cartInfo };
+            const next: CartInfo = {
+              cart: {
+                total_items: data.total_item,
+                total_price: data.total_price,
+              },
+              cart_item_groups: curr.cart_item_groups ?? [],
+            };
+            setCartInfo(next);
+          },
+          onError(error) {
+            console.log("error:", error);
+          },
+        }
+      );
+    },
+    [cartInfo]
+  );
+
   return (
-    <CartCtx.Provider value={{ updateCartItem, numberOfItems, setCartInfo }}>
+    <CartCtx.Provider
+      value={{ updateCartItem, removeCartItem, numberOfItems, setCartInfo }}
+    >
       {children}
     </CartCtx.Provider>
   );
