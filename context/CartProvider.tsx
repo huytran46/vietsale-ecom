@@ -40,38 +40,48 @@ export const CartProvider: React.FC = ({ children }) => {
     [cartInfo]
   );
 
-  const updateCartItem = React.useCallback((productId: string, qty: number) => {
-    addToTheCart(
-      { productID: productId, qty },
-      {
-        onSuccess(data) {
-          if (_isEmpty(data)) {
+  const updateCartItem = React.useCallback(
+    (productId: string, qty: number) => {
+      addToTheCart(
+        { productID: productId, qty },
+        {
+          onSuccess(data) {
+            if (_isEmpty(data)) {
+              toast({
+                title: ErrorMap[ErrorCode._0],
+                status: "error",
+                variant: "top-accent",
+                duration: 1000,
+                isClosable: true,
+              });
+              return;
+            }
+            const curr = { ...cartInfo };
+            const next: CartInfo = {
+              cart: {
+                total_items: data.total_item,
+                total_price: data.total_price,
+              },
+              cart_item_groups: curr.cart_item_groups ?? [],
+            };
+            setCartInfo(next);
+            queryClient.invalidateQueries(FETCH_CART_URI);
             toast({
-              title: ErrorMap[ErrorCode._0],
-              status: "error",
+              title: "Thêm vào giỏ hàng thành công",
+              status: "success",
               variant: "top-accent",
               duration: 1000,
               isClosable: true,
             });
-            return;
-          }
-          const curr = { ...cartInfo };
-          const next: CartInfo = {
-            cart: {
-              total_items: data.total_item,
-              total_price: data.total_price,
-            },
-            cart_item_groups: curr.cart_item_groups ?? [],
-          };
-          setCartInfo(next);
-          queryClient.invalidateQueries(FETCH_CART_URI);
-        },
-        onError(error) {
-          console.log("error:", error);
-        },
-      }
-    );
-  }, []);
+          },
+          onError(error) {
+            console.log("error:", error);
+          },
+        }
+      );
+    },
+    [cartInfo, queryClient, addToTheCart, toast]
+  );
 
   const removeCartItem = React.useCallback(
     (cartItemId: string, qty: number) => {
@@ -98,6 +108,7 @@ export const CartProvider: React.FC = ({ children }) => {
               cart_item_groups: curr.cart_item_groups ?? [],
             };
             setCartInfo(next);
+            queryClient.invalidateQueries(FETCH_CART_URI);
           },
           onError(error) {
             console.log("error:", error);

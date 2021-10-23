@@ -41,7 +41,7 @@ export const theme = extendTheme(
       },
     },
     colors: {
-      "gray.light": "#FBFBFB",
+      "gray.light": "#f7f7f7",
       "gray.dark": "#000206",
       brand: {
         50: "#1F96FF14",

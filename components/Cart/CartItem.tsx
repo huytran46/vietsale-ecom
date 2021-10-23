@@ -4,7 +4,7 @@ import {
   Text,
   Checkbox,
   Image,
-  Box,
+  Fade,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -58,7 +58,7 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
   }, [qty, maxStock]);
 
   function onDelete() {
-    updateQty();
+    removeCartItem(cartItem.id, cartItem.qty);
   }
 
   function onNoDelete() {
@@ -70,7 +70,7 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
     <HStack
       bg={isSelected ? "brand.50" : "white"}
       _hover={{
-        bg: "brand.50",
+        bg: "gray.50",
       }}
       borderBottomRadius={rounded ? "md" : ""}
       mt="0px !important"
@@ -93,35 +93,32 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
           alt={product.name}
         />
       </MyLinkOverlay>
-      <MyLinkOverlay flex="1" href={`/products/${product.id}`}>
+      <MyLinkOverlay flex="2" href={`/products/${product.id}`}>
         <Text fontSize="xs">{product.name}</Text>
       </MyLinkOverlay>
-      <Text flex="1" textAlign="center" fontSize="xs">
+      <Text flex="2" textAlign="center" fontSize="xs">
         {productPrice ? formatCcy(productPrice) + " đ" : "Liên hệ cửa hàng"}
       </Text>
       {isDeleting ? (
-        <HStack>
-          <Button
-            onClick={onDelete}
-            borderColor="red.700"
-            size="sm"
-            bg="red.500"
-          >
-            Xoá khỏi giò hàng
-          </Button>
-          <Button
-            onClick={onNoDelete}
-            borderColor="green.700"
-            size="sm"
-            bg="green.500"
-          >
-            Giữ lại
-          </Button>
-        </HStack>
+        <Fade in={isDeleting}>
+          <HStack>
+            <Button
+              onClick={onDelete}
+              borderColor="red.700"
+              size="sm"
+              bg="red.500"
+            >
+              Xoá khỏi giò hàng
+            </Button>
+            <Button onClick={onNoDelete} borderColor="brand.700" size="sm">
+              Giữ lại
+            </Button>
+          </HStack>
+        </Fade>
       ) : (
         <HStack>
           <NumberInput
-            flex="1"
+            flex="2"
             maxW="100px"
             value={qty}
             min={MINIMUM_QTY}
@@ -136,21 +133,21 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
               <NumberDecrementStepper />
             </NumberInputStepper>
           </NumberInput>
-          {cartItem.qty !== qty && (
+          <Fade in={cartItem.qty !== qty}>
             <Button
+              disabled={cartItem.qty === qty}
               size="sm"
-              bg="green.500"
-              borderColor="green.700"
+              borderColor="brand.700"
               onClick={() => updateQty()}
             >
               Lưu
             </Button>
-          )}
+          </Fade>
         </HStack>
       )}
 
       <Text
-        flex="1"
+        flex="2"
         textAlign="center"
         fontWeight="medium"
         fontSize="sm"
@@ -161,6 +158,7 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
           : "Liên hệ cửa hàng"}
       </Text>
       <Icon
+        flex="1"
         color="red.500"
         transitionDuration="0.2s"
         _hover={{
@@ -170,7 +168,6 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
         onClick={() => setDeleting(true)}
         as={BsTrash}
       />
-      <Text>{cartItem.qty}</Text>
     </HStack>
   );
 };

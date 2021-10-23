@@ -24,6 +24,7 @@ import { doLogin, LOGIN_URI } from "services/auth";
 import { brandRing } from "utils";
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
+import { LocalStorageKey } from "constants/local-storage";
 
 const LoginSchema = Yup.object().shape({
   username: Yup.string()
@@ -73,7 +74,7 @@ const Login: NextPage = () => {
             },
             onSuccess(data) {
               setUser({ email: data?.email });
-              localStorage.setItem("email", data?.email ?? "");
+              localStorage.setItem(LocalStorageKey.EMAIL, data?.email ?? "");
               actions.resetForm();
               router.push("/");
             },

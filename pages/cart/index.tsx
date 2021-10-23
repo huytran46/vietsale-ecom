@@ -9,6 +9,11 @@ import {
   CheckboxGroup,
   Checkbox,
   HStack,
+  Flex,
+  Spacer,
+  StackDivider,
+  Divider,
+  Button,
 } from "@chakra-ui/react";
 import { dehydrate, QueryClient, useQuery } from "react-query";
 
@@ -18,12 +23,15 @@ import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
 import CartItem from "components/Cart/CartItem";
 import { useCartCtx } from "context/CartProvider";
+import { useUser } from "context/UserProvider";
+import MyLinkOverlay from "components/common/MyLinkOverlay";
 
 const Cart: NextPage = () => {
   const { data: cartInfo, isLoading } = useQuery(FETCH_CART_URI, () =>
     fetchCartInfo()
   );
   const { setCartInfo } = useCartCtx();
+  const { defaultAddress, fullDetailAddress, fetchUserAddresses } = useUser();
   const cartItemGroups = React.useMemo(() => {
     return cartInfo?.cart_item_groups ?? [];
   }, [cartInfo]);
@@ -32,6 +40,11 @@ const Cart: NextPage = () => {
     if (!cartInfo) return;
     setCartInfo(cartInfo);
   }, [cartInfo, setCartInfo]);
+
+  React.useEffect(() => {
+    if (defaultAddress) return;
+    fetchUserAddresses();
+  }, [defaultAddress, fetchUserAddresses]);
 
   if (isLoading)
     return (
@@ -53,14 +66,14 @@ const Cart: NextPage = () => {
       <Text fontSize="lg" textTransform="uppercase" fontWeight="medium">
         Giỏ hàng
       </Text>
-      <Grid w="full" templateColumns="repeat(6, 1fr)" gap={4}>
-        <GridItem colSpan={4}>
+      <Grid w="full" templateColumns="repeat(8, 1fr)" gap={4}>
+        <GridItem colSpan={6}>
           <VStack w="full" spacing={10}>
             {cartItemGroups?.map((gr, idx) => (
               <CheckboxGroup key={idx} colorScheme="brand">
                 <VStack
                   bg="white"
-                  borderColor="gray.200"
+                  borderColor="gray.300"
                   borderWidth="1px"
                   borderRadius="md"
                   alignItems="flex-start"
@@ -68,11 +81,11 @@ const Cart: NextPage = () => {
                 >
                   <HStack
                     p={3}
-                    borderBottomColor="gray.200"
+                    borderBottomColor="gray.300"
                     borderBottomWidth="1px"
                     borderTopRadius="md"
                     w="full"
-                    bg="gray.50"
+                    bg="gray.light"
                   >
                     <Checkbox value="" />
                     <Text fontWeight="700" fontSize="sm">
@@ -89,9 +102,105 @@ const Cart: NextPage = () => {
                 </VStack>
               </CheckboxGroup>
             ))}
+            {cartItemGroups.length === 0 && (
+              <Box w="full" bg="red.500">
+                <Empty>
+                  <Text>
+                    Không có món hàng nào trong giỏ hàng. Xem thêm sản phẩm
+                    tại&nbsp;
+                    <MyLinkOverlay href="/products" color="brand.500">
+                      đây
+                    </MyLinkOverlay>
+                  </Text>
+                </Empty>
+              </Box>
+            )}
           </VStack>
         </GridItem>
-        <GridItem colSpan={2} bg="transparent" />
+        <GridItem colSpan={2}>
+          <VStack spacing={3}>
+            {defaultAddress && (
+              <Box
+                d="flex"
+                flexDir="column"
+                alignItems="flex-start"
+                p={3}
+                w="full"
+                bg="white"
+                borderRadius="md"
+                gridGap={2}
+              >
+                <Flex w="full">
+                  <Text fontSize="sm" fontWeight="medium">
+                    Giao tới
+                  </Text>
+                  <Spacer />
+                  <Text fontSize="sm" fontWeight="medium" color="brand.500">
+                    Thay đổi
+                  </Text>
+                </Flex>
+                <HStack divider={<StackDivider />}>
+                  <Text fontSize="sm" fontWeight="medium">
+                    {defaultAddress.fullname}
+                  </Text>
+                  <Text fontSize="sm" fontWeight="medium">
+                    {defaultAddress.phone}
+                  </Text>
+                </HStack>
+                <HStack divider={<StackDivider />}>
+                  <Text fontSize="xs" color="gray.500">
+                    {fullDetailAddress}
+                  </Text>
+                </HStack>
+              </Box>
+            )}
+            <Box
+              d="flex"
+              flexDir="column"
+              alignItems="flex-start"
+              p={3}
+              w="full"
+              bg="white"
+              borderRadius="md"
+              borderWidth="1px"
+              borderColor="gray.200"
+              gridGap={2}
+            >
+              <Flex w="full">
+                <Text fontSize="sm" fontWeight="medium">
+                  Tạm tính
+                </Text>
+                <Spacer />
+                <Text fontSize="sm">0đ</Text>
+              </Flex>
+              <Flex w="full">
+                <Text fontSize="sm" fontWeight="medium">
+                  Giảm giá
+                </Text>
+                <Spacer />
+                <Text fontSize="sm">0đ</Text>
+              </Flex>
+              <Divider />
+              <VStack spacing={0} alignItems="flex-end" w="full">
+                <Flex w="full">
+                  <Text fontSize="sm" fontWeight="medium">
+                    Tổng cộng
+                  </Text>
+                  <Spacer />
+                  <Text color="brand.500" fontSize="sm">
+                    Vui lòng chọn sản phẩm
+                  </Text>
+                </Flex>
+                <Text color="gray.400" fontSize="xs">
+                  (Đã bao gồm VAT nếu có)
+                </Text>
+              </VStack>
+              <Button size="sm" borderColor="red.700" bg="red.500" w="full">
+                Mua hàng
+              </Button>
+            </Box>
+          </VStack>
+        </GridItem>
       </Grid>
     </VStack>
   );
@@ -100,7 +209,7 @@ const Cart: NextPage = () => {
 const handler: NextSsrIronHandler = async function ({ req, res }) {
   const auth = req.session.get(IronSessionKey.AUTH);
   if (auth === undefined) {
-    res.setHeader("location", "/login");
+    res.setHeader("location", "/cart/need-login");
     res.statusCode = 302;
     res.end();
     return { props: {} };

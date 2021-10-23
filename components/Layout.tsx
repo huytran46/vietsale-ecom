@@ -32,11 +32,10 @@ const MainHeader: React.FC = ({}) => {
   const router = useRouter();
   const { searchKeyword, setSearchKeyword, setGlobalLoadingState } =
     useLayoutCtx();
-  // eslint-disable-next-line
   const updateKeyword = (event: React.ChangeEvent<HTMLInputElement>) =>
     setSearchKeyword(event.target.value);
   const { numberOfItems } = useCartCtx();
-  const { user } = useUser();
+  const { user, username, logout } = useUser();
 
   return (
     <Box
@@ -85,14 +84,14 @@ const MainHeader: React.FC = ({}) => {
                   </MyLinkOverlay>
                 </HStack>
               ) : (
-                <Text fontSize="xs">
-                  Xin chào,{" "}
-                  <b>
-                    {user.email?.split("@") &&
-                      user.email?.split("@").length > 0 &&
-                      user.email?.split("@")[0]}
-                  </b>
-                </Text>
+                <HStack divider={<StackDivider />} spacing={3}>
+                  <Text fontSize="xs">
+                    Xin chào, <b>{username}</b>
+                  </Text>
+                  <Text fontSize="xs" cursor="pointer" onClick={logout}>
+                    Đăng xuất
+                  </Text>
+                </HStack>
               )}
             </HStack>
           </SimpleGrid>
@@ -157,6 +156,13 @@ const MainHeader: React.FC = ({}) => {
             </Stack>
             <Center flex={2}>
               <Button
+                disabled={router.asPath === "/cart"}
+                _hover={{
+                  bgGradient:
+                    router.asPath === "/cart"
+                      ? "linear(to-l, brand.300, brand.500)"
+                      : "inherit",
+                }}
                 onClick={() => router.push("/cart")}
                 fontSize="2xl"
                 size="md"
@@ -181,7 +187,12 @@ const Layout: React.FC = ({ children }) => {
   return (
     <Box bg="gray.light" w="full" h="auto">
       <MainHeader />
-      <Container maxW="container.xl" h="full" marginTop={headerBarHeight}>
+      <Container
+        maxW="container.xl"
+        h="full"
+        minH="100vh"
+        marginTop={headerBarHeight}
+      >
         {isGlobalLoading ? (
           <VStack alignItems="center" p={10} w="full" h="100vh">
             <Spinner

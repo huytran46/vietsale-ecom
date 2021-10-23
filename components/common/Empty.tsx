@@ -1,12 +1,16 @@
 import React from "react";
-import { Center, Text } from "@chakra-ui/react";
-
-const Empty: React.FC = () => {
+import { Center, VStack, Text, Icon } from "@chakra-ui/react";
+import { BsQuestionCircle } from "react-icons/bs";
+const Empty: React.FC = ({ children }) => {
   return (
     <Center bg="white" p={10} h="full" w="full">
-      <Text color="gray.300" fontSize="xl">
-        Không có dữ liệu
-      </Text>
+      <VStack>
+        <Text d="flex" alignItems="center" color="gray.300" fontSize="xl">
+          Không có dữ liệu&nbsp;
+          <Icon as={BsQuestionCircle} />
+        </Text>
+        {children}
+      </VStack>
     </Center>
   );
 };

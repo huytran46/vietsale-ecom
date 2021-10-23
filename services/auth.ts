@@ -10,3 +10,11 @@ export async function doLogin(payload: LoginPayload): Promise<User> {
   });
   return await res.json();
 }
+
+export const LOGOUT_URI = "/api/logout";
+export async function doLogout(): Promise<void> {
+  const res = await fetch(HOST_URL + LOGOUT_URI, {
+    method: "POST",
+  });
+  return await res.json();
+}

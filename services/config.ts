@@ -12,17 +12,4 @@ fetcher.interceptors.request.use(function (config) {
   return config;
 });
 
-// Add a 401 response interceptor
-fetcher.interceptors.response.use(
-  function (response) {
-    return response;
-  },
-  function (error) {
-    if (401 === error.response.status) {
-      return 401;
-    }
-    return error;
-  }
-);
-
 export default fetcher;

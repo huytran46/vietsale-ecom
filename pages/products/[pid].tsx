@@ -84,7 +84,7 @@ const ProductDetail: NextPage = () => {
   const [coverUrl, setCoverUrl] = React.useState<string>(productCoverUrl);
   const [currentImage, setCurrentImage] = React.useState(0);
   const [isViewerOpen, setIsViewerOpen] = React.useState(false);
-  const { user } = useUser();
+  const { user, fullDetailAddress, defaultAddress } = useUser();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { updateCartItem } = useCartCtx();
 
@@ -285,7 +285,18 @@ const ProductDetail: NextPage = () => {
                 borderColor="gray.300"
                 borderRadius="md"
               >
-                {Boolean(user) && <Text>Giao đến {user?.edges}</Text>}
+                {Boolean(user) && (
+                  <VStack alignItems="flex-start">
+                    <Flex w="full">
+                      <Text fontSize="sm">Giao đến</Text>
+                      <Spacer />
+                      <Text fontSize="sm" fontWeight="medium">
+                        {defaultAddress?.fullname}
+                      </Text>
+                    </Flex>
+                    <Text fontSize="xs">{fullDetailAddress}</Text>
+                  </VStack>
+                )}
                 {!Boolean(user) && (
                   <VStack>
                     <Text fontSize="xs">
