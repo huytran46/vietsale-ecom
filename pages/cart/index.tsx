@@ -73,7 +73,7 @@ const Cart: NextPage = () => {
               <CheckboxGroup key={idx} colorScheme="brand">
                 <VStack
                   bg="white"
-                  borderColor="gray.300"
+                  borderColor="gray.100"
                   borderWidth="1px"
                   borderRadius="md"
                   alignItems="flex-start"
@@ -81,11 +81,10 @@ const Cart: NextPage = () => {
                 >
                   <HStack
                     p={3}
-                    borderBottomColor="gray.300"
+                    borderBottomColor="gray.100"
                     borderBottomWidth="1px"
                     borderTopRadius="md"
                     w="full"
-                    bg="gray.light"
                   >
                     <Checkbox value="" />
                     <Text fontWeight="700" fontSize="sm">
