@@ -48,8 +48,10 @@ export default nc()
         res
           .status(200)
           .json({ success: true, email: loginResp.data.data.email });
+        return;
       } catch (error) {
         res.status(500).json({ error });
+        return;
       }
     })
   );
