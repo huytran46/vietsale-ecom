@@ -47,6 +47,7 @@ export function withAuth(
 ): NextIronHandler {
   return async (req, res) => {
     const token = req.session.get(IronSessionKey.AUTH);
+    console.log("token in withAuth: ", token);
     if (!token) {
       req.session.destroy();
       await req.session.save();

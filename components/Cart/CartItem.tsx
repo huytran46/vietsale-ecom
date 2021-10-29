@@ -69,9 +69,6 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
   return (
     <HStack
       bg={isSelected ? "brand.50" : "white"}
-      _hover={{
-        bg: "gray.50",
-      }}
       borderBottomRadius={rounded ? "md" : ""}
       mt="0px !important"
       p={3}

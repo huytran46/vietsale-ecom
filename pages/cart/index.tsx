@@ -25,16 +25,56 @@ import CartItem from "components/Cart/CartItem";
 import { useCartCtx } from "context/CartProvider";
 import { useUser } from "context/UserProvider";
 import MyLinkOverlay from "components/common/MyLinkOverlay";
+import { formatCcy } from "utils";
 
 const Cart: NextPage = () => {
   const { data: cartInfo, isLoading } = useQuery(FETCH_CART_URI, () =>
     fetchCartInfo()
   );
-  const { setCartInfo } = useCartCtx();
+  const { setCartInfo, selectCartItems, selectedCartItems } = useCartCtx();
+
   const { defaultAddress, fullDetailAddress, fetchUserAddresses } = useUser();
+
   const cartItemGroups = React.useMemo(() => {
     return cartInfo?.cart_item_groups ?? [];
   }, [cartInfo]);
+
+  const selectedCartItemsForPriceCalc = React.useMemo(() => {
+    if (!selectedCartItems) return [];
+    const selCartItemIds = Object.values(selectedCartItems).flat();
+    const selCartItemsForPrice =
+      cartInfo?.cart_item_groups
+        ?.map((cip) => cip.cart_items)
+        .flat()
+        .filter((ci) => selCartItemIds.indexOf(ci.id) > -1) ?? [];
+    if (!selCartItemsForPrice) return [];
+    return selCartItemsForPrice;
+  }, [selectedCartItems, cartInfo?.cart_item_groups]);
+
+  const finalOrderTotalAmt = React.useMemo(() => {
+    if (!selectedCartItemsForPriceCalc) return 0;
+    return selectedCartItemsForPriceCalc.reduce((cumm, curr) => {
+      const prod = curr.edges?.is_product;
+      if (!prod) return 0;
+      const prodDiscPrice = prod.discount_price ?? 0;
+      if (prodDiscPrice === 0) cumm += curr.qty * prod.orig_price;
+      else cumm += curr.qty * prodDiscPrice;
+      return cumm;
+    }, 0);
+  }, [selectedCartItemsForPriceCalc]);
+
+  const origOrderTotalAmt = React.useMemo(() => {
+    if (!selectedCartItemsForPriceCalc) return 0;
+    return selectedCartItemsForPriceCalc.reduce((cumm, curr) => {
+      const prodOrigPrice = curr.edges.is_product.orig_price ?? 0;
+      cumm += curr.qty * prodOrigPrice;
+      return cumm;
+    }, 0);
+  }, [selectedCartItemsForPriceCalc]);
+
+  const discountOrderTotalAmt = React.useMemo(() => {
+    return origOrderTotalAmt - finalOrderTotalAmt;
+  }, [origOrderTotalAmt, finalOrderTotalAmt]);
 
   React.useEffect(() => {
     if (!cartInfo) return;
@@ -63,14 +103,21 @@ const Cart: NextPage = () => {
       spacing={6}
       py={16}
     >
-      <Text fontSize="lg" textTransform="uppercase" fontWeight="medium">
-        Giỏ hàng
+      <Text fontSize="xl" textTransform="uppercase" fontWeight="bold">
+        Giỏ hàng của bạn
       </Text>
       <Grid w="full" templateColumns="repeat(8, 1fr)" gap={4}>
         <GridItem colSpan={6}>
           <VStack w="full" spacing={10}>
             {cartItemGroups?.map((gr, idx) => (
-              <CheckboxGroup key={idx} colorScheme="brand">
+              <CheckboxGroup
+                key={idx}
+                colorScheme="brand"
+                value={selectedCartItems?.[gr.shop_id] ?? []}
+                onChange={(cartItemIds: string[]) =>
+                  selectCartItems(gr.shop_id, cartItemIds)
+                }
+              >
                 <VStack
                   bg="white"
                   borderColor="gray.100"
@@ -85,8 +132,19 @@ const Cart: NextPage = () => {
                     borderBottomWidth="1px"
                     borderTopRadius="md"
                     w="full"
+                    spacing={6}
                   >
-                    <Checkbox value="" />
+                    <Checkbox
+                      value=""
+                      onChange={(e) =>
+                        selectCartItems(
+                          gr.shop_id,
+                          e.target.checked
+                            ? gr.cart_items?.map((ci) => ci.id) ?? []
+                            : []
+                        )
+                      }
+                    />
                     <Text fontWeight="700" fontSize="sm">
                       {gr.shop_name}
                     </Text>
@@ -116,8 +174,8 @@ const Cart: NextPage = () => {
             )}
           </VStack>
         </GridItem>
-        <GridItem colSpan={2}>
-          <VStack spacing={3}>
+        <GridItem position="relative" colSpan={2}>
+          <VStack position="fixed" maxW="300px" spacing={3}>
             {defaultAddress && (
               <Box
                 d="flex"
@@ -170,14 +228,22 @@ const Cart: NextPage = () => {
                   Tạm tính
                 </Text>
                 <Spacer />
-                <Text fontSize="sm">0đ</Text>
+                <Text fontSize="sm">
+                  {origOrderTotalAmt === 0
+                    ? "0đ"
+                    : `${formatCcy(origOrderTotalAmt)} đ`}
+                </Text>
               </Flex>
               <Flex w="full">
                 <Text fontSize="sm" fontWeight="medium">
                   Giảm giá
                 </Text>
                 <Spacer />
-                <Text fontSize="sm">0đ</Text>
+                <Text fontSize="sm" color="red.500" fontWeight="medium">
+                  {discountOrderTotalAmt === 0
+                    ? "0đ"
+                    : `- ${formatCcy(discountOrderTotalAmt)} đ`}
+                </Text>
               </Flex>
               <Divider />
               <VStack spacing={0} alignItems="flex-end" w="full">
@@ -186,15 +252,30 @@ const Cart: NextPage = () => {
                     Tổng cộng
                   </Text>
                   <Spacer />
-                  <Text color="brand.500" fontSize="sm">
-                    Vui lòng chọn sản phẩm
+                  <Text
+                    color="brand.500"
+                    fontSize={finalOrderTotalAmt === 0 ? "sm" : "md"}
+                    fontWeight="medium"
+                  >
+                    {finalOrderTotalAmt === 0
+                      ? "Vui lòng chọn sản phẩm"
+                      : formatCcy(finalOrderTotalAmt) + " đ"}
                   </Text>
                 </Flex>
                 <Text color="gray.400" fontSize="xs">
                   (Đã bao gồm VAT nếu có)
                 </Text>
               </VStack>
-              <Button size="sm" borderColor="red.700" bg="red.500" w="full">
+              <Button
+                disabled={finalOrderTotalAmt === 0}
+                _hover={{
+                  bg: "red.500",
+                }}
+                size="sm"
+                borderColor="red.700"
+                bg="red.500"
+                w="full"
+              >
                 Mua hàng
               </Button>
             </Box>

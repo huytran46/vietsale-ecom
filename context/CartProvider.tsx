@@ -17,6 +17,8 @@ type CartContext = {
   removeCartItem: (cartItemId: string, qty: number) => void;
   numberOfItems: number;
   setCartInfo: (next: CartInfo) => void;
+  selectedCartItems?: Record<string, string[]>;
+  selectCartItems: (shopId: string, cartItems: string[]) => void;
 };
 
 const CartCtx = React.createContext({} as CartContext);
@@ -35,6 +37,9 @@ export const CartProvider: React.FC = ({ children }) => {
   });
 
   const [cartInfo, setCartInfo] = React.useState<CartInfo>();
+  const [selectedCartItems, setSelCartItems] =
+    React.useState<Record<string, string[]>>();
+
   const numberOfItems = React.useMemo(
     () => cartInfo?.cart?.total_items ?? 0,
     [cartInfo]
@@ -126,9 +131,25 @@ export const CartProvider: React.FC = ({ children }) => {
     [cartInfo, queryClient, removeFromTheCart, toast]
   );
 
+  const selectCartItems = React.useCallback(
+    (shopId: string, cartItems: string[]) => {
+      const next = { ...selectedCartItems };
+      next[shopId] = cartItems;
+      setSelCartItems(next);
+    },
+    [selectedCartItems, setSelCartItems]
+  );
+
   return (
     <CartCtx.Provider
-      value={{ updateCartItem, removeCartItem, numberOfItems, setCartInfo }}
+      value={{
+        updateCartItem,
+        removeCartItem,
+        numberOfItems,
+        setCartInfo,
+        selectedCartItems,
+        selectCartItems,
+      }}
     >
       {children}
     </CartCtx.Provider>

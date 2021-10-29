@@ -43,3 +43,71 @@ export function formatCcy(m: number | string, isReduce?: boolean): string {
 export function randInt(max: number): number {
   return Math.floor(Math.random() * max);
 }
+
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function abbreviate(
+  number: number,
+  maxPlaces: number,
+  forcePlaces?: number,
+  forceLetter?: string
+): string {
+  number = Number(number);
+  if (forceLetter) {
+    return annotate(number, maxPlaces, forcePlaces, forceLetter);
+  }
+  let abbr;
+  if (number >= 1e12) {
+    abbr = "T";
+  } else if (number >= 1e9) {
+    abbr = "B";
+  } else if (number >= 1e6) {
+    abbr = "M";
+  } else if (number >= 1e3) {
+    abbr = "K";
+  } else {
+    abbr = "";
+  }
+  return annotate(number, maxPlaces, forcePlaces, abbr);
+}
+
+function annotate(
+  number: number,
+  maxPlaces: number,
+  forcePlaces?: number,
+  abbr?: string
+) {
+  // set places to false to not round
+  let rounded = 0;
+  switch (abbr) {
+    case "T":
+      rounded = number / 1e12;
+      break;
+    case "B":
+      rounded = number / 1e9;
+      break;
+    case "M":
+      rounded = number / 1e6;
+      break;
+    case "K":
+      rounded = number / 1e3;
+      break;
+    case "":
+      rounded = number;
+      break;
+  }
+
+  let roundedString = `${rounded}`;
+  if (maxPlaces) {
+    const test = new RegExp("\\.\\d{" + (maxPlaces + 1) + ",}$");
+    if (test.test("" + rounded)) {
+      roundedString = rounded.toFixed(maxPlaces);
+    }
+  }
+  if (forcePlaces) {
+    roundedString = Number(rounded).toFixed(forcePlaces);
+  }
+  return roundedString + abbr;
+}

@@ -8,6 +8,7 @@ interface CartItemEdges {
 export interface CartItem {
   id: string;
   qty: number;
+  orig_price: number;
   created_at: string;
   updated_at: string;
   edges: CartItemEdges;
