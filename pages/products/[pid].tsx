@@ -338,7 +338,7 @@ const ProductDetail: NextPage = () => {
                   Thông tin chi tiết
                 </Text>
                 <Box borderWidth="1px" borderColor="gray.300" borderRadius="md">
-                  <Table variant="striped" size="sm">
+                  <Table size="sm">
                     <Tbody>
                       <Tr>
                         <Td borderTopLeftRadius="md">
