@@ -12,24 +12,23 @@ export default nc()
   .use(cors())
   .post(
     withSession(async (req, res) => {
-      const uri = "/auth/user/login";
-      const { username, password, deviceModel, fcm }: LoginPayload = JSON.parse(
-        req.body
-      );
-      let isPhone = true;
-      const splits = username.split("@");
-      if (splits.length > 1) {
-        isPhone = false;
-      }
-
-      let params;
-      if (isPhone) {
-        params = { phone: username, password, fcm, deviceModel };
-      } else {
-        params = { email: username, password, fcm, deviceModel };
-      }
-
       try {
+        const uri = "/auth/user/login";
+        const { username, password, deviceModel, fcm }: LoginPayload =
+          JSON.parse(req.body);
+        let isPhone = true;
+        const splits = username.split("@");
+        if (splits.length > 1) {
+          isPhone = false;
+        }
+
+        let params;
+        if (isPhone) {
+          params = { phone: username, password, fcm, deviceModel };
+        } else {
+          params = { email: username, password, fcm, deviceModel };
+        }
+
         const loginResp = await fetcher.post<
           any,
           AxiosResponse<BaseReponse<LoginResponse>>
