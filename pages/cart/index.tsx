@@ -46,13 +46,13 @@ const Cart: NextPage = () => {
     if (!selectedCartItems) return [];
     const selCartItemIds = Object.values(selectedCartItems).flat();
     const selCartItemsForPrice =
-      cartInfo?.cart_item_groups
+      cartItemGroups
         ?.map((cip) => cip.cart_items)
         .flat()
         .filter((ci) => selCartItemIds.indexOf(ci.id) > -1) ?? [];
     if (!selCartItemsForPrice) return [];
     return selCartItemsForPrice;
-  }, [selectedCartItems, cartInfo?.cart_item_groups]);
+  }, [selectedCartItems, cartItemGroups]);
 
   const finalOrderTotalAmt = React.useMemo(() => {
     if (!selectedCartItemsForPriceCalc) return 0;
@@ -83,7 +83,8 @@ const Cart: NextPage = () => {
     if (!selectedCartItems) return;
 
     await router.push(
-      stringifyUrl({ url: "/order/pre", query: selectedCartItems })
+      stringifyUrl({ url: "/order/pre", query: selectedCartItems }),
+      "chon-phuong-thuc-thanh-toan"
     );
   }, [selectedCartItems, router]);
 
