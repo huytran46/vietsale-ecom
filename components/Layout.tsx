@@ -163,7 +163,7 @@ const MainHeader: React.FC = ({}) => {
                       ? "linear(to-l, brand.300, brand.500)"
                       : "inherit",
                 }}
-                onClick={() => router.push("/cart")}
+                onClick={async () => await router.push("/cart", "/gio-hang")}
                 fontSize="2xl"
                 size="md"
                 borderColor="brand.700"
