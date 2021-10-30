@@ -31,11 +31,10 @@ function withSession(handler: NextIronHandler | NextSsrIronHandler) {
     password: process.env.SECRET_COOKIE_PASSWORD ?? "",
     cookieName: "vietsale/ecommerce",
     cookieOptions: {
-      // httpOnly: true,
-      // sameSite: "lax",
-      // path: "/",
-      // secure: process.env.NODE_ENV === "production",
-      secure: false,
+      httpOnly: true,
+      sameSite: "strict",
+      path: "/",
+      secure: process.env.NODE_ENV === "production",
     },
   });
 }

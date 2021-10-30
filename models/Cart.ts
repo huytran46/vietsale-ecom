@@ -39,3 +39,14 @@ export interface Cart {
     items: CartItem[];
   };
 }
+
+export interface CheckoutItem {
+  shopID: string;
+  cartItemIDs: string[];
+}
+
+export interface PreCheckoutPayload {
+  userAddressID: string;
+  paymentMethodID: number;
+  checkoutItems: [];
+}

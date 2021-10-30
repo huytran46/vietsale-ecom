@@ -1,5 +1,6 @@
 import React from "react";
 import type { NextPage } from "next";
+import { useRouter } from "next/router";
 import {
   VStack,
   Grid,
@@ -26,8 +27,10 @@ import { useCartCtx } from "context/CartProvider";
 import { useUser } from "context/UserProvider";
 import MyLinkOverlay from "components/common/MyLinkOverlay";
 import { formatCcy } from "utils";
+import { stringifyUrl } from "query-string";
 
 const Cart: NextPage = () => {
+  const router = useRouter();
   const { data: cartInfo, isLoading } = useQuery(FETCH_CART_URI, () =>
     fetchCartInfo()
   );
@@ -76,7 +79,14 @@ const Cart: NextPage = () => {
     return origOrderTotalAmt - finalOrderTotalAmt;
   }, [origOrderTotalAmt, finalOrderTotalAmt]);
 
-  const preCheckout = React.useCallback(() => {}, []);
+  const handlePrecheckout = React.useCallback(async () => {
+    if (!selectedCartItems) return;
+
+    await router.push(
+      stringifyUrl({ url: "/order/pre", query: selectedCartItems })
+    );
+  }, [selectedCartItems, router]);
+
   React.useEffect(() => {
     if (!cartInfo) return;
     setCartInfo(cartInfo);
@@ -276,6 +286,7 @@ const Cart: NextPage = () => {
                 borderColor="red.700"
                 bg="red.500"
                 w="full"
+                onClick={handlePrecheckout}
               >
                 Mua hàng
               </Button>
