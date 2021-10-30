@@ -46,7 +46,6 @@ export default nc()
         req.session.set(IronSessionKey.REF_TOKEN, refToken);
         await req.session.save();
 
-        console.log("req.session:", req.session.get(IronSessionKey.AUTH));
         res
           .status(200)
           .json({ success: true, email: loginResp.data.data.email });
