@@ -42,9 +42,12 @@ export default nc()
 
         const token = loginResp.data.data.token.access_token;
         const refToken = loginResp.data.data.token.refresh_token;
+
         req.session.set(IronSessionKey.AUTH, token);
         req.session.set(IronSessionKey.REF_TOKEN, refToken);
         await req.session.save();
+
+        console.log("req.session:", req.session.get(IronSessionKey.AUTH));
         res
           .status(200)
           .json({ success: true, email: loginResp.data.data.email });

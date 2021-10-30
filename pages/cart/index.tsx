@@ -76,6 +76,7 @@ const Cart: NextPage = () => {
     return origOrderTotalAmt - finalOrderTotalAmt;
   }, [origOrderTotalAmt, finalOrderTotalAmt]);
 
+  const preCheckout = React.useCallback(() => {}, []);
   React.useEffect(() => {
     if (!cartInfo) return;
     setCartInfo(cartInfo);
