@@ -1,4 +1,5 @@
 import React from "react";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import {
   Container,
@@ -49,6 +50,9 @@ const MainHeader: React.FC = ({}) => {
       py={2}
       boxShadow="lg"
     >
+      <Head>
+        <title>Việt Sale - Sàn thương mại điện tử</title>
+      </Head>
       <Container maxW="container.xl" h="full">
         <VStack justifyContent="flex-start" spacing={5} h="full" w="full">
           <SimpleGrid flex={1} w="full" columns={2}>
@@ -77,7 +81,7 @@ const MainHeader: React.FC = ({}) => {
               {!user ? (
                 <HStack divider={<StackDivider />}>
                   <MyLinkOverlay href="/login">
-                    <Text fontSize="xs"> Đăng kí</Text>
+                    <Text fontSize="xs">Đăng kí</Text>
                   </MyLinkOverlay>
                   <MyLinkOverlay href="/login">
                     <Text fontSize="xs">Đăng nhập</Text>
@@ -85,6 +89,11 @@ const MainHeader: React.FC = ({}) => {
                 </HStack>
               ) : (
                 <HStack divider={<StackDivider />} spacing={3}>
+                  <MyLinkOverlay fontSize="xs" href="/order">
+                    <Text fontSize="xs" color="yellow">
+                      Đơn mua
+                    </Text>
+                  </MyLinkOverlay>
                   <Text fontSize="xs">
                     Xin chào, <b>{username}</b>
                   </Text>

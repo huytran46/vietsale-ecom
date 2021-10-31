@@ -21,11 +21,15 @@ import {
   AlertIcon,
 } from "@chakra-ui/react";
 import { dehydrate, QueryClient, useMutation, useQuery } from "react-query";
-import { parse } from "query-string";
+import { parse, stringify, stringifyUrl } from "query-string";
 
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
-import { CheckoutItem, PreCheckoutPayload } from "models/Cart";
+import {
+  CheckoutItem,
+  CheckoutItemWithService,
+  PreCheckoutPayload,
+} from "models/Cart";
 import { postPrecheckout, POST_PRECHECKOUT_URI } from "services/order";
 import { PreCheckoutResponse } from "models/request-response/Cart";
 import { fetchCartInfo, FETCH_CART_URI } from "services/cart";
@@ -89,7 +93,12 @@ const Precheckout: NextPage = () => {
 
   const { defaultAddress, fullDetailAddress } = useUser();
 
-  const { totalFinalPrice, totalShippingFee, checkingoutItems } = useOrderCtx();
+  const {
+    totalFinalPrice,
+    totalShippingFee,
+    checkingoutItems,
+    setOrderGroups,
+  } = useOrderCtx();
 
   const orderGroups: Array<OrderGroup | undefined> = React.useMemo(() => {
     if (!cartInfo || !logChannels || checkoutItems.length < 1) return [];
@@ -141,9 +150,27 @@ const Precheckout: NextPage = () => {
     return !orderGroups || orderGroups?.length < 1;
   }, [orderGroups]);
 
-  const handleCheckout = React.useCallback(() => {
-    console.log("checkingoutItems:", checkingoutItems);
-  }, [checkingoutItems]);
+  const handleCheckout = React.useCallback(async () => {
+    const finalCheckoutItems: CheckoutItemWithService[] = checkingoutItems.map(
+      ({ shopID, cartItemIDs, logisticServiceID }) => ({
+        shopID,
+        cartItemIDs,
+        logisticServiceID,
+      })
+    );
+    const queryStr = JSON.stringify(finalCheckoutItems);
+    await router.push(
+      stringifyUrl({ url: "/order/checkout", query: { payload: queryStr } }),
+      "/xac-nhan-don-hang"
+    );
+  }, [checkingoutItems, router]);
+
+  React.useEffect(() => {
+    if (!orderGroups) return;
+    const isInvalid = orderGroups.find((og) => og === undefined);
+    if (isInvalid) return;
+    setOrderGroups(orderGroups as OrderGroup[]);
+  }, [orderGroups, setOrderGroups]);
 
   React.useEffect(() => {
     doPrecheckout(payload, {
@@ -169,9 +196,14 @@ const Precheckout: NextPage = () => {
       py={16}
     >
       <VStack w="full">
-        <Progress w="full" hasStripe value={50} />
+        <Progress borderRadius="md" w="full" hasStripe value={50} />
         <HStack w="full">
-          <Text color="brand.700" fontSize="xs" maxW="100px">
+          <Text
+            color="brand.700"
+            fontSize="xs"
+            fontWeight="medium"
+            maxW="100px"
+          >
             Chọn phương thức thanh toán
           </Text>
           <Spacer />
@@ -328,10 +360,11 @@ const Precheckout: NextPage = () => {
                       fontSize={totalFinalPrice === 0 ? "sm" : "md"}
                       fontWeight="medium"
                     >
-                      {!isItemLoading && totalFinalPrice === 0
+                      {isItemLoading
+                        ? "-"
+                        : !isItemLoading && totalFinalPrice === 0
                         ? "Vui lòng chọn sản phẩm"
                         : formatCcy(totalFinalPrice) + " đ"}
-                      {isItemLoading && "-"}
                     </Text>
                   </Flex>
                   <Text color="gray.400" fontSize="xs">

@@ -1,6 +1,6 @@
 import { BaseReponse } from "models/common/BaseResponse";
 import { Product } from "models/Product";
-import { parse, stringifyUrl } from "query-string";
+import { stringifyUrl } from "query-string";
 import fetcher from "services/config";
 import withSession from "utils/session";
 

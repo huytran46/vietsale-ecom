@@ -61,3 +61,9 @@ export interface PreCheckoutPayload {
   paymentMethodID: number;
   checkoutItems: CheckoutItem[];
 }
+
+export interface CheckoutPayload {
+  userAddressID: string;
+  paymentMethodID: number;
+  checkoutItems: CheckoutItemWithService[];
+}
