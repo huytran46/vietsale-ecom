@@ -15,10 +15,13 @@ import {
   Divider,
   Progress,
   Button,
+  Radio,
+  RadioGroup,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
 import { dehydrate, QueryClient, useMutation, useQuery } from "react-query";
 import { parse } from "query-string";
-import { MdLocalShipping } from "react-icons/md";
 
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
@@ -26,7 +29,6 @@ import { CheckoutItem, PreCheckoutPayload } from "models/Cart";
 import { postPrecheckout, POST_PRECHECKOUT_URI } from "services/order";
 import { PreCheckoutResponse } from "models/request-response/Cart";
 import { fetchCartInfo, FETCH_CART_URI } from "services/cart";
-import CartItemRow from "components/Cart/CartItem";
 import { useUser } from "context/UserProvider";
 import { formatCcy } from "utils";
 import OrderGroupInfo, { OrderGroup } from "components/Order/OrderGroup";
@@ -237,6 +239,36 @@ const Precheckout: NextPage = () => {
                 </HStack>
               </Box>
             )}
+
+            <Box
+              d="flex"
+              flexDir="column"
+              alignItems="flex-start"
+              p={3}
+              w="full"
+              bg="white"
+              borderRadius="md"
+              gridGap={2}
+            >
+              <Flex w="full">
+                <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                  Phương thức thanh toán
+                </Text>
+              </Flex>
+              <RadioGroup isDisabled colorScheme="brand" defaultValue="COD">
+                <Radio value="COD">
+                  <Text fontSize="sm">Thanh toán bằng tiền mặt (COD)</Text>
+                </Radio>
+              </RadioGroup>
+              <Alert borderRadius="md" status="info">
+                <AlertIcon />
+                <Text fontSize="xs">
+                  Hiện tại hệ thống chỉ chấp nhận thanh toán bằng tiền mặt và
+                  đang nâng cấp để thực hiện được nhiều phương thức hơn. Mong
+                  quý khách thông cảm vì sự bất tiện này.
+                </Text>
+              </Alert>
+            </Box>
 
             {orderInfo && (
               <Box
