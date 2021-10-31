@@ -380,20 +380,25 @@ const ProductDetail: NextPage = () => {
                 </NumberInput>
                 <Button
                   w="full"
+                  disabled={productDetail.quantity === amt}
                   leftIcon={<Icon as={FaShoppingCart} />}
                   bg="red.500"
                   _focus={{
                     ringColor: "red.100",
                     ring: 4,
+                    bg: "red.600",
                   }}
                   _active={{
+                    bg: "red.600",
+                  }}
+                  _hover={{
                     bg: "red.600",
                   }}
                   onClick={handleAddToCart}
                   borderColor="red.700"
                   textShadow="md"
                 >
-                  Chọn mua
+                  Thêm vào giỏ
                 </Button>
               </HStack>
             </GridItem>
@@ -445,6 +450,7 @@ const ProductDetail: NextPage = () => {
                     Xem shop
                   </Button>
                   <Button
+                    disabled
                     variant="outline"
                     color="brand.700"
                     size="sm"

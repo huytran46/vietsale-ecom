@@ -27,5 +27,5 @@ export async function withQuery(
 export const parseUrlWithQueries = (baseUrl: string, param?: HttpQueryParam) =>
   stringifyUrl(
     { url: HOST_URL + baseUrl, query: param },
-    { skipEmptyString: true, skipNull: true }
+    { skipEmptyString: true, skipNull: true, arrayFormat: "index" }
   );

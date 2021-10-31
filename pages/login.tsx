@@ -159,9 +159,15 @@ const Login: NextPage = () => {
                 borderColor="red.700"
                 _focus={{
                   ringColor: "red.200",
+                  bg: "red.600",
                 }}
                 _active={{
                   ringColor: "red.200",
+                  bg: "red.600",
+                }}
+                _hover={{
+                  ringColor: "red.200",
+                  bg: "red.600",
                 }}
                 type="submit"
               >
@@ -169,8 +175,8 @@ const Login: NextPage = () => {
               </Button>
             </chakra.form>
             <VStack h="full" w="full">
-              <Text fontSize="xl" fontWeight="medium">
-                Tạo tài khoản
+              <Text fontSize="xl" color="brand.500" fontWeight="medium">
+                Việt Sale
               </Text>
             </VStack>
           </HStack>

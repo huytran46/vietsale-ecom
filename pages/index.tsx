@@ -27,11 +27,16 @@ import ProductItem from "components/ProductItem";
 import { fetchProducts, FETCH_PRODUCT_URI } from "services/product";
 import { Product } from "models/Product";
 import { ALLOWED_FETCH_MORE_TIME, PAGE_SIZE } from "constants/platform";
+import withSession, { NextSsrIronHandler } from "utils/session";
+import { IronSessionKey } from "constants/session";
+import { fetchCartInfo, FETCH_CART_URI } from "services/cart";
+import { splitName } from "utils";
 
 const Home: NextPage = () => {
   const router = useRouter();
   const [isBottom, setBottomState] = React.useState(false);
   const [productPage, setProductPage] = React.useState(1);
+  useQuery(FETCH_CART_URI, fetchCartInfo);
   const { data, isLoading } = useQuery<HomeInfo>(FETCH_HOME_URI, fetchHome);
 
   const {
@@ -201,6 +206,12 @@ const Home: NextPage = () => {
               flexDir="column"
               alignItems="center"
               justifyContent="center"
+              cursor="pointer"
+              onClick={async () =>
+                router.push(
+                  `/products?pc=${cate.id}&pc_name=${cate.category_name}`
+                )
+              }
             >
               <Avatar
                 size="md"
@@ -239,7 +250,7 @@ const Home: NextPage = () => {
 
       {/* All products */}
       <MetaCard
-        title="Gợi ý hôm nay"
+        title="Tất cả sản phẩm"
         bodyProps={{
           bg: "white",
         }}
@@ -283,8 +294,12 @@ const Home: NextPage = () => {
   );
 };
 
-export async function getServerSideProps() {
+const handler: NextSsrIronHandler = async function ({ req, res }) {
   const queryClient = new QueryClient();
+  const auth = req.session.get(IronSessionKey.AUTH);
+  if (auth !== undefined) {
+    await queryClient.prefetchQuery(FETCH_CART_URI, fetchCartInfo);
+  }
   await queryClient.prefetchQuery(FETCH_HOME_URI, fetchHome);
   await queryClient.prefetchQuery(FETCH_PRODUCT_URI, () =>
     fetchProducts({ pageSize: PAGE_SIZE })
@@ -294,6 +309,20 @@ export async function getServerSideProps() {
       dehydratedState: dehydrate(queryClient),
     },
   };
-}
+};
+export const getServerSideProps = withSession(handler);
+
+// export async function getServerSideProps() {
+//   const queryClient = new QueryClient();
+//   await queryClient.prefetchQuery(FETCH_HOME_URI, fetchHome);
+//   await queryClient.prefetchQuery(FETCH_PRODUCT_URI, () =>
+//     fetchProducts({ pageSize: PAGE_SIZE })
+//   );
+//   return {
+//     props: {
+//       dehydratedState: dehydrate(queryClient),
+//     },
+//   };
+// }
 
 export default Home;

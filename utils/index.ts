@@ -111,3 +111,8 @@ function annotate(
   }
   return roundedString + abbr;
 }
+
+export function splitName(name: string): string {
+  const split = name.toLocaleLowerCase().trim().split(" ");
+  return split.join("-");
+}

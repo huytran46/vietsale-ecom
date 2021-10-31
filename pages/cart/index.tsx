@@ -31,9 +31,9 @@ import { stringify, stringifyUrl } from "query-string";
 
 const Cart: NextPage = () => {
   const router = useRouter();
-  const { data: cartInfo, isLoading } = useQuery(FETCH_CART_URI, () =>
-    fetchCartInfo()
-  );
+
+  const { data: cartInfo, isLoading } = useQuery(FETCH_CART_URI, fetchCartInfo);
+
   const { setCartInfo, selectCartItems, selectedCartItems } = useCartCtx();
 
   const { defaultAddress, fullDetailAddress, fetchUserAddresses } = useUser();
@@ -327,7 +327,7 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
     return { props: {} };
   }
   const queryClient = new QueryClient();
-  await queryClient.prefetchQuery(FETCH_CART_URI, () => fetchCartInfo());
+  await queryClient.prefetchQuery(FETCH_CART_URI, fetchCartInfo);
   return {
     props: {
       dehydratedState: dehydrate(queryClient),

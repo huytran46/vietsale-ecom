@@ -1,32 +1,71 @@
 import React from "react";
 import type { GetServerSidePropsContext, NextPage } from "next";
 import { useRouter } from "next/router";
-import { VStack, SimpleGrid, Box, Icon, Text, Link } from "@chakra-ui/react";
+import {
+  VStack,
+  SimpleGrid,
+  Box,
+  Icon,
+  Text,
+  Link,
+  Badge,
+  Stack,
+  Spinner,
+  Wrap,
+  WrapItem,
+} from "@chakra-ui/react";
+import VisibilitySensor from "react-visibility-sensor";
 import { dehydrate, QueryClient, useQuery } from "react-query";
 import { HiOutlineShoppingCart } from "react-icons/hi";
 
 import { fetchProducts, FETCH_PRODUCT_URI } from "services/product";
 import ProductItem from "components/ProductItem";
+import { Product } from "models/Product";
 
 const PAGE_SIZE = 60;
 
 const Products: NextPage = () => {
   const { query } = useRouter();
-  const { _q } = query;
+  const { _q, pc, pc_name } = query;
+  const justMounted = React.useRef(true);
+  const [isBottom, setBottomState] = React.useState(false);
   const [productPage, setProductPage] = React.useState(1);
 
   const {
     data: products,
     isLoading,
     refetch: doFetchProducts,
+    isRefetching: isProductRefetching,
+    isPreviousData: isOldProductData,
   } = useQuery(FETCH_PRODUCT_URI, () =>
-    fetchProducts({ page: productPage, pageSize: PAGE_SIZE, _q: _q as string })
+    fetchProducts({
+      page: productPage,
+      pageSize: PAGE_SIZE,
+      _q: _q as string,
+      cateIDs: [pc].flat() as string[],
+    })
   );
+
+  const [productData, setProductData] = React.useState<Product[]>([]);
+
+  React.useEffect(() => {
+    if (justMounted) {
+      justMounted.current = false;
+      return;
+    }
+    if (!isBottom) return;
+    setProductPage((prev) => prev + 1);
+  }, [isBottom]);
 
   React.useEffect(() => {
     if (productPage === 1) return;
     doFetchProducts();
   }, [productPage, doFetchProducts]);
+
+  React.useEffect(() => {
+    if (isOldProductData || isProductRefetching || !products) return;
+    setProductData((prev) => prev.concat(products));
+  }, [isProductRefetching, isOldProductData, products]);
 
   const NotFound = React.useMemo(
     () => (
@@ -46,25 +85,49 @@ const Products: NextPage = () => {
   );
 
   if (isLoading) return null;
-  if (!products) return NotFound;
+  if (!products || !productData) return NotFound;
+
+  function triggerBottomState(isVisible: boolean) {
+    setBottomState(isVisible);
+  }
 
   return (
     <VStack h="fit-content" w="full" spacing={10} py={10}>
-      {products.length < 1 && NotFound}
+      {productData.length < 1 && NotFound}
+      <Wrap w="full">
+        <WrapItem>
+          <Badge colorScheme="brand" p={1}>
+            <Text fontWeight="bold" color="white">
+              {pc_name}
+            </Text>
+          </Badge>
+        </WrapItem>
+      </Wrap>
       <SimpleGrid w="full" bg="white" gap={2} columns={[1, 2, 4, 6]}>
-        {products.map((p, idx) => (
+        {productData.map((p, idx) => (
           <ProductItem key={idx} product={p} />
         ))}
       </SimpleGrid>
+      <VisibilitySensor onChange={triggerBottomState}>
+        <Stack direction="row" h={2}>
+          <Spinner
+            colorScheme="brand"
+            color="brand.500"
+            speed="1s"
+            size="md"
+            emptyColor="gray.300"
+          />
+        </Stack>
+      </VisibilitySensor>
     </VStack>
   );
 };
 
 export async function getServerSideProps({ query }: GetServerSidePropsContext) {
-  const { _q } = query;
+  const { _q, pc } = query;
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(FETCH_PRODUCT_URI, () =>
-    fetchProducts({ pageSize: 60, _q: _q as string })
+    fetchProducts({ pageSize: 60, _q: _q as string, cateIDs: pc as string[] })
   );
   return {
     props: {
