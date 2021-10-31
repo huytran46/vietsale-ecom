@@ -19,6 +19,7 @@ import "swiper/css/navigation";
 import { LayoutProvider } from "context/LayoutProvider";
 import { UserProvider } from "context/UserProvider";
 import { CartProvider } from "context/CartProvider";
+import { OrderProvider } from "context/OrderProvider";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = React.useState(
@@ -39,15 +40,17 @@ function MyApp({ Component, pageProps }: AppProps) {
         <ChakraProvider theme={theme}>
           <UserProvider>
             <CartProvider>
-              <LayoutProvider>
-                {Boolean(pageProps.noLayout) ? (
-                  <Component {...pageProps} />
-                ) : (
-                  <Layout>
+              <OrderProvider>
+                <LayoutProvider>
+                  {Boolean(pageProps.noLayout) ? (
                     <Component {...pageProps} />
-                  </Layout>
-                )}
-              </LayoutProvider>
+                  ) : (
+                    <Layout>
+                      <Component {...pageProps} />
+                    </Layout>
+                  )}
+                </LayoutProvider>
+              </OrderProvider>
             </CartProvider>
           </UserProvider>
         </ChakraProvider>

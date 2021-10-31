@@ -44,7 +44,8 @@ export const theme = extendTheme(
       "gray.light": "#f7f7f7",
       "gray.dark": "#000206",
       brand: {
-        50: "#1F96FF14",
+        25: "aliceblue",
+        50: "rgb(194, 225, 255)",
         100: "#70BCFF",
         300: "#47A9FF",
         500: "#1F96FF",

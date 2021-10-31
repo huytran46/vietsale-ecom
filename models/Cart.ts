@@ -45,8 +45,19 @@ export interface CheckoutItem {
   cartItemIDs: string[];
 }
 
+export interface CheckoutItemWithServiceAndPrices extends CheckoutItem {
+  logisticServiceID: number;
+  totalOrigPrice: number;
+  totalShippingFee: number;
+  totalFinalPrice: number;
+}
+
+export interface CheckoutItemWithService extends CheckoutItem {
+  logisticServiceID: number;
+}
+
 export interface PreCheckoutPayload {
   userAddressID: string;
   paymentMethodID: number;
-  checkoutItems: [];
+  checkoutItems: CheckoutItem[];
 }

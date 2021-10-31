@@ -27,7 +27,7 @@ import { useCartCtx } from "context/CartProvider";
 import { useUser } from "context/UserProvider";
 import MyLinkOverlay from "components/common/MyLinkOverlay";
 import { formatCcy } from "utils";
-import { stringifyUrl } from "query-string";
+import { stringify, stringifyUrl } from "query-string";
 
 const Cart: NextPage = () => {
   const router = useRouter();
@@ -81,12 +81,27 @@ const Cart: NextPage = () => {
 
   const handlePrecheckout = React.useCallback(async () => {
     if (!selectedCartItems) return;
+    const selItemStr = stringify(selectedCartItems);
+    const orderInfoStr = stringify({
+      origOrderTotalAmt,
+      discountOrderTotalAmt,
+      finalOrderTotalAmt,
+    });
 
     await router.push(
-      stringifyUrl({ url: "/order/pre", query: selectedCartItems }),
+      stringifyUrl({
+        url: "/order/pre",
+        query: { selItems: selItemStr, orderInfo: orderInfoStr },
+      }),
       "chon-phuong-thuc-thanh-toan"
     );
-  }, [selectedCartItems, router]);
+  }, [
+    selectedCartItems,
+    origOrderTotalAmt,
+    discountOrderTotalAmt,
+    finalOrderTotalAmt,
+    router,
+  ]);
 
   React.useEffect(() => {
     if (!cartInfo) return;
@@ -119,7 +134,7 @@ const Cart: NextPage = () => {
         Giỏ hàng của bạn
       </Text>
       <Grid w="full" templateColumns="repeat(8, 1fr)" gap={4}>
-        <GridItem colSpan={6}>
+        <GridItem colSpan={[8, 8, 6]}>
           <VStack w="full" spacing={10}>
             {cartItemGroups?.map((gr, idx) => (
               <CheckboxGroup
@@ -186,7 +201,7 @@ const Cart: NextPage = () => {
             )}
           </VStack>
         </GridItem>
-        <GridItem position="relative" colSpan={2}>
+        <GridItem position="relative" colSpan={[8, 8, 2]}>
           <VStack position="fixed" maxW="300px" spacing={3}>
             {defaultAddress && (
               <Box
@@ -283,11 +298,15 @@ const Cart: NextPage = () => {
                 _hover={{
                   bg: "red.500",
                 }}
+                _focus={{
+                  ringColor: "red.300",
+                }}
                 size="sm"
                 borderColor="red.700"
                 bg="red.500"
                 w="full"
                 onClick={handlePrecheckout}
+                colorScheme="red"
               >
                 Mua hàng
               </Button>

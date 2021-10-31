@@ -12,6 +12,7 @@ import {
   NumberDecrementStepper,
   Icon,
   Button,
+  VStack,
 } from "@chakra-ui/react";
 import { BsTrash } from "react-icons/bs";
 
@@ -26,9 +27,15 @@ type Props = {
   cartItem: CartItem;
   isSelected?: boolean;
   rounded?: boolean;
+  viewMode?: boolean;
 };
 
-const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
+const CartItemRow: React.FC<Props> = ({
+  cartItem,
+  isSelected,
+  rounded,
+  viewMode,
+}) => {
   const [qty, setQty] = React.useState(cartItem.qty);
   const [isDeleting, setDeleting] = React.useState(cartItem.qty === 0);
   const { updateCartItem, removeCartItem } = useCartCtx();
@@ -75,7 +82,7 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
       w="full"
       spacing={6}
     >
-      <Checkbox value={cartItem.id} />
+      {!viewMode && <Checkbox value={cartItem.id} disabled={viewMode} />}
       <MyLinkOverlay
         href={`/products/${product.id}`}
         borderRadius="md"
@@ -114,32 +121,41 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
         </Fade>
       ) : (
         <HStack>
-          <NumberInput
-            flex="2"
-            maxW="100px"
-            value={qty}
-            min={MINIMUM_QTY}
-            max={maxStock}
-            onChange={(_, newQty) => setQty(newQty)}
-            size="sm"
-            bg="white"
-          >
-            <NumberInputField />
-            <NumberInputStepper>
-              <NumberIncrementStepper />
-              <NumberDecrementStepper />
-            </NumberInputStepper>
-          </NumberInput>
-          <Fade in={cartItem.qty !== qty}>
-            <Button
-              disabled={cartItem.qty === qty}
+          {!viewMode && (
+            <NumberInput
+              flex="2"
+              maxW="100px"
+              value={qty}
+              min={MINIMUM_QTY}
+              max={maxStock}
+              onChange={(_, newQty) => setQty(newQty)}
               size="sm"
-              borderColor="brand.700"
-              onClick={() => updateQty()}
+              bg="white"
             >
-              Lưu
-            </Button>
-          </Fade>
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          )}
+          {viewMode && (
+            <Text fontSize="md" color="gray.500">
+              x{formatCcy(qty)}
+            </Text>
+          )}
+          {!viewMode && (
+            <Fade in={cartItem.qty !== qty}>
+              <Button
+                disabled={cartItem.qty === qty}
+                size="sm"
+                borderColor="brand.700"
+                onClick={() => updateQty()}
+              >
+                Lưu
+              </Button>
+            </Fade>
+          )}
         </HStack>
       )}
 
@@ -154,17 +170,20 @@ const CartItemRow: React.FC<Props> = ({ cartItem, isSelected, rounded }) => {
           ? formatCcy(qty === 0 ? productPrice : productPrice * qty) + " đ"
           : "Liên hệ cửa hàng"}
       </Text>
-      <Icon
-        flex="1"
-        color="red.500"
-        transitionDuration="0.2s"
-        _hover={{
-          transform: isDeleting ? "" : "scale(1.2)",
-        }}
-        cursor={isDeleting ? "not-allowed" : "pointer"}
-        onClick={() => setDeleting(true)}
-        as={BsTrash}
-      />
+
+      {!viewMode && (
+        <Icon
+          flex="1"
+          color="red.500"
+          transitionDuration="0.2s"
+          _hover={{
+            transform: isDeleting ? "" : "scale(1.2)",
+          }}
+          cursor={isDeleting ? "not-allowed" : "pointer"}
+          onClick={() => setDeleting(true)}
+          as={BsTrash}
+        />
+      )}
     </HStack>
   );
 };
