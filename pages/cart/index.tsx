@@ -189,17 +189,15 @@ const Cart: NextPage = () => {
               </CheckboxGroup>
             ))}
             {cartItemGroups.length === 0 && (
-              <Box w="full" bg="red.500">
-                <Empty>
-                  <Text>
-                    Không có món hàng nào trong giỏ hàng. Xem thêm sản phẩm
-                    tại&nbsp;
-                    <MyLinkOverlay href="/products" color="brand.500">
-                      đây
-                    </MyLinkOverlay>
-                  </Text>
-                </Empty>
-              </Box>
+              <Empty>
+                <Text>
+                  Không có món hàng nào trong giỏ hàng. Xem thêm sản phẩm
+                  tại&nbsp;
+                  <MyLinkOverlay href="/products" color="brand.500">
+                    đây
+                  </MyLinkOverlay>
+                </Text>
+              </Empty>
             )}
           </VStack>
         </GridItem>
@@ -269,7 +267,7 @@ const Cart: NextPage = () => {
                 </Text>
                 <Spacer />
                 <Text fontSize="sm" color="red.500" fontWeight="medium">
-                  {discountOrderTotalAmt === 0
+                  {discountOrderTotalAmt === 0 || isNaN(discountOrderTotalAmt)
                     ? "0đ"
                     : `- ${formatCcy(discountOrderTotalAmt)} đ`}
                 </Text>

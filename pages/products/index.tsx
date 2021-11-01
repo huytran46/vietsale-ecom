@@ -29,6 +29,7 @@ const Products: NextPage = () => {
   const { _q, pc, pc_name } = query;
   const justMounted = React.useRef(true);
   const [isBottom, setBottomState] = React.useState(false);
+  const [isNoMore, setNoMoreDate] = React.useState(false);
   const [productPage, setProductPage] = React.useState(1);
 
   const {
@@ -49,10 +50,12 @@ const Products: NextPage = () => {
   const [productData, setProductData] = React.useState<Product[]>([]);
 
   React.useEffect(() => {
-    if (justMounted) {
+    if (justMounted.current) {
       justMounted.current = false;
+      console.log("justMounted:", justMounted);
       return;
     }
+
     if (!isBottom) return;
     setProductPage((prev) => prev + 1);
   }, [isBottom]);
@@ -64,6 +67,12 @@ const Products: NextPage = () => {
 
   React.useEffect(() => {
     if (isOldProductData || isProductRefetching || !products) return;
+    if (products.length < PAGE_SIZE) {
+      setNoMoreDate(true);
+      return;
+    } else {
+      setNoMoreDate(false);
+    }
     setProductData((prev) => prev.concat(products));
   }, [isProductRefetching, isOldProductData, products]);
 
@@ -88,37 +97,50 @@ const Products: NextPage = () => {
   if (!products || !productData) return NotFound;
 
   function triggerBottomState(isVisible: boolean) {
+    if (justMounted.current) {
+      justMounted.current = false;
+      return;
+    }
     setBottomState(isVisible);
   }
 
   return (
     <VStack h="fit-content" w="full" spacing={10} py={10}>
-      {productData.length < 1 && NotFound}
-      <Wrap w="full">
-        <WrapItem>
-          <Badge colorScheme="brand" p={1}>
-            <Text fontWeight="bold" color="white">
-              {pc_name}
-            </Text>
-          </Badge>
-        </WrapItem>
-      </Wrap>
-      <SimpleGrid w="full" bg="white" gap={2} columns={[1, 2, 4, 6]}>
-        {productData.map((p, idx) => (
-          <ProductItem key={idx} product={p} />
-        ))}
-      </SimpleGrid>
-      <VisibilitySensor onChange={triggerBottomState}>
-        <Stack direction="row" h={2}>
-          <Spinner
-            colorScheme="brand"
-            color="brand.500"
-            speed="1s"
-            size="md"
-            emptyColor="gray.300"
-          />
-        </Stack>
-      </VisibilitySensor>
+      {pc_name && (
+        <Wrap w="full">
+          <WrapItem>
+            <Badge colorScheme="red" p={1}>
+              <Text fontWeight="bold" color="white">
+                {pc_name}
+              </Text>
+            </Badge>
+          </WrapItem>
+        </Wrap>
+      )}
+
+      {productData.length < 1 ? (
+        NotFound
+      ) : (
+        <SimpleGrid w="full" bg="white" gap={2} columns={[1, 2, 4, 6]}>
+          {productData.map((p, idx) => (
+            <ProductItem key={idx} product={p} />
+          ))}
+        </SimpleGrid>
+      )}
+
+      {!isNoMore && (
+        <VisibilitySensor onChange={triggerBottomState}>
+          <Stack direction="row" h={2}>
+            <Spinner
+              colorScheme="brand"
+              color="brand.500"
+              speed="1s"
+              size="md"
+              emptyColor="gray.300"
+            />
+          </Stack>
+        </VisibilitySensor>
+      )}
     </VStack>
   );
 };

@@ -321,7 +321,8 @@ const Precheckout: NextPage = () => {
                   </Text>
                   <Spacer />
                   <Text fontSize="sm">
-                    {orderInfo.origOrderTotalAmt === 0
+                    {orderInfo.origOrderTotalAmt === 0 ||
+                    isNaN(orderInfo.origOrderTotalAmt)
                       ? "0đ"
                       : `${formatCcy(orderInfo.origOrderTotalAmt)} đ`}
                   </Text>
@@ -360,10 +361,9 @@ const Precheckout: NextPage = () => {
                       fontSize={totalFinalPrice === 0 ? "sm" : "md"}
                       fontWeight="medium"
                     >
-                      {isItemLoading
-                        ? "-"
-                        : !isItemLoading && totalFinalPrice === 0
-                        ? "Vui lòng chọn sản phẩm"
+                      {!isItemLoading &&
+                      (totalFinalPrice === 0 || isNaN(totalFinalPrice))
+                        ? "0đ"
                         : formatCcy(totalFinalPrice) + " đ"}
                     </Text>
                   </Flex>

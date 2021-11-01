@@ -27,23 +27,22 @@ export const OrderProvider: React.FC = ({ children }) => {
 
   const [orders, setOrders] = React.useState<Order[]>([]);
 
-  const totalFinalPrice = React.useMemo(
-    () =>
-      checkingoutItems.reduce((final, coi) => {
-        final += coi.totalFinalPrice;
-        return final;
-      }, 0),
-    [checkingoutItems]
-  );
+  const totalShippingFee = React.useMemo(() => {
+    const result = checkingoutItems.reduce((final, coi) => {
+      final += isNaN(coi.totalShippingFee) ? 0 : coi.totalShippingFee;
+      return final;
+    }, 0);
 
-  const totalShippingFee = React.useMemo(
-    () =>
-      checkingoutItems.reduce((final, coi) => {
-        final += coi.totalShippingFee;
-        return final;
-      }, 0),
-    [checkingoutItems]
-  );
+    return result;
+  }, [checkingoutItems]);
+
+  const totalFinalPrice = React.useMemo(() => {
+    const result = checkingoutItems.reduce((final, coi) => {
+      final += isNaN(coi.totalFinalPrice) ? 0 : coi.totalFinalPrice;
+      return final;
+    }, 0);
+    return result + totalShippingFee;
+  }, [checkingoutItems, totalShippingFee]);
 
   return (
     <OrderContxt.Provider

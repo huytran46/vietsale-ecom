@@ -52,6 +52,7 @@ const MainHeader: React.FC = ({}) => {
     >
       <Head>
         <title>Việt Sale - Sàn thương mại điện tử</title>
+        <link rel="shortcut icon" href="/favicon.png" />
       </Head>
       <Container maxW="container.xl" h="full">
         <VStack justifyContent="flex-start" spacing={5} h="full" w="full">
