@@ -115,14 +115,12 @@ const Cart: NextPage = () => {
     fetchUserAddresses();
   }, [defaultAddress, fetchUserAddresses]);
 
-  if (isLoading)
+  if (isLoading || !cartInfo)
     return (
       <Box p={3} m={3}>
         Đang tải...
       </Box>
     );
-
-  if (!cartInfo) return <Empty />;
 
   return (
     <VStack
@@ -138,57 +136,7 @@ const Cart: NextPage = () => {
       <Grid w="full" templateColumns="repeat(8, 1fr)" gap={4}>
         <GridItem colSpan={[8, 8, 6]}>
           <VStack w="full" spacing={10}>
-            {cartItemGroups?.map((gr, idx) => (
-              <CheckboxGroup
-                key={idx}
-                colorScheme="brand"
-                value={selectedCartItems?.[gr.shop_id] ?? []}
-                onChange={(cartItemIds: string[]) =>
-                  selectCartItems(gr.shop_id, cartItemIds)
-                }
-              >
-                <VStack
-                  bg="white"
-                  borderColor="gray.100"
-                  borderWidth="1px"
-                  borderRadius="md"
-                  alignItems="flex-start"
-                  w="full"
-                >
-                  <HStack
-                    p={3}
-                    borderBottomColor="gray.100"
-                    borderBottomWidth="1px"
-                    borderTopRadius="md"
-                    w="full"
-                    spacing={6}
-                  >
-                    <Checkbox
-                      value=""
-                      onChange={(e) =>
-                        selectCartItems(
-                          gr.shop_id,
-                          e.target.checked
-                            ? gr.cart_items?.map((ci) => ci.id) ?? []
-                            : []
-                        )
-                      }
-                    />
-                    <Text fontWeight="700" fontSize="sm">
-                      {gr.shop_name}
-                    </Text>
-                  </HStack>
-                  {gr.cart_items.map((item, idx) => (
-                    <CartItem
-                      key={idx}
-                      rounded={idx === gr.cart_items.length - 1}
-                      cartItem={item}
-                    />
-                  ))}
-                </VStack>
-              </CheckboxGroup>
-            ))}
-            {cartItemGroups.length === 0 && (
+            {cartItemGroups.length < 1 ? (
               <Empty>
                 <Text>
                   Không có món hàng nào trong giỏ hàng. Xem thêm sản phẩm
@@ -198,6 +146,57 @@ const Cart: NextPage = () => {
                   </MyLinkOverlay>
                 </Text>
               </Empty>
+            ) : (
+              cartItemGroups?.map((gr, idx) => (
+                <CheckboxGroup
+                  key={idx}
+                  colorScheme="brand"
+                  value={selectedCartItems?.[gr.shop_id] ?? []}
+                  onChange={(cartItemIds: string[]) =>
+                    selectCartItems(gr.shop_id, cartItemIds)
+                  }
+                >
+                  <VStack
+                    bg="white"
+                    borderColor="gray.100"
+                    borderWidth="1px"
+                    borderRadius="md"
+                    alignItems="flex-start"
+                    w="full"
+                  >
+                    <HStack
+                      p={3}
+                      borderBottomColor="gray.100"
+                      borderBottomWidth="1px"
+                      borderTopRadius="md"
+                      w="full"
+                      spacing={6}
+                    >
+                      <Checkbox
+                        value=""
+                        onChange={(e) =>
+                          selectCartItems(
+                            gr.shop_id,
+                            e.target.checked
+                              ? gr.cart_items?.map((ci) => ci.id) ?? []
+                              : []
+                          )
+                        }
+                      />
+                      <Text fontWeight="700" fontSize="sm">
+                        {gr.shop_name}
+                      </Text>
+                    </HStack>
+                    {gr.cart_items.map((item, idx) => (
+                      <CartItem
+                        key={idx}
+                        rounded={idx === gr.cart_items.length - 1}
+                        cartItem={item}
+                      />
+                    ))}
+                  </VStack>
+                </CheckboxGroup>
+              ))
             )}
           </VStack>
         </GridItem>
@@ -328,6 +327,7 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
   }
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(FETCH_CART_URI, () => fetchCartInfo());
+
   return {
     props: {
       dehydratedState: dehydrate(queryClient),
