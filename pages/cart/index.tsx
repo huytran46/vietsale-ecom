@@ -17,6 +17,7 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { dehydrate, QueryClient, useQuery } from "react-query";
+import { stringify, stringifyUrl } from "query-string";
 
 import { fetchCartInfo, FETCH_CART_URI } from "services/cart";
 import Empty from "components/common/Empty";
@@ -27,14 +28,15 @@ import { useCartCtx } from "context/CartProvider";
 import { useUser } from "context/UserProvider";
 import MyLinkOverlay from "components/common/MyLinkOverlay";
 import { formatCcy } from "utils";
-import { stringify, stringifyUrl } from "query-string";
+import {
+  doFetchDefaultAddress,
+  FETCH_DEFAULT_ADDRESS_URI,
+} from "services/user";
 
 const Cart: NextPage = () => {
   const router = useRouter();
 
-  const { data: cartInfo, isLoading } = useQuery(FETCH_CART_URI, () =>
-    fetchCartInfo()
-  );
+  const { data: cartInfo, isLoading } = useQuery(FETCH_CART_URI, fetchCartInfo);
 
   const { setCartInfo, selectCartItems, selectedCartItems } = useCartCtx();
 
@@ -115,12 +117,13 @@ const Cart: NextPage = () => {
     fetchUserAddresses();
   }, [defaultAddress, fetchUserAddresses]);
 
-  if (isLoading || !cartInfo)
+  if (isLoading || !cartInfo) {
     return (
       <Box p={3} m={3}>
         Đang tải...
       </Box>
     );
+  }
 
   return (
     <VStack
@@ -147,7 +150,7 @@ const Cart: NextPage = () => {
                 </Text>
               </Empty>
             ) : (
-              cartItemGroups?.map((gr, idx) => (
+              cartItemGroups.map((gr, idx) => (
                 <CheckboxGroup
                   key={idx}
                   colorScheme="brand"
@@ -325,8 +328,13 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
     res.end();
     return { props: {} };
   }
+
   const queryClient = new QueryClient();
-  await queryClient.prefetchQuery(FETCH_CART_URI, () => fetchCartInfo());
+  await queryClient.prefetchQuery(FETCH_CART_URI, fetchCartInfo);
+  await queryClient.prefetchQuery(
+    FETCH_DEFAULT_ADDRESS_URI,
+    doFetchDefaultAddress
+  );
 
   return {
     props: {

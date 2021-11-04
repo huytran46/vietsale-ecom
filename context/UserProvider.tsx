@@ -1,11 +1,16 @@
 import React from "react";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
+import { useRouter } from "next/router";
+import { useQuery } from "react-query";
+
 import { User } from "models/User";
 import { UserAddress } from "models/UserAddress";
-import { doFetchDefaultAddress } from "services/user";
+import {
+  doFetchDefaultAddress,
+  FETCH_DEFAULT_ADDRESS_URI,
+} from "services/user";
 import { LocalStorageKey } from "constants/local-storage";
 import { doLogout } from "services/auth";
-import { useRouter } from "next/router";
 
 type UserContext = {
   visitorId: string;
@@ -31,7 +36,11 @@ export const UserProvider: React.FC = ({ children }) => {
   const [visitorId, setVisitorId] = React.useState("");
   const [platform, setPlatform] = React.useState("");
   const [user, setUser] = React.useState<User>();
-  const [userAddresses, setUserAddresses] = React.useState<UserAddress[]>([]);
+  // const [userAddresses, setUserAddresses] = React.useState<UserAddress[]>([]);
+  const { data: userAddresses, refetch: fetchUserAddresses } = useQuery(
+    FETCH_DEFAULT_ADDRESS_URI,
+    doFetchDefaultAddress
+  );
   const username = React.useMemo(() => {
     if (!user || user.email === "") return "";
     const split = user?.email?.split("@");
@@ -88,13 +97,13 @@ export const UserProvider: React.FC = ({ children }) => {
   // const getProvinces = React.useCallback(async () => {}, []);
   // const getDistricts = React.useCallback(async () => {}, []);
   // const getWards = React.useCallback(async () => {}, []);
-  const fetchUserAddresses = React.useCallback(() => {
-    if (!user) return;
-    doFetchDefaultAddress()
-      .then((userAddresses) => setUserAddresses(userAddresses))
-      .catch((err) => console.error(err))
-      .finally();
-  }, [user]);
+  // const fetchUserAddresses = React.useCallback(() => {
+  //   if (!user) return;
+  //   doFetchDefaultAddress()
+  //     .then((userAddresses) => setUserAddresses(userAddresses))
+  //     .catch((err) => console.error(err))
+  //     .finally();
+  // }, [user]);
 
   const logout = React.useCallback(async () => {
     if (!user) return;
@@ -133,7 +142,7 @@ export const UserProvider: React.FC = ({ children }) => {
         setUser,
         platform,
         username,
-        userAddresses,
+        userAddresses: userAddresses ?? [],
         defaultAddress,
         fullDetailAddress,
         fetchUserAddresses,
