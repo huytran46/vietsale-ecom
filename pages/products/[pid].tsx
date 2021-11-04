@@ -57,6 +57,7 @@ import MetaCard from "components/MetaCard";
 import ProductItem from "components/ProductItem";
 import UserAddressModal from "components/UserAddressModal";
 import { useCartCtx } from "context/CartProvider";
+import MyLinkOverlay from "components/common/MyLinkOverlay";
 
 const DEFAULT_QTY = 1;
 const MINIMUM_QTY = 1;
@@ -378,28 +379,50 @@ const ProductDetail: NextPage = () => {
                     <NumberDecrementStepper />
                   </NumberInputStepper>
                 </NumberInput>
-                <Button
-                  w="full"
-                  disabled={productDetail.quantity === amt}
-                  leftIcon={<Icon as={FaShoppingCart} />}
-                  bg="red.500"
-                  _focus={{
-                    ringColor: "red.100",
-                    ring: 4,
-                    bg: "red.600",
-                  }}
-                  _active={{
-                    bg: "red.600",
-                  }}
-                  _hover={{
-                    bg: "red.600",
-                  }}
-                  onClick={handleAddToCart}
-                  borderColor="red.700"
-                  textShadow="md"
-                >
-                  Thêm vào giỏ
-                </Button>
+                {user ? (
+                  <Button
+                    w="full"
+                    disabled={productDetail.quantity === amt}
+                    leftIcon={<Icon as={FaShoppingCart} />}
+                    bg="red.500"
+                    _focus={{
+                      ringColor: "red.100",
+                      ring: 4,
+                      bg: "red.600",
+                    }}
+                    _active={{
+                      bg: "red.600",
+                    }}
+                    _hover={{
+                      bg: "red.600",
+                    }}
+                    onClick={handleAddToCart}
+                    borderColor="red.700"
+                    textShadow="md"
+                  >
+                    Thêm vào giỏ
+                  </Button>
+                ) : (
+                  <Box
+                    fontSize="sm"
+                    w="full"
+                    h="full"
+                    p={3}
+                    borderWidth="1px"
+                    borderStyle="dashed"
+                    borderRadius="md"
+                  >
+                    Vui lòng{" "}
+                    <MyLinkOverlay color="brand.700" href="/login">
+                      đăng nhập
+                    </MyLinkOverlay>{" "}
+                    để đặt hàng, nếu chưa có tài khoản bấm vào{" "}
+                    <MyLinkOverlay color="brand.700" href="/register">
+                      đây
+                    </MyLinkOverlay>{" "}
+                    để tạo tài khoản.
+                  </Box>
+                )}
               </HStack>
             </GridItem>
             <GridItem colSpan={[1, 1, 2]}>

@@ -1,3 +1,4 @@
+import React from "react";
 import type { NextPage, GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useFormik } from "formik";
@@ -20,81 +21,89 @@ import {
 } from "@chakra-ui/react";
 import { useMutation } from "react-query";
 
-import { useUser } from "context/UserProvider";
-import { doLogin, LOGIN_URI } from "services/auth";
+import { doRegister, REGISTER_URI } from "services/auth";
 import { brandRing } from "utils";
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
-import { LocalStorageKey } from "constants/local-storage";
+import { RegisterPayload } from "models/request-response/Login";
 
-const LoginSchema = Yup.object().shape({
-  username: Yup.string()
-    .min(5, "Tên đăng nhập phải có ít nhất 5 kí tự")
-    .max(50, "Tên đăng nhập quá dài")
+const MerchantRegisterSchema = Yup.object().shape({
+  phone: Yup.string()
+    .min(5, "Tên số điện thoại phải có ít nhất 5 kí tự")
+    .max(50, "Tên số điện thoại quá dài")
     .nullable(false)
-    .required("Không thể thiếu tên đăng nhập"),
-  password: Yup.string()
-    .min(5, "Mật khẩu phải có ít nhất 5 kí tự")
+    .required("Không thể thiếu số điện thoại"),
+  email: Yup.string()
+    .min(5, "Tên email phải có ít nhất 5 kí tự")
+    .max(50, "Tên email quá dài")
     .nullable(false)
-    .required("Không thể thiếu mật khẩu"),
+    .matches(
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+      "Email không hợp lệ"
+    )
+    .required("Không thể thiếu tên email"),
+  shopName: Yup.string()
+    .min(5, "Địa chỉ phải có ít nhất 5 kí tự")
+    .nullable(false)
+    .required("Không thể thiếu tên cửa hàng"),
+  shopAddress: Yup.string()
+    .min(5, "Địa chỉ phải có ít nhất 5 kí tự")
+    .nullable(false)
+    .required("Không thể địa chỉ cửa hàng"),
 });
 
-type LoginPayload = {
-  username: string;
-  password: string;
-};
-
-const Login: NextPage = () => {
+const MerchantRegister: NextPage = () => {
   const router = useRouter();
+
   const toast = useToast();
   const { mutate } = useMutation({
-    mutationKey: LOGIN_URI,
-    mutationFn: doLogin,
+    mutationKey: REGISTER_URI,
+    mutationFn: doRegister,
   });
 
-  const { visitorId, platform, setUser } = useUser();
-
   const { handleSubmit, values, errors, touched, handleChange, isSubmitting } =
-    useFormik<LoginPayload>({
+    useFormik<RegisterPayload>({
       initialValues: {
-        username: "",
-        password: "",
+        phone: "",
+        email: "",
+        shopName: "",
+        shopAddress: "",
       },
-      validationSchema: LoginSchema,
-      onSubmit: ({ username, password }, actions) => {
+      validationSchema: MerchantRegisterSchema,
+      onSubmit: ({ phone, email, shopName, shopAddress }, actions) => {
         actions.setSubmitting(true);
         mutate(
           {
-            username,
-            password,
-            deviceModel: `${visitorId}|${platform}`,
-            fcm: visitorId,
+            phone,
+            email,
+            shopName,
+            shopAddress,
+            isRegisterForBusiness: true,
           },
           {
             onSettled() {
               actions.setSubmitting(false);
             },
-            async onSuccess(data) {
-              if ((data as any).httpCode) {
+            async onSuccess(resp) {
+              if ((resp as any).httpCode) {
                 toast({
-                  title: "Lỗi",
-                  description: (data as any).message ?? "Đã xảy ra lỗi",
                   status: "error",
-                  duration: 3000,
+                  duration: 5000,
                   isClosable: true,
+                  description:
+                    ((resp as any).message as string) ?? "Đã xảy ra lỗi",
+                  title: "Lỗi",
                 });
                 return;
               }
-              setUser({ email: data?.email, is_merchant: data.is_merchant });
-              localStorage.setItem(LocalStorageKey.EMAIL, data?.email ?? "");
               actions.resetForm();
               toast({
-                title: "Thành công",
-                description:
-                  "Đăng nhập thành công, vui lòng đợi trong giây lát...",
                 status: "success",
-                duration: 3000,
+                duration: 4000,
                 isClosable: true,
+                description:
+                  "Đăng kí bán hàng thành công, nhân viên Việt Sale sẽ liên hệ với đối tác sớm nhất có thể. Trân trọng cám ơn",
+                title: "Thành công",
               });
               await router.push("/");
             },
@@ -127,11 +136,10 @@ const Login: NextPage = () => {
             borderWidth="1px"
             borderColor="gray.200"
             borderRadius="md"
-            minH="400px"
+            // minH="500px"
             bg="white"
             boxShadow="xl"
             p={6}
-            py={0}
             divider={<StackDivider />}
             zIndex={2}
           >
@@ -142,34 +150,63 @@ const Login: NextPage = () => {
               w="full"
               h="full"
               maxW="320px"
+              pr={3}
               onSubmit={handleSubmit}
             >
-              <FormControl id="username">
-                <FormLabel>Tên đăng nhập</FormLabel>
+              <FormControl id="phone">
+                <FormLabel>Số điện thoại</FormLabel>
                 <Input
                   type="text"
-                  id="username"
-                  name="username"
-                  value={values.username}
+                  id="phone"
+                  name="phone"
+                  value={values.phone}
                   onChange={handleChange}
                   {...brandRing}
                 />
                 <FormHelperText fontSize="xs" color="red.400">
-                  {touched.username && errors.username}
+                  {touched.phone && errors.phone}
                 </FormHelperText>
               </FormControl>
-              <FormControl id="password">
-                <FormLabel>Mật khẩu</FormLabel>
+              <FormControl id="email">
+                <FormLabel>Email</FormLabel>
                 <Input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={values.password}
+                  type="text"
+                  id="email"
+                  name="email"
+                  value={values.email}
                   onChange={handleChange}
                   {...brandRing}
                 />
                 <FormHelperText fontSize="xs" color="red.400">
-                  {touched.password && errors.password}
+                  {touched.email && errors.email}
+                </FormHelperText>
+              </FormControl>
+              <FormControl id="shopName">
+                <FormLabel>Tên cửa hàng</FormLabel>
+                <Input
+                  type="text"
+                  id="shopName"
+                  name="shopName"
+                  value={values.shopName}
+                  onChange={handleChange}
+                  {...brandRing}
+                />
+                <FormHelperText fontSize="xs" color="red.400">
+                  {touched.shopName && errors.shopName}
+                </FormHelperText>
+              </FormControl>
+              <FormControl id="shopAddress">
+                <FormLabel>Địa chỉ cửa hàng</FormLabel>
+                <Input
+                  type="text"
+                  id="shopAddress"
+                  name="shopAddress"
+                  value={values.shopAddress}
+                  onChange={handleChange}
+                  {...brandRing}
+                />
+                <FormHelperText fontSize="xs" color="red.400">
+                  {touched.shopAddress && errors.shopAddress}
                 </FormHelperText>
               </FormControl>
               <Button
@@ -191,7 +228,7 @@ const Login: NextPage = () => {
                 }}
                 type="submit"
               >
-                Đăng nhập
+                Đăng kí bán hàng
               </Button>
             </chakra.form>
             <VStack h="full" w="full">
@@ -222,4 +259,4 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
 
 export const getServerSideProps: GetServerSideProps = withSession(handler);
 
-export default Login;
+export default MerchantRegister;

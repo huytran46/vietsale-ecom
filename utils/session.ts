@@ -32,7 +32,7 @@ function withSession(handler: NextIronHandler | NextSsrIronHandler) {
     cookieName: "vietsale/ecommerce",
     cookieOptions: {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       // secure: process.env.NODE_ENV === "production",
       secure: false,

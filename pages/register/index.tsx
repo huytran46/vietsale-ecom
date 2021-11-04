@@ -1,3 +1,4 @@
+import React from "react";
 import type { NextPage, GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useFormik } from "formik";
@@ -20,83 +21,91 @@ import {
 } from "@chakra-ui/react";
 import { useMutation } from "react-query";
 
-import { useUser } from "context/UserProvider";
-import { doLogin, LOGIN_URI } from "services/auth";
+import { doRegister, REGISTER_URI } from "services/auth";
 import { brandRing } from "utils";
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
-import { LocalStorageKey } from "constants/local-storage";
+import { RegisterPayload } from "models/request-response/Login";
 
-const LoginSchema = Yup.object().shape({
-  username: Yup.string()
-    .min(5, "Tên đăng nhập phải có ít nhất 5 kí tự")
-    .max(50, "Tên đăng nhập quá dài")
+const RegisterSchema = Yup.object().shape({
+  phone: Yup.string()
+    .min(5, "Tên số điện thoại phải có ít nhất 5 kí tự")
+    .max(50, "Tên số điện thoại quá dài")
     .nullable(false)
-    .required("Không thể thiếu tên đăng nhập"),
+    .required("Không thể thiếu số điện thoại"),
+  email: Yup.string()
+    .min(5, "Tên email phải có ít nhất 5 kí tự")
+    .max(50, "Tên email quá dài")
+    .nullable(false)
+    .matches(
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+      "Email không hợp lệ"
+    )
+    .required("Không thể thiếu tên email"),
   password: Yup.string()
     .min(5, "Mật khẩu phải có ít nhất 5 kí tự")
     .nullable(false)
     .required("Không thể thiếu mật khẩu"),
+  confirmed: Yup.string()
+    .min(5, "Mật khẩu phải có ít nhất 5 kí tự")
+    .nullable(false)
+    .required("Không thể thiếu mật khẩu")
+    .oneOf([Yup.ref("password"), null], "Mật khẩu nhập lại không đúng"),
 });
 
-type LoginPayload = {
-  username: string;
-  password: string;
-};
-
-const Login: NextPage = () => {
+const Register: NextPage = () => {
   const router = useRouter();
+
   const toast = useToast();
   const { mutate } = useMutation({
-    mutationKey: LOGIN_URI,
-    mutationFn: doLogin,
+    mutationKey: REGISTER_URI,
+    mutationFn: doRegister,
   });
 
-  const { visitorId, platform, setUser } = useUser();
-
   const { handleSubmit, values, errors, touched, handleChange, isSubmitting } =
-    useFormik<LoginPayload>({
+    useFormik<RegisterPayload>({
       initialValues: {
-        username: "",
+        phone: "",
+        email: "",
         password: "",
+        confirmed: "",
       },
-      validationSchema: LoginSchema,
-      onSubmit: ({ username, password }, actions) => {
+      validationSchema: RegisterSchema,
+      onSubmit: ({ phone, email, password, confirmed }, actions) => {
         actions.setSubmitting(true);
         mutate(
           {
-            username,
+            phone,
+            email,
             password,
-            deviceModel: `${visitorId}|${platform}`,
-            fcm: visitorId,
+            confirmed,
           },
           {
             onSettled() {
               actions.setSubmitting(false);
             },
-            async onSuccess(data) {
-              if ((data as any).httpCode) {
+            async onSuccess(resp) {
+              if ((resp as any).httpCode) {
                 toast({
-                  title: "Lỗi",
-                  description: (data as any).message ?? "Đã xảy ra lỗi",
                   status: "error",
-                  duration: 3000,
+                  duration: 5000,
                   isClosable: true,
+                  description:
+                    ((resp as any).message as string) ?? "Đã xảy ra lỗi",
+                  title: "Lỗi",
                 });
                 return;
               }
-              setUser({ email: data?.email, is_merchant: data.is_merchant });
-              localStorage.setItem(LocalStorageKey.EMAIL, data?.email ?? "");
               actions.resetForm();
               toast({
-                title: "Thành công",
-                description:
-                  "Đăng nhập thành công, vui lòng đợi trong giây lát...",
                 status: "success",
-                duration: 3000,
+                duration: 2000,
                 isClosable: true,
+                description:
+                  "Tạo tài khoản thành công, vui lòng chờ trong giây lát...",
+                title: "Thành công",
               });
-              await router.push("/");
+              await router.push("/login");
             },
           }
         );
@@ -127,11 +136,10 @@ const Login: NextPage = () => {
             borderWidth="1px"
             borderColor="gray.200"
             borderRadius="md"
-            minH="400px"
+            // minH="500px"
             bg="white"
             boxShadow="xl"
             p={6}
-            py={0}
             divider={<StackDivider />}
             zIndex={2}
           >
@@ -142,20 +150,35 @@ const Login: NextPage = () => {
               w="full"
               h="full"
               maxW="320px"
+              pr={3}
               onSubmit={handleSubmit}
             >
-              <FormControl id="username">
-                <FormLabel>Tên đăng nhập</FormLabel>
+              <FormControl id="phone">
+                <FormLabel>Số điện thoại</FormLabel>
                 <Input
                   type="text"
-                  id="username"
-                  name="username"
-                  value={values.username}
+                  id="phone"
+                  name="phone"
+                  value={values.phone}
                   onChange={handleChange}
                   {...brandRing}
                 />
                 <FormHelperText fontSize="xs" color="red.400">
-                  {touched.username && errors.username}
+                  {touched.phone && errors.phone}
+                </FormHelperText>
+              </FormControl>
+              <FormControl id="email">
+                <FormLabel>Email</FormLabel>
+                <Input
+                  type="text"
+                  id="email"
+                  name="email"
+                  value={values.email}
+                  onChange={handleChange}
+                  {...brandRing}
+                />
+                <FormHelperText fontSize="xs" color="red.400">
+                  {touched.email && errors.email}
                 </FormHelperText>
               </FormControl>
               <FormControl id="password">
@@ -170,6 +193,20 @@ const Login: NextPage = () => {
                 />
                 <FormHelperText fontSize="xs" color="red.400">
                   {touched.password && errors.password}
+                </FormHelperText>
+              </FormControl>
+              <FormControl id="confirmed">
+                <FormLabel>Nhập lại mật khẩu</FormLabel>
+                <Input
+                  type="password"
+                  id="confirmed"
+                  name="confirmed"
+                  value={values.confirmed}
+                  onChange={handleChange}
+                  {...brandRing}
+                />
+                <FormHelperText fontSize="xs" color="red.400">
+                  {touched.confirmed && errors.confirmed}
                 </FormHelperText>
               </FormControl>
               <Button
@@ -191,7 +228,7 @@ const Login: NextPage = () => {
                 }}
                 type="submit"
               >
-                Đăng nhập
+                Tạo tài khoản
               </Button>
             </chakra.form>
             <VStack h="full" w="full">
@@ -206,9 +243,10 @@ const Login: NextPage = () => {
   );
 };
 
-const handler: NextSsrIronHandler = async function ({ req, res }) {
+const handler: NextSsrIronHandler = async function ({ req, res, query }) {
+  const { type } = query;
   const auth = req.session.get(IronSessionKey.AUTH);
-  if (auth !== undefined) {
+  if (auth !== undefined && !type) {
     res.setHeader("location", "/");
     res.statusCode = 302;
     res.end();
@@ -222,4 +260,4 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
 
 export const getServerSideProps: GetServerSideProps = withSession(handler);
 
-export default Login;
+export default Register;

@@ -1,3 +1,5 @@
+import { User } from "models/User";
+
 export type LoginPayload = {
   username: string;
   password: string;
@@ -13,4 +15,18 @@ export type LoginResponse = {
     exp: number;
   };
   is_merchant: boolean;
+};
+
+export type RegisterPayload = {
+  phone: string;
+  email: string;
+  password?: string;
+  confirmed?: string;
+  isRegisterForBusiness?: boolean;
+  shopName?: string;
+  shopAddress?: string;
+};
+
+export type RegisterResponse = {
+  user: User;
 };

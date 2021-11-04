@@ -41,6 +41,7 @@ export const UserProvider: React.FC = ({ children }) => {
 
   const defaultAddress = React.useMemo(() => {
     if (!userAddresses) return;
+    if (!userAddresses.length) return;
     return userAddresses?.find((ad) => ad.is_default === true);
   }, [userAddresses]);
 

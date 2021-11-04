@@ -45,12 +45,22 @@ export default nc()
         req.session.set(IronSessionKey.AUTH, token);
         req.session.set(IronSessionKey.REF_TOKEN, refToken);
         await req.session.save();
-
         res
           .status(200)
           .json({ success: true, email: loginResp.data.data.email });
         return;
-      } catch (error) {
+      } catch (error: any) {
+        if (error.response) {
+          if (error.response.status === 404) {
+            res.status(404);
+            res.json({
+              httpCode: 404,
+              message: "Tên đăng nhập / mật khẩu bị sai",
+            });
+            res.end();
+            return;
+          }
+        }
         res.status(500).json({ error });
         return;
       }

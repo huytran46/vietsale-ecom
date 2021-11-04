@@ -66,8 +66,13 @@ const MainHeader: React.FC = ({}) => {
               p="1"
             >
               <Text fontSize="xs">Tải ứng dụng</Text>
-              <Text fontSize="xs">Trở thành người bán</Text>
-              <Text fontSize="xs">Kênh người bán</Text>
+              {(!user || !user.is_merchant) && (
+                <MyLinkOverlay fontSize="xs" href="/register/merchant">
+                  Trở thành người bán
+                </MyLinkOverlay>
+              )}
+
+              {/* <Text fontSize="xs">Kênh người bán</Text> */}
             </HStack>
             <HStack
               isInline
@@ -77,11 +82,11 @@ const MainHeader: React.FC = ({}) => {
               w="full"
               p="1"
             >
-              <Text fontSize="xs">Thông báo</Text>
-              <Text fontSize="xs">Hỗ trợ</Text>
+              {/* <Text fontSize="xs">Thông báo</Text> */}
+              {/* <Text fontSize="xs">Hỗ trợ</Text> */}
               {!user ? (
                 <HStack divider={<StackDivider />}>
-                  <MyLinkOverlay href="/login">
+                  <MyLinkOverlay href="/register">
                     <Text fontSize="xs">Đăng kí</Text>
                   </MyLinkOverlay>
                   <MyLinkOverlay href="/login">
