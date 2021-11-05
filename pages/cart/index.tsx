@@ -35,10 +35,12 @@ import {
 
 const Cart: NextPage = () => {
   const router = useRouter();
-
-  const { data: cartInfo, isLoading } = useQuery(FETCH_CART_URI, () =>
-    fetchCartInfo()
-  );
+  // const refetchTimes = React.useRef<number>(1);
+  const {
+    data: cartInfo,
+    isLoading,
+    refetch: refetchCartInfo,
+  } = useQuery(FETCH_CART_URI, () => fetchCartInfo());
 
   const { setCartInfo, selectCartItems, selectedCartItems } = useCartCtx();
 
@@ -118,6 +120,10 @@ const Cart: NextPage = () => {
     if (defaultAddress) return;
     fetchUserAddresses();
   }, [defaultAddress, fetchUserAddresses]);
+
+  React.useEffect(() => {
+    refetchCartInfo();
+  }, []);
 
   if (isLoading || !cartInfo) {
     return (
