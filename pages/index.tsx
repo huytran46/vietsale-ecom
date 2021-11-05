@@ -28,13 +28,11 @@ import { fetchProducts, FETCH_PRODUCT_URI } from "services/product";
 import { Product } from "models/Product";
 import { ALLOWED_FETCH_MORE_TIME, PAGE_SIZE } from "constants/platform";
 import withSession, { NextSsrIronHandler } from "utils/session";
-import { fetchCartInfo, FETCH_CART_URI } from "services/cart";
 
 const Home: NextPage = () => {
   const router = useRouter();
   const [isBottom, setBottomState] = React.useState(false);
   const [productPage, setProductPage] = React.useState(1);
-  useQuery(FETCH_CART_URI, fetchCartInfo);
   const { data, isLoading } = useQuery<HomeInfo>(FETCH_HOME_URI, fetchHome);
 
   const {
