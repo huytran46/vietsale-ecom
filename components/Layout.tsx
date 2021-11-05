@@ -13,6 +13,7 @@ import {
   StackDivider,
   Spinner,
   Badge,
+  useBoolean,
 } from "@chakra-ui/react";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { BiSearchAlt } from "react-icons/bi";
@@ -25,6 +26,7 @@ import MyLinkOverlay from "./common/MyLinkOverlay";
 import { useLayoutCtx } from "context/LayoutProvider";
 import { useCartCtx } from "context/CartProvider";
 import { useUser } from "context/UserProvider";
+import DownloadAppModal from "./DownloadAppModal";
 
 const headerBarHeight = 131;
 const highestZIndex = 3;
@@ -37,6 +39,7 @@ const MainHeader: React.FC = ({}) => {
     setSearchKeyword(event.target.value);
   const { numberOfItems } = useCartCtx();
   const { user, username, logout } = useUser();
+  const [isDownloadMOpen, downloadModalHandler] = useBoolean();
 
   return (
     <Box
@@ -65,7 +68,15 @@ const MainHeader: React.FC = ({}) => {
               w="full"
               p="1"
             >
-              <Text fontSize="xs">Tải ứng dụng</Text>
+              <DownloadAppModal
+                isOpen={isDownloadMOpen}
+                onOpen={downloadModalHandler.on}
+                onClose={downloadModalHandler.off}
+              >
+                <Text fontSize="xs" cursor="pointer">
+                  Tải ứng dụng
+                </Text>
+              </DownloadAppModal>
               {(!user || !user.is_merchant) && (
                 <MyLinkOverlay fontSize="xs" href="/register/merchant">
                   Trở thành người bán

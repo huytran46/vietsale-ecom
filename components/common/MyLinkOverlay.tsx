@@ -10,12 +10,14 @@ import {
 type Props = BoxProps & {
   href: string;
   innerProp?: LinkOverlayProps;
+  isBlank?: boolean;
 };
 
 const MyLinkOverlay: React.FC<Props> = ({
   href,
   children,
   innerProp,
+  isBlank,
   ...props
 }) => {
   return (
@@ -27,7 +29,9 @@ const MyLinkOverlay: React.FC<Props> = ({
       {...props}
     >
       <NextLink href={href} passHref>
-        <LinkOverlay {...innerProp}>{children}</LinkOverlay>
+        <LinkOverlay {...innerProp} target={isBlank ? "_blank" : "_self"}>
+          {children}
+        </LinkOverlay>
       </NextLink>
     </Box>
   );

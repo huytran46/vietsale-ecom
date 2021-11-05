@@ -244,14 +244,6 @@ const MerchantRegister: NextPage = () => {
 };
 
 const handler: NextSsrIronHandler = async function ({ req, res }) {
-  const auth = req.session.get(IronSessionKey.AUTH);
-  if (auth !== undefined) {
-    res.setHeader("location", "/");
-    res.statusCode = 302;
-    res.end();
-    return { props: {} };
-  }
-
   return {
     props: { noLayout: true },
   };
