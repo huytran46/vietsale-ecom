@@ -41,6 +41,15 @@ const MainHeader: React.FC = ({}) => {
   const { user, username, logout } = useUser();
   const [isDownloadMOpen, downloadModalHandler] = useBoolean();
 
+  const updateQueries = React.useCallback(async () => {
+    setGlobalLoadingState(true);
+    const isLoaded = await router.replace("/products?_q=" + searchKeyword);
+    if (isLoaded) {
+      setSearchKeyword("");
+    }
+    setGlobalLoadingState(false);
+  }, [searchKeyword, router]);
+
   return (
     <Box
       bgGradient="linear(to-b, brand.700, brand.300)"
@@ -136,16 +145,7 @@ const MainHeader: React.FC = ({}) => {
                   border="3px solid"
                   borderColor="white"
                   cursor="pointer"
-                  onClick={async () => {
-                    setGlobalLoadingState(true);
-                    const isLoaded = await router.replace(
-                      "/products?_q=" + searchKeyword
-                    );
-                    if (isLoaded) {
-                      setSearchKeyword("");
-                    }
-                    setGlobalLoadingState(false);
-                  }}
+                  onClick={updateQueries}
                 >
                   <BiSearchAlt />
                 </InputRightElement>

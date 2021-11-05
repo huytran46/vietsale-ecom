@@ -17,16 +17,18 @@ import {
 import VisibilitySensor from "react-visibility-sensor";
 import { dehydrate, QueryClient, useQuery } from "react-query";
 import { HiOutlineShoppingCart } from "react-icons/hi";
+import { MdClose } from "react-icons/md";
 
 import { fetchProducts, FETCH_PRODUCT_URI } from "services/product";
 import ProductItem from "components/ProductItem";
 import { Product } from "models/Product";
+import { parse } from "query-string";
 
 const PAGE_SIZE = 60;
 
 const Products: NextPage = () => {
-  const { query } = useRouter();
-  const { _q, pc, pc_name } = query;
+  const router = useRouter();
+  const { _q, pc, pc_name } = router.query;
   const justMounted = React.useRef(true);
   const [isBottom, setBottomState] = React.useState(false);
   const [isNoMore, setNoMoreDate] = React.useState(false);
@@ -49,13 +51,24 @@ const Products: NextPage = () => {
 
   const [productData, setProductData] = React.useState<Product[]>([]);
 
+  const removeQueries = React.useCallback(() => {
+    const currentPath = window.location.search.substring(1);
+    const queryObj = JSON.parse(
+      '{"' +
+        decodeURI(currentPath)
+          .replace(/"/g, '\\"')
+          .replace(/&/g, '","')
+          .replace(/=/g, '":"') +
+        '"}'
+    );
+    router.replace("/products");
+  }, [router]);
+
   React.useEffect(() => {
     if (justMounted.current) {
       justMounted.current = false;
-      console.log("justMounted:", justMounted);
       return;
     }
-
     if (!isBottom) return;
     setProductPage((prev) => prev + 1);
   }, [isBottom]);
@@ -82,7 +95,9 @@ const Products: NextPage = () => {
         <Box d="flex" alignItems="center" gridGap={3} color="gray.400" p={3}>
           <Icon as={HiOutlineShoppingCart} w="32px" h="32px" />
           <Text fontSize="2xl">
-            Không có sản phẩm nào được tìm thấy. Từ khoá &#8220;{_q}&#8220;
+            Không có sản phẩm nào được tìm thấy{" "}
+            {pc_name ? "trong danh mục" : "với từ khoá"} &#8220;{_q ?? pc_name}
+            &#8220;
           </Text>
         </Box>
         <Link href="/products" color="brand.300" fontSize="xl">
@@ -90,7 +105,7 @@ const Products: NextPage = () => {
         </Link>
       </VStack>
     ),
-    [_q]
+    [_q, pc_name]
   );
 
   if (isLoading) return null;
@@ -106,19 +121,31 @@ const Products: NextPage = () => {
 
   return (
     <VStack h="fit-content" w="full" spacing={10} py={10}>
-      {pc_name && (
+      {(pc_name || _q) && (
         <Wrap w="full">
           <WrapItem>
-            <Badge colorScheme="red" p={1}>
-              <Text fontWeight="bold" color="white">
-                {pc_name}
+            <Badge
+              opacity={1}
+              d="flex"
+              alignItems="center"
+              colorScheme="brand"
+              p={1}
+            >
+              <Text fontWeight="bold" textTransform="none" color="white" mr="1">
+                {_q ?? pc_name}
               </Text>
+              <Icon
+                color="white"
+                cursor="pointer"
+                as={MdClose}
+                onClick={removeQueries}
+              />
             </Badge>
           </WrapItem>
         </Wrap>
       )}
 
-      {productData.length < 1 ? (
+      {productData.length < 1 && isNoMore ? (
         NotFound
       ) : (
         <SimpleGrid w="full" bg="white" gap={2} columns={[1, 2, 4, 6]}>
