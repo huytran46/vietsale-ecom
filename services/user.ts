@@ -6,9 +6,7 @@ import { UserAddress } from "models/UserAddress";
 export const FETCH_DEFAULT_ADDRESS_URI = "/api/user/address";
 export async function doFetchDefaultAddress(): Promise<UserAddress[]> {
   const [err, resp] = await to(
-    axios.get<UserAddress[]>(HOST_URL + FETCH_DEFAULT_ADDRESS_URI, {
-      withCredentials: true,
-    })
+    axios.get<UserAddress[]>(HOST_URL + FETCH_DEFAULT_ADDRESS_URI)
   );
   if (err) {
     return [];

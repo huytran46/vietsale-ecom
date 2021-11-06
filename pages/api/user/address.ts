@@ -12,7 +12,6 @@ export default withSession(
       headers: {
         Authorization: "Bearer " + req.token,
       },
-      withCredentials: true,
     });
     const userAddresses = result.data.data.user_addresses;
     if (userAddresses) return res.status(200).json(userAddresses);

@@ -35,8 +35,8 @@ function withSession(handler: NextIronHandler | NextSsrIronHandler) {
       sameSite: "lax",
       path: "/",
       secure: process.env.NODE_ENV === "production",
-      // secure: false,
-      domain: "www.vietsale.vn",
+      domain:
+        process.env.NODE_ENV === "production" ? "www.vietsale.vn" : undefined,
     },
   });
 }
