@@ -88,7 +88,12 @@ const OrderItem: React.FC<Props> = ({ order }) => {
     >
       <Flex w="full">
         <Icon fontSize="xl" as={AiOutlineBarcode} mr={1.5} />
-        <Text fontWeight="medium" textTransform="uppercase" fontSize="sm">
+        <Text
+          as="code"
+          fontWeight="medium"
+          textTransform="uppercase"
+          fontSize="sm"
+        >
           {order.code}
         </Text>
         <Spacer />
@@ -96,12 +101,18 @@ const OrderItem: React.FC<Props> = ({ order }) => {
           {moment(order.created_at).format("HH:mm:ss DD/MM/yyyy")}
         </Text>
       </Flex>
-      <Text fontSize="sm">
-        Trạng thái:{" "}
-        <Badge p={1} colorScheme={OrderStatusMapLang[order.status].color}>
-          {OrderStatusMapLang[order.status].label}
-        </Badge>
-      </Text>
+      <HStack divider={<StackDivider />}>
+        <Text fontSize="sm">
+          Trạng thái:{" "}
+          <Badge p={1} colorScheme={OrderStatusMapLang[order.status].color}>
+            {OrderStatusMapLang[order.status].label}
+          </Badge>
+        </Text>
+        <Text fontSize="sm">
+          Lần cuối cập nhật:{" "}
+          {moment(order.updated_at).format("HH:mm:ss DD/MM/YYYY")}
+        </Text>
+      </HStack>
       <HStack spacing={0}>
         <Icon fontSize="xl" as={FaRegAddressCard} mr={2} />
         <HStack divider={<StackDivider />}>

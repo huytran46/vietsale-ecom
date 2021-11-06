@@ -170,7 +170,7 @@ const ProductDetail: NextPage = () => {
         w="full"
         gridGap={3}
       >
-        <VStack flex={2} spacing={3}>
+        <VStack flex={1} spacing={3}>
           <Box cursor="pointer">
             <Image
               h="500px"
@@ -216,7 +216,7 @@ const ProductDetail: NextPage = () => {
           </Wrap>
         </VStack>
 
-        <VStack alignItems="flex-start" spacing={6} flex={3}>
+        <VStack alignItems="flex-start" spacing={6} flex={2}>
           <VStack spacing={1} alignItems="flex-start">
             <Text fontSize="2xl">{productDetail.name}</Text>
             <HStack divider={<StackDivider />} alignItems="center">
@@ -296,9 +296,20 @@ const ProductDetail: NextPage = () => {
                         Giao đến
                       </Text>
                       <Spacer />
-                      <Text fontSize="sm" fontWeight="medium" color="brand.500">
-                        Thay đổi
-                      </Text>
+                      <UserAddressModal
+                        isOpen={isOpen}
+                        onOpen={onOpen}
+                        onClose={onClose}
+                      >
+                        <Text
+                          cursor="pointer"
+                          fontSize="sm"
+                          fontWeight="medium"
+                          color="brand.500"
+                        >
+                          Thay đổi
+                        </Text>
+                      </UserAddressModal>
                     </Flex>
                     <HStack divider={<StackDivider />} w="full">
                       <Text fontSize="xs" fontWeight="medium" color="brand.500">
@@ -312,6 +323,23 @@ const ProductDetail: NextPage = () => {
                   </VStack>
                 )}
                 {!Boolean(user) && (
+                  <VStack>
+                    <Text fontSize="xs">
+                      Hãy{" "}
+                      <MyLinkOverlay
+                        href="/login"
+                        cursor="pointer"
+                        fontWeight="semibold"
+                        color="brand.500"
+                        fontSize="xs"
+                      >
+                        đăng nhập
+                      </MyLinkOverlay>{" "}
+                      để nhận thông tin về phí giao hàng chính xác nhất.
+                    </Text>
+                  </VStack>
+                )}
+                {Boolean(user) && !Boolean(defaultAddress) && (
                   <VStack>
                     <Text fontSize="xs">
                       Hãy nhập địa chỉ để nhận báo giá chính xác về phí vận
