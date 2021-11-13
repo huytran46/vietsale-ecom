@@ -3,6 +3,8 @@ import {
   ThemeConfig,
   theme as base,
   withDefaultColorScheme,
+  withDefaultSize,
+  withDefaultProps,
 } from "@chakra-ui/react";
 
 const config: ThemeConfig = {
@@ -64,6 +66,24 @@ export const theme = extendTheme(
   },
   withDefaultColorScheme({
     colorScheme: "brand",
-    components: ["Checkbox", "Button"],
+    components: ["Checkbox", "Button", "Tabs"],
+  }),
+  withDefaultProps({
+    defaultProps: {
+      fontSize: "sm",
+    },
+  }),
+  withDefaultSize({
+    size: "sm",
+    components: [
+      "Checkbox",
+      "Input",
+      "InputGroup",
+      "Tabs",
+      "Text",
+      "FormLabel",
+      "FormHelperText",
+      "FormErrorMessage",
+    ],
   })
 );

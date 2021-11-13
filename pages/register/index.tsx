@@ -26,6 +26,7 @@ import { brandRing } from "utils";
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
 import { RegisterPayload } from "models/request-response/Login";
+import { LayoutType } from "constants/common";
 
 const RegisterSchema = Yup.object().shape({
   phone: Yup.string()
@@ -57,6 +58,7 @@ const Register: NextPage = () => {
   const router = useRouter();
 
   const toast = useToast();
+
   const { mutate } = useMutation({
     mutationKey: REGISTER_URI,
     mutationFn: doRegister,
@@ -254,7 +256,7 @@ const handler: NextSsrIronHandler = async function ({ req, res, query }) {
   }
 
   return {
-    props: { noLayout: true },
+    props: { layout: LayoutType.NONE },
   };
 };
 

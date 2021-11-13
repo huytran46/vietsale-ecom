@@ -1,4 +1,5 @@
 export enum LocalStorageKey {
   EMAIL = "!%rWyD",
+  ME = "*Crt2s",
+  MERCHANT = "UI&xw%",
 }
-// *Crt2s UI&xw%

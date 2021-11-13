@@ -26,6 +26,7 @@ import { brandRing } from "utils";
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
 import { LocalStorageKey } from "constants/local-storage";
+import { LayoutType } from "constants/common";
 
 const LoginSchema = Yup.object().shape({
   username: Yup.string()
@@ -75,7 +76,7 @@ const Login: NextPage = () => {
               actions.setSubmitting(false);
             },
             async onSuccess(data) {
-              if ((data as any).httpCode) {
+              if ((data as any).httpCode || (data as any).error) {
                 toast({
                   title: "Lỗi",
                   description: (data as any).message ?? "Đã xảy ra lỗi",
@@ -86,7 +87,22 @@ const Login: NextPage = () => {
                 return;
               }
               setUser({ email: data?.email, is_merchant: data.is_merchant });
+              localStorage.setItem(
+                LocalStorageKey.ME,
+                JSON.stringify({
+                  email: data?.email,
+                  is_merchant: data.is_merchant,
+                }) ?? ""
+              );
               localStorage.setItem(LocalStorageKey.EMAIL, data?.email ?? "");
+              // merchant only
+              if (data.shops && data.shops.length > 0) {
+                const shopInfo = data.shops[0];
+                localStorage.setItem(
+                  LocalStorageKey.MERCHANT,
+                  JSON.stringify(shopInfo ?? "")
+                );
+              }
               actions.resetForm();
               toast({
                 title: "Thành công",
@@ -216,7 +232,7 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
   }
 
   return {
-    props: { noLayout: true },
+    props: { layout: LayoutType.NONE },
   };
 };
 

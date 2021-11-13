@@ -26,6 +26,7 @@ import { brandRing } from "utils";
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
 import { RegisterPayload } from "models/request-response/Login";
+import { LayoutType } from "constants/common";
 
 const MerchantRegisterSchema = Yup.object().shape({
   phone: Yup.string()
@@ -245,7 +246,7 @@ const MerchantRegister: NextPage = () => {
 
 const handler: NextSsrIronHandler = async function ({ req, res }) {
   return {
-    props: { noLayout: true },
+    props: { layout: LayoutType.NONE },
   };
 };
 

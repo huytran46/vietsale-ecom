@@ -1,3 +1,4 @@
+import { Shop } from "models/Shop";
 import { User } from "models/User";
 
 export type LoginPayload = {
@@ -15,6 +16,7 @@ export type LoginResponse = {
     exp: number;
   };
   is_merchant: boolean;
+  shops?: Shop[];
 };
 
 export type RegisterPayload = {

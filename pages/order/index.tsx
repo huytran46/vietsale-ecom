@@ -4,7 +4,6 @@ import {
   VStack,
   Box,
   Text,
-  HStack,
   Tab,
   Tabs,
   TabList,
@@ -27,6 +26,7 @@ const selectStyle = {
     boxShadow: "none",
   },
 };
+
 const Orders: NextPage = () => {
   const [orderStatus, setOrderStatus] = React.useState<OrderStatus>(
     OrderStatus.PENDING
@@ -54,14 +54,6 @@ const Orders: NextPage = () => {
   React.useEffect(() => {
     refetchOrders();
   }, [orderStatus, refetchOrders]);
-
-  // if (isItemLoading) {
-  //   return (
-  //     <Box p={3}>
-  //       <Text>Đang tải...</Text>
-  //     </Box>
-  //   );
-  // }
 
   return (
     <VStack h="fit-content" alignItems="flex-start" w="full" spacing={6} py={6}>

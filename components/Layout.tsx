@@ -27,6 +27,8 @@ import { useLayoutCtx } from "context/LayoutProvider";
 import { useCartCtx } from "context/CartProvider";
 import { useUser } from "context/UserProvider";
 import DownloadAppModal from "./DownloadAppModal";
+import { LocalStorageKey } from "constants/local-storage";
+import { Shop } from "models/Shop";
 
 const headerBarHeight = 131;
 const highestZIndex = 3;
@@ -38,7 +40,7 @@ const MainHeader: React.FC = ({}) => {
   const updateKeyword = (event: React.ChangeEvent<HTMLInputElement>) =>
     setSearchKeyword(event.target.value);
   const { numberOfItems } = useCartCtx();
-  const { user, username, logout } = useUser();
+  const { user, username, logout, shopId } = useUser();
   const [isDownloadMOpen, downloadModalHandler] = useBoolean();
 
   const updateQueries = React.useCallback(async () => {
@@ -86,13 +88,23 @@ const MainHeader: React.FC = ({}) => {
                   Tải ứng dụng
                 </Text>
               </DownloadAppModal>
+
               {(!user || !user.is_merchant) && (
                 <MyLinkOverlay fontSize="xs" href="/register/merchant">
                   Trở thành người bán
                 </MyLinkOverlay>
               )}
 
-              {/* <Text fontSize="xs">Kênh người bán</Text> */}
+              {shopId && (
+                <MyLinkOverlay
+                  fontSize="xs"
+                  color="yellow"
+                  fontWeight="bold"
+                  href={`/merchant?shop_id=${shopId}`}
+                >
+                  Kênh người bán
+                </MyLinkOverlay>
+              )}
             </HStack>
             <HStack
               isInline
@@ -116,13 +128,16 @@ const MainHeader: React.FC = ({}) => {
               ) : (
                 <HStack divider={<StackDivider />} spacing={3}>
                   <MyLinkOverlay fontSize="xs" href="/order">
-                    <Text fontSize="xs" color="yellow">
+                    <Text fontSize="xs" color="yellow" fontWeight="bold">
                       Đơn mua
                     </Text>
                   </MyLinkOverlay>
-                  <Text fontSize="xs">
-                    Xin chào, <b>{username}</b>
-                  </Text>
+                  {username !== "" && (
+                    <Text fontSize="xs">
+                      Xin chào, <b>{username}</b>
+                    </Text>
+                  )}
+
                   <Text fontSize="xs" cursor="pointer" onClick={logout}>
                     Đăng xuất
                   </Text>

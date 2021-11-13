@@ -1,7 +1,8 @@
-import { Inventory } from './Inventory';
-import { MyFile } from './MyFile';
-import { Product } from './Product';
-import { User } from './User';
+import { Inventory } from "./Inventory";
+import { MyFile } from "./MyFile";
+import { Product } from "./Product";
+import { Uom } from "./Uom";
+import { User } from "./User";
 
 export type Shop = {
   id: string;
@@ -20,4 +21,5 @@ export type ShopEdge = {
   files: MyFile[];
   products: Product[];
   avatar: MyFile;
+  unitOfMeasures: Uom[];
 };

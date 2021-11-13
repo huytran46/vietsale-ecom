@@ -11,6 +11,7 @@ import {
 } from "services/user";
 import { LocalStorageKey } from "constants/local-storage";
 import { doLogout } from "services/auth";
+import { Shop } from "models/Shop";
 
 type UserContext = {
   visitorId: string;
@@ -23,6 +24,7 @@ type UserContext = {
   fullDetailAddress: string;
   fetchUserAddresses: () => void;
   logout: () => Promise<void>;
+  shopId?: string;
 };
 
 const UserCtx = React.createContext<UserContext>({} as UserContext);
@@ -123,15 +125,25 @@ export const UserProvider: React.FC = ({ children }) => {
     }
   }, [user, router]);
 
+  const shopId = React.useMemo(() => {
+    if (!user || !user.is_merchant) return;
+    const merch: Shop = JSON.parse(
+      localStorage.getItem(LocalStorageKey.MERCHANT) ?? ""
+    );
+    return merch.id;
+  }, [user]);
+
   React.useEffect(() => {
     if (defaultAddress) return;
     fetchUserAddresses();
   }, [defaultAddress, fetchUserAddresses]);
 
   React.useEffect(() => {
-    const email = localStorage.getItem(LocalStorageKey.EMAIL);
-    if (!email || email === "") return;
-    setUser({ email });
+    const usrRaw = localStorage.getItem(LocalStorageKey.ME);
+    if (!usrRaw || usrRaw === "") return;
+    const user = JSON.parse(usrRaw);
+    if (!user || user === "") return;
+    setUser(user);
   }, []);
 
   React.useEffect(() => {
@@ -153,6 +165,7 @@ export const UserProvider: React.FC = ({ children }) => {
         fullDetailAddress,
         fetchUserAddresses,
         logout,
+        shopId,
       }}
     >
       {children}

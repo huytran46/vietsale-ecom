@@ -1,5 +1,5 @@
 // this file is a wrapper with defaults to be used in both API routes and `getServerSideProps` functions
-import to from "await-to-js";
+import { LayoutType } from "constants/common";
 import { IronSessionKey } from "constants/session";
 import {
   NextApiRequest,
@@ -10,7 +10,7 @@ import {
 import { Session, withIronSession } from "next-iron-session";
 
 type MyResponse = GetServerSidePropsResult<unknown> &
-  Partial<{ noLayout?: boolean }>;
+  Partial<{ layout?: LayoutType }>;
 
 // optionally add stronger typing for next-specific implementation
 export type NextIronRequest = NextApiRequest & {
