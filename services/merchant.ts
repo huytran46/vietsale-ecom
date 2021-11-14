@@ -18,7 +18,7 @@ export async function fetchShopProductsForMerch(
 ): Promise<ProductsResponse> {
   try {
     const res = await axios.get<ProductsResponse>(
-      HOST_URL + `/dev/merchant/shop/${shopId}/product`,
+      HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/product`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -43,11 +43,15 @@ export async function doCreateShopProduct(
     const res = await axios.post<
       CreateProductPayload,
       AxiosResponse<CreateProductResponse>
-    >(HOST_URL + `/dev/merchant/shop/${shopId}/product`, payload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    >(
+      HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/product`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return res.data;
   } catch (error) {
     return {} as CreateProductResponse;
@@ -87,7 +91,7 @@ export async function doUploadFile(
 ): Promise<UploadFileResponse> {
   try {
     const res = await axios.post<FormData, AxiosResponse<UploadFileResponse>>(
-      HOST_URL + `/dev/merchant/shop/${shopId}/file`,
+      HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/file`,
       payload,
       {
         headers: {

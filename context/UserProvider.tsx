@@ -25,6 +25,7 @@ type UserContext = {
   fetchUserAddresses: () => void;
   logout: () => Promise<void>;
   shopId?: string;
+  shopInfo?: Shop;
 };
 
 const UserCtx = React.createContext<UserContext>({} as UserContext);
@@ -125,13 +126,18 @@ export const UserProvider: React.FC = ({ children }) => {
     }
   }, [user, router]);
 
-  const shopId = React.useMemo(() => {
+  const shopInfo = React.useMemo(() => {
     if (!user || !user.is_merchant) return;
     const merch: Shop = JSON.parse(
       localStorage.getItem(LocalStorageKey.MERCHANT) ?? ""
     );
-    return merch.id;
+    return merch;
   }, [user]);
+
+  const shopId = React.useMemo(() => {
+    if (!user || !user.is_merchant || !shopInfo) return;
+    return shopInfo.id;
+  }, [user, shopInfo]);
 
   React.useEffect(() => {
     if (defaultAddress) return;
@@ -166,6 +172,7 @@ export const UserProvider: React.FC = ({ children }) => {
         fetchUserAddresses,
         logout,
         shopId,
+        shopInfo,
       }}
     >
       {children}

@@ -17,12 +17,16 @@ import "swiper/css/autoplay";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 
+// React Quill HTML Editor
+import "react-quill/dist/quill.snow.css";
+
 // Custom context
 import { LayoutProvider } from "context/LayoutProvider";
 import { UserProvider } from "context/UserProvider";
 import { CartProvider } from "context/CartProvider";
 import { OrderProvider } from "context/OrderProvider";
 import { LayoutType } from "constants/common";
+import { FileProvider } from "context/FileProvider";
 
 function layoutLoader(
   layout: LayoutType,
@@ -67,13 +71,15 @@ function MyApp({ Component, pageProps }: AppProps) {
           <UserProvider>
             <CartProvider>
               <OrderProvider>
-                <LayoutProvider>
-                  {layoutLoader(
-                    pageProps.layout as LayoutType,
-                    Component,
-                    pageProps
-                  )}
-                </LayoutProvider>
+                <FileProvider>
+                  <LayoutProvider>
+                    {layoutLoader(
+                      pageProps.layout as LayoutType,
+                      Component,
+                      pageProps
+                    )}
+                  </LayoutProvider>
+                </FileProvider>
               </OrderProvider>
             </CartProvider>
           </UserProvider>

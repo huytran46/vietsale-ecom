@@ -10,5 +10,7 @@ export type Uom = {
   measure_name: string;
   created_at: string;
   updated_at: string;
-  edges: UomValue[];
+  edges: {
+    values: UomValue[];
+  };
 };
