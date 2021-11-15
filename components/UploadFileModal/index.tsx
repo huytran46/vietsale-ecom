@@ -43,6 +43,7 @@ import { useFileCtx } from "context/FileProvider";
 enum PANEL {
   UPLOAD = 0,
   PICK = 1,
+  MULTI_PICK = 2,
 }
 
 type Props = {
@@ -143,8 +144,17 @@ const UploadFileModal: React.FC<Props> = ({
     [tempFiles]
   );
 
+  const removeTempFiles = React.useCallback(
+    (ids: number[]) => {
+      const next = [...tempFiles];
+      setTempFiles(next.filter((f) => ids.indexOf(f.id) === -1));
+    },
+    [tempFiles]
+  );
+
   const onSubmit = React.useCallback(() => {
     if (tempFiles.length < 1) return;
+    const successFileIds: number[] = [];
     tempFiles.forEach((file, idx) => {
       const formData = new FormData();
       formData.append("uploadFile", file.raw);
@@ -165,11 +175,12 @@ const UploadFileModal: React.FC<Props> = ({
             status: "success",
             description: "Tải tệp lên thành công",
           });
-          removeTempFile(idx);
+          successFileIds.push(idx);
         },
       });
     });
-  }, [tempFiles, queryClient, shopId, toast, upload, removeTempFile]);
+    removeTempFiles(successFileIds);
+  }, [tempFiles, queryClient, shopId, toast, upload, removeTempFiles]);
 
   const files = React.useMemo(
     () => response?.data?.upload_files ?? [],
@@ -199,6 +210,13 @@ const UploadFileModal: React.FC<Props> = ({
 
   React.useEffect(() => setFiles(files), [setFiles, files]);
 
+  React.useEffect(() => {
+    if (defaultPanel === PANEL.PICK) {
+      return setSingleMode(true);
+    }
+    return setSingleMode(false);
+  }, [defaultPanel]);
+
   return (
     <>
       {React.cloneElement(children as any, { onClick: onOpen })}
@@ -215,7 +233,20 @@ const UploadFileModal: React.FC<Props> = ({
               <Flex w="full" alignItems="center" p={3}>
                 <TabList w="full">
                   <Tab {...selectStyle}>Tải lên</Tab>
-                  <Tab {...selectStyle}>Chọn tệp</Tab>
+                  <Tab
+                    {...selectStyle}
+                    isDisabled={defaultPanel === PANEL.MULTI_PICK}
+                    opacity={defaultPanel === PANEL.MULTI_PICK ? 0.3 : 1}
+                  >
+                    Chọn 1 tệp
+                  </Tab>
+                  <Tab
+                    {...selectStyle}
+                    isDisabled={defaultPanel === PANEL.PICK}
+                    opacity={defaultPanel === PANEL.PICK ? 0.3 : 1}
+                  >
+                    Chọn nhiều tệp cùng lúc
+                  </Tab>
                   <Spacer />
                   <ModalCloseButton top="24px" />
                 </TabList>
@@ -316,40 +347,45 @@ const UploadFileModal: React.FC<Props> = ({
                   </HStack>
                 </TabPanel>
                 <TabPanel p={0}>
-                  <HStack spacing={3} pb={3} pl={3} alignItems="center">
-                    <Button
-                      p={2}
-                      borderWidth="1px"
-                      borderColor={singleMode ? "brand.700" : "inherit"}
-                      borderRadius="md"
-                      bg={singleMode ? "brand.700" : "inherit"}
-                      onClick={() => setSingleMode(true)}
-                      _focus={{ ring: 0 }}
-                      _active={{ ring: 0 }}
-                    >
-                      <Icon
-                        fontSize="xl"
-                        color={singleMode ? "white" : "gray.500"}
-                        as={HiOutlineCursorClick}
-                      />
-                    </Button>
-                    <Button
-                      p={2}
-                      borderWidth="1px"
-                      borderColor={!singleMode ? "brand.700" : "inherit"}
-                      borderRadius="md"
-                      bg={!singleMode ? "brand.500" : "inherit"}
-                      onClick={() => setSingleMode(false)}
-                      _focus={{ ring: 0 }}
-                      _active={{ ring: 0 }}
-                    >
-                      <Icon
-                        fontSize="xl"
-                        color={!singleMode ? "white" : "gray.500"}
-                        as={BiSelectMultiple}
-                      />
-                    </Button>
+                  <HStack maxH="500px" overflowY="auto">
+                    <Grid templateColumns="repeat(6, 1fr)" gap={3}>
+                      {files.map((f, idx) => (
+                        <Box
+                          key={idx}
+                          position="relative"
+                          p={3}
+                          cursor="pointer"
+                          onClick={() => handleFilePicking(f.id)}
+                          borderWidth="2px"
+                          borderColor={
+                            isSelected(f.id) ? "brand.500" : "transparent"
+                          }
+                          borderRadius="md"
+                        >
+                          <MyImage
+                            src={f.file_thumbnail}
+                            width="120px"
+                            height="120px"
+                            borderRadius="md"
+                          />
+                          <Text
+                            position="absolute"
+                            bottom="0"
+                            left="0"
+                            right="0"
+                            fontSize="xs"
+                            textAlign="center"
+                            color="gray.500"
+                            isTruncated
+                          >
+                            {f.file_name}
+                          </Text>
+                        </Box>
+                      ))}
+                    </Grid>
                   </HStack>
+                </TabPanel>
+                <TabPanel p={0}>
                   <HStack maxH="500px" overflowY="auto">
                     <Grid templateColumns="repeat(6, 1fr)" gap={3}>
                       {files.map((f, idx) => (

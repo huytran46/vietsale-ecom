@@ -96,7 +96,7 @@ const AsideBar: React.FC = () => {
         <Text mt={1} p={3} pb={1} fontWeight="bold" fontSize="sm">
           Quản lý đơn hàng
         </Text>
-        <NavItem label="Tất cả" path="/merchant/orders" />
+        <NavItem label="Tất cả" path={`/merchant/orders?shop_id=${shopId}`} />
         <Text mt={1} p={3} pb={1} fontWeight="bold" fontSize="sm">
           Quản lý phương tiện
         </Text>

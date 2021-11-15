@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
-import { HOST_URL, HOST_URL_FOR_EXTERNAL_CALL } from "constants/platform";
+import _isArray from "lodash/isArray";
+import { HOST_URL_FOR_EXTERNAL_CALL } from "constants/platform";
 import { BaseReponse } from "models/common/BaseResponse";
 import { HttpQueryParam } from "models/common/SearchQuery";
 import { MyFile } from "models/MyFile";
@@ -8,6 +9,7 @@ import {
   CreateProductPayload,
   UploadFilePayload,
 } from "models/request-response/Merchant";
+import { Order } from "models/Order";
 
 export const FETCH_SHOP_PRODUCTS_MERCH = "/merchant/products";
 type ProductsResponse = BaseReponse<{ products: Product[] }> | undefined;
@@ -40,17 +42,30 @@ export async function doCreateShopProduct(
   payload: CreateProductPayload
 ): Promise<CreateProductResponse> {
   try {
+    const params = new URLSearchParams();
+
+    Object.entries(payload).forEach(([key, val]) => {
+      if (_isArray(val)) {
+        val.forEach((singleVal) => params.append(key, singleVal));
+        return;
+      }
+      params.append(key, val);
+    });
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    };
+
     const res = await axios.post<
-      CreateProductPayload,
+      URLSearchParams,
       AxiosResponse<CreateProductResponse>
     >(
       HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/product`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      params,
+      config
     );
     return res.data;
   } catch (error) {
@@ -104,5 +119,28 @@ export async function doUploadFile(
     return res.data;
   } catch (error) {
     return {} as UploadFileResponse;
+  }
+}
+
+export const FETCH_SHOP_ORDERS_MERCH = "/merchant/orders";
+type OrdersResponse = BaseReponse<{ orders: Order[] }> | undefined;
+export async function fetchShopOrdersForMerch(
+  token: string,
+  shopId: string,
+  params?: HttpQueryParam
+): Promise<OrdersResponse> {
+  try {
+    const res = await axios.get<OrdersResponse>(
+      HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/order`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return res.data;
+  } catch (error) {
+    return {} as OrdersResponse;
   }
 }

@@ -2,6 +2,7 @@ import React from "react";
 import type { NextPage } from "next";
 import dynamic from "next/dynamic";
 import {
+  useToast,
   useBoolean,
   Stack,
   VStack,
@@ -41,9 +42,20 @@ import {
   Spacer,
   Spinner,
   Center,
+  AlertIcon,
+  Alert,
+  AlertTitle,
+  AlertDescription,
+  OrderedList,
 } from "@chakra-ui/react";
-import { BsImage, BsCircle, BsCheckCircle } from "react-icons/bs";
-import { useMutation, useQuery } from "react-query";
+import { BsImage, BsCircle } from "react-icons/bs";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  QueryClient,
+  dehydrate,
+} from "react-query";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import _debounce from "lodash/debounce";
@@ -55,6 +67,7 @@ import { LayoutType } from "constants/common";
 import {
   CREATE_SHOP_PRODUCT_MERCH,
   doCreateShopProduct,
+  FETCH_SHOP_PRODUCTS_MERCH,
 } from "services/merchant";
 import { CreateProductPayload } from "models/request-response/Merchant";
 import styles from "./add.module.css";
@@ -133,7 +146,7 @@ const MyFormControl: React.FC<MyFormControlProps> = ({
       </FormLabel>
       {children}
       <FormHelperText fontSize="xs">{helperTxt}</FormHelperText>
-      <FormErrorMessage>{errorTxt}</FormErrorMessage>
+      <FormErrorMessage fontSize="sm">{errorTxt}</FormErrorMessage>
     </FormControl>
   );
 };
@@ -154,12 +167,13 @@ const CreateProductSchema = Yup.object().shape({
     .nullable(false)
     .required("Không thể thiếu giá sản phẩm"),
   desc: Yup.string()
-    .min(50, "Ít nhất 50 kí tự")
+    .min(50, "Mô tả phải ít nhất 50 kí tự")
     .nullable(false)
     .required("Không thể thiếu mô tả cho sản phẩm"),
   isPercentDiscount: Yup.boolean().required("Không thể thiếu cách tính giá"),
   cateIDs: Yup.array()
     .of(Yup.string())
+    .min(1, "Phải chọn ít nhất 1 danh mục sản phẩm")
     .required("Không thể thiếu danh mục cho sản phẩm"),
   quantity: Yup.number()
     .min(1, "Số lượng sản phẩm không thể nhỏ hơn 1")
@@ -189,6 +203,8 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
   token,
   shopId,
 }) => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
   const [categoryName, setCategoryName] = React.useState("");
   const [selectedCategoryIds, setCategoryIds] = React.useState<string[]>([]);
   const [isProductCategoryPopup, setPCPopup] = React.useState(false);
@@ -198,6 +214,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
   const { selectedMyFile, selectedMyFiles } = useFileCtx();
 
   const [isUploadFileOpen, uploadModalHandler] = useBoolean();
+
   const { mutateAsync } = useMutation({
     mutationKey: CREATE_SHOP_PRODUCT_MERCH,
     mutationFn: (payload: CreateProductPayload) =>
@@ -226,29 +243,51 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
     touched,
     handleChange,
     isSubmitting,
+    isValid,
     setFieldValue,
+    resetForm,
   } = useFormik<CreateProductPayload>({
     initialValues: {
       productName: "",
       cover: "",
-      unitValueID: 1,
+      unitValueID: 0,
       cateIDs: [],
       fileIDs: [],
       desc: "",
       isPercentDiscount: false,
       discountValue: 0,
-      height: 0.1,
-      width: 0.1,
-      length: 0.1,
+      height: 1,
+      width: 1,
+      length: 1,
       sku: "",
-      price: 1,
+      price: 1000,
       quantity: 1,
-      weight: 0.1,
+      weight: 1,
     },
     validationSchema: CreateProductSchema,
     onSubmit(values) {
       mutateAsync(values)
-        .then()
+        .then((res) => {
+          if (!res.success) {
+            toast({
+              status: "error",
+              title: "Lỗi",
+              description: res.message,
+            });
+            return;
+          }
+          toast({
+            status: "success",
+            title: "Thành công",
+            description: "Thêm sản phẩm thành công, vui lòng đợi QTV duyệt",
+          });
+          queryClient.invalidateQueries([
+            FETCH_SHOP_PRODUCTS_MERCH,
+            token,
+            shopId,
+          ]);
+          resetForm();
+        })
         .catch((e) => console.log(e))
         .finally();
     },
@@ -257,6 +296,8 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
   const { shopInfo } = useUser();
 
   const [selectedUOM, setUOM] = React.useState<number>();
+
+  const [uploadMode, setUploadMode] = React.useState<number>(1);
 
   const UOMs = React.useMemo(() => {
     const units = shopInfo?.edges?.unitOfMeasures ?? [];
@@ -276,7 +317,6 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
       const discounted = (values.price * (values.discountValue ?? 0)) / 100;
       return (values.price - discounted).toFixed(2);
     }
-
     return values.price - (values.discountValue ?? 0);
   }, [values.discountValue, values.price, values.isPercentDiscount]);
 
@@ -321,8 +361,84 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
     setFieldValue("cateIDs", selectedCategoryIds);
   }, [selectedCategoryIds, setFieldValue]);
 
+  React.useEffect(() => {
+    setFieldValue("cover", selectedMyFile?.id);
+  }, [selectedMyFile, setFieldValue]);
+
+  React.useEffect(() => {
+    const nextFiles = selectedMyFiles
+      ?.filter((_) => Boolean(_))
+      .map((f) => f?.id);
+
+    if (nextFiles.length > NUMBER_OF_PLACEHOLDERS) {
+      return;
+    }
+
+    setFieldValue(
+      "fileIDs",
+      selectedMyFiles?.filter((_) => Boolean(_)).map((f) => f?.id)
+    );
+  }, [selectedMyFiles, setFieldValue]);
+
   return (
     <VStack spacing={6} pb={12}>
+      <Box w="full">
+        <Alert
+          status="info"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          height="320px"
+        >
+          <AlertIcon />
+          <AlertTitle mt={4} mb={1} fontSize="lg">
+            Quy trình đăng sản phẩm
+          </AlertTitle>
+          <AlertDescription fontSize="sm" maxWidth="sm">
+            <OrderedList w="full">
+              <ListItem>
+                Điền đầy đủ thông tin sản phẩm, đúng theo biểu mẫu yêu cầu (bên
+                dưới).
+              </ListItem>
+              <ListItem>
+                Quản trị viên <b>Việt Sale</b> sẽ kiểm duyệt sản phẩm trong vòng
+                24h. Nếu sản phẩm đạt chuẩn sẽ được xuất hiện trên hệ thống,
+                người dùng có thể mua được.
+              </ListItem>
+            </OrderedList>
+            <Text>
+              <b>Lưu ý:</b> Nếu số lượng sản phẩm bằng 0 <b>HOẶC</b> bị chặn bởi
+              quản trị viên <b>HOẶC</b> chưa được duyệt thì sẽ không xuất hiện
+              trên hệ thống, người dùng sẽ không nhìn thấy được sản phẩm của
+              bạn.
+            </Text>
+          </AlertDescription>
+        </Alert>
+      </Box>
+
+      {Object.values(errors).length > 0 && Object.values(touched).length > 0 && (
+        <Box w="full">
+          <Alert
+            status="error"
+            flexDirection="column"
+            alignItems="flex-start"
+            justifyContent="center"
+          >
+            <AlertTitle d="flex" mt={4} mb={1} fontSize="lg">
+              <AlertIcon />
+              Lỗi
+            </AlertTitle>
+            <AlertDescription fontSize="sm" maxWidth="sm">
+              <OrderedList w="full">
+                {Object.values(errors).map((e, idx) => (
+                  <ListItem key={idx}>{e}</ListItem>
+                ))}
+              </OrderedList>
+            </AlertDescription>
+          </Alert>
+        </Box>
+      )}
+
       <HStack
         bg="white"
         h="fit-content"
@@ -334,7 +450,11 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
         borderRadius="sm"
       >
         <Box>
-          <MyFormControl label="Chọn danh mục sản phẩm" id="cateName">
+          <MyFormControl
+            id="cateName"
+            label="Chọn danh mục sản phẩm"
+            errorTxt={`${errors.cateIDs}`}
+          >
             <Popover
               returnFocusOnClose={true}
               isOpen={isProductCategoryPopup}
@@ -475,7 +595,11 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
         <VStack spacing={6} alignItems="flex-start" as="form" w="full">
           <Wrap spacing={12} maxW="full">
             <WrapItem>
-              <MyFormControl label="Hình ảnh đại diện" id="cover">
+              <MyFormControl
+                id="cover"
+                label="Hình ảnh đại diện"
+                errorTxt={errors.cover}
+              >
                 <VStack alignItems="flex-start">
                   <Box
                     h="120px"
@@ -519,8 +643,11 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                     token={token}
                     shopId={shopId}
                     onClose={uploadModalHandler.off}
-                    onOpen={uploadModalHandler.on}
-                    defaultPanel={1}
+                    onOpen={() => {
+                      setUploadMode(1);
+                      uploadModalHandler.on();
+                    }}
+                    defaultPanel={uploadMode}
                   >
                     <Button
                       size="xs"
@@ -547,14 +674,21 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
             </WrapItem>
 
             <WrapItem>
-              <MyFormControl label="Ảnh mô tả" id="fileIDs">
+              <MyFormControl
+                label="Ảnh mô tả"
+                id="fileIDs"
+                errorTxt={errors.fileIDs}
+              >
                 <UploadFileModal
                   isOpen={isUploadFileOpen}
                   token={token}
                   shopId={shopId}
                   onClose={uploadModalHandler.off}
-                  onOpen={uploadModalHandler.on}
-                  defaultPanel={1}
+                  onOpen={() => {
+                    setUploadMode(2);
+                    uploadModalHandler.on();
+                  }}
+                  defaultPanel={uploadMode}
                 >
                   <Wrap>
                     {selectedMyFiles.map((f, idx) => (
@@ -601,7 +735,11 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
 
           <Wrap spacing={12} maxW="full">
             <WrapItem>
-              <MyFormControl label="Tên sản phẩm" id="productName">
+              <MyFormControl
+                id="productName"
+                label="Tên sản phẩm"
+                errorTxt={errors.productName}
+              >
                 <Input
                   id="productName"
                   name="productName"
@@ -616,8 +754,33 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
               </MyFormControl>
             </WrapItem>
 
+            <WrapItem>
+              <MyFormControl
+                id="sku"
+                label="SKU"
+                helperTxt="Mã sản phẩm chủ shop tự quản lý"
+                errorTxt={errors.sku}
+              >
+                <Input
+                  id="sku"
+                  name="sku"
+                  type="text"
+                  focusBorderColor="none"
+                  borderLeftRadius="sm"
+                  colorScheme="brand"
+                  variant="outline"
+                  placeholder="Ví dụ: SK01ABD,..."
+                  onChange={_debounce(handleChange, 500, { trailing: true })}
+                />
+              </MyFormControl>
+            </WrapItem>
+
             <WrapItem minW="400px">
-              <MyFormControl label="Mô tả ngắn" id="shortDesc">
+              <MyFormControl
+                id="shortDesc"
+                label="Mô tả ngắn"
+                errorTxt={errors.shortDesc}
+              >
                 <Textarea
                   id="shortDesc"
                   name="shortDesc"
@@ -636,42 +799,11 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
 
           <Wrap spacing={12} maxW="full">
             <WrapItem>
-              <MyFormControl id="quantity" label="Số lượng">
-                <InputGroup w="200px">
-                  <InputLeftAddon borderLeftRadius="sm">
-                    {
-                      UOMValues.find((u) => u.id === values.unitValueID)
-                        ?.measure_value
-                    }
-                  </InputLeftAddon>
-                  <NumberInput
-                    id="quantity"
-                    name="quantity"
-                    size="sm"
-                    colorScheme="brand"
-                    focusBorderColor="none"
-                    borderLeftRadius="sm"
-                    min={1}
-                    onChange={_debounce(
-                      (_, num) => setFieldValue("quantity", num),
-                      500,
-                      { trailing: true }
-                    )}
-                  >
-                    <NumberInputField />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                </InputGroup>
-              </MyFormControl>
-            </WrapItem>
-            <WrapItem>
               <MyFormControl
                 label="Đơn vị"
                 id="unitValueID"
                 helperTxt="Chọn đơn vị cho sản phẩm"
+                errorTxt={errors.unitValueID}
               >
                 <InputGroup size="sm" w="300px">
                   <InputLeftAddon borderLeftRadius="sm" px={0}>
@@ -712,6 +844,77 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                 </InputGroup>
               </MyFormControl>
             </WrapItem>
+
+            <WrapItem>
+              <MyFormControl
+                id="quantity"
+                label="Số lượng"
+                errorTxt={errors.quantity}
+              >
+                <InputGroup w="200px">
+                  <InputLeftAddon borderLeftRadius="sm">
+                    {
+                      UOMValues.find((u) => u.id === values.unitValueID)
+                        ?.measure_value
+                    }
+                  </InputLeftAddon>
+                  <NumberInput
+                    id="quantity"
+                    name="quantity"
+                    size="sm"
+                    colorScheme="brand"
+                    focusBorderColor="none"
+                    borderLeftRadius="sm"
+                    min={1}
+                    defaultValue={1}
+                    onChange={_debounce(
+                      (_, num) => setFieldValue("quantity", num),
+                      500,
+                      { trailing: true }
+                    )}
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </InputGroup>
+              </MyFormControl>
+            </WrapItem>
+
+            <WrapItem>
+              <MyFormControl
+                id="weight"
+                label="Cân nặng"
+                errorTxt={errors.weight}
+              >
+                <InputGroup w="200px">
+                  <NumberInput
+                    id="weight"
+                    name="weight"
+                    size="sm"
+                    colorScheme="brand"
+                    focusBorderColor="none"
+                    borderLeftRadius="sm"
+                    min={1}
+                    defaultValue={1}
+                    onChange={_debounce(
+                      (_, num) => setFieldValue("weight", num),
+                      500,
+                      { trailing: true }
+                    )}
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                  <InputRightAddon borderRightRadius="sm">gram</InputRightAddon>
+                </InputGroup>
+              </MyFormControl>
+            </WrapItem>
           </Wrap>
 
           <Wrap spacing={12} maxW="full">
@@ -720,6 +923,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                 id="price"
                 label="Giá sản phẩm"
                 helperTxt={`Giá hiển thị ${formatCcy(values.price)}đ`}
+                errorTxt={errors.price}
               >
                 <InputGroup w="200px">
                   <InputLeftAddon borderLeftRadius="sm">đ</InputLeftAddon>
@@ -730,8 +934,9 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                     colorScheme="brand"
                     focusBorderColor="none"
                     borderLeftRadius="sm"
-                    min={1}
-                    defaultValue={1}
+                    min={1000}
+                    step={1000}
+                    defaultValue={1000}
                     onChange={_debounce(
                       (_, num) => setFieldValue("price", num),
                       500,
@@ -755,6 +960,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                 helperTxt={`Giá sau khi giảm ${formatCcy(
                   computedDiscountValue
                 )}đ`}
+                errorTxt={errors.discountValue}
               >
                 <InputGroup size="sm" w="200px">
                   <InputLeftAddon p={0} borderLeftRadius="sm">
@@ -813,39 +1019,98 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
           <Wrap spacing={12} maxW="full">
             <WrapItem>
               <MyFormControl
-                label="Kích thước"
                 id="size"
+                label="Kích thước"
                 helperTxt="Kích thước sẽ được dùng để tính cước vận chuyển cho món hàng."
+                errorTxt={errors.length ?? errors.width ?? errors.height}
               >
-                <Stack direction={["column", "row"]} spacing={1} w="full">
-                  <InputGroup w="200px">
-                    <Input
+                <Stack
+                  alignItems="center"
+                  direction={["column", "row"]}
+                  divider={
+                    <Text fontSize="sm" mx={3} color="gray.400">
+                      x
+                    </Text>
+                  }
+                  spacing={1}
+                  w="full"
+                >
+                  <InputGroup w="240px" size="sm">
+                    <InputLeftAddon borderLeftRadius="sm">Rộng</InputLeftAddon>
+                    <NumberInput
+                      id="width"
+                      name="width"
                       focusBorderColor="none"
                       borderLeftRadius="sm"
                       colorScheme="brand"
                       variant="outline"
                       placeholder="Chiều rộng"
-                    />
+                      onChange={_debounce(
+                        (_, num) => setFieldValue("width", num),
+                        500,
+                        { trailing: true }
+                      )}
+                      min={1}
+                      defaultValue={1}
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
                     <InputRightAddon borderRightRadius="sm">cm</InputRightAddon>
                   </InputGroup>
-                  <InputGroup w="200px">
-                    <Input
+                  <InputGroup w="240px" size="sm">
+                    <InputLeftAddon borderLeftRadius="sm">Dài</InputLeftAddon>
+                    <NumberInput
+                      id="length"
+                      name="length"
                       focusBorderColor="none"
                       borderLeftRadius="sm"
                       colorScheme="brand"
                       variant="outline"
                       placeholder="Chiều dài"
-                    />
+                      onChange={_debounce(
+                        (_, num) => setFieldValue("length", num),
+                        500,
+                        { trailing: true }
+                      )}
+                      min={1}
+                      defaultValue={1}
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
                     <InputRightAddon borderRightRadius="sm">cm</InputRightAddon>
                   </InputGroup>
-                  <InputGroup w="200px">
-                    <Input
+                  <InputGroup w="240px" size="sm">
+                    <InputLeftAddon borderLeftRadius="sm">Cao</InputLeftAddon>
+                    <NumberInput
+                      id="height"
+                      name="height"
                       focusBorderColor="none"
                       borderLeftRadius="sm"
                       colorScheme="brand"
                       variant="outline"
                       placeholder="Chiều cao"
-                    />
+                      onChange={_debounce(
+                        (_, num) => setFieldValue("height", num),
+                        500,
+                        { trailing: true }
+                      )}
+                      min={1}
+                      defaultValue={1}
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
                     <InputRightAddon borderRightRadius="sm">cm</InputRightAddon>
                   </InputGroup>
                 </Stack>
@@ -866,7 +1131,11 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
         borderRadius="sm"
       >
         <Box maxW="full">
-          <MyFormControl id="desc" label="Mô tả đầy đủ sản phẩm">
+          <MyFormControl
+            id="desc"
+            label="Mô tả đầy đủ sản phẩm"
+            errorTxt={errors.desc}
+          >
             <QuillNoSSRWrapper
               id="desc"
               modules={modules}
@@ -878,6 +1147,26 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
             />
           </MyFormControl>
         </Box>
+
+        <HStack w="full" justifyContent="flex-end">
+          <Button
+            bg="red.500"
+            borderColor="red.700"
+            _focus={{
+              ring: 0,
+            }}
+            _hover={{
+              bg: "red.600",
+            }}
+            _active={{
+              bg: "red.700",
+            }}
+            onClick={handleSubmit as any}
+            disabled={isSubmitting || !isValid}
+          >
+            Đăng bán sản phẩm
+          </Button>
+        </HStack>
       </VStack>
     </VStack>
   );
@@ -892,8 +1181,13 @@ const handler: NextSsrIronHandler = async function ({ req, res, query }) {
     res.end();
     return { props: {} };
   }
+
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery(FETCH_CATEGORIES, fetchProductCategories);
+
   return {
     props: {
+      dehydratedState: dehydrate(queryClient),
       token: auth,
       shopId: shop_id,
       layout: LayoutType.MERCH,

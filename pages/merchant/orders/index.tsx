@@ -20,19 +20,22 @@ import {
   Select,
   Center,
   Spinner,
+  Badge,
 } from "@chakra-ui/react";
 import { dehydrate, QueryClient, useQuery } from "react-query";
+import moment from "moment";
 
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
 import { LayoutType } from "constants/common";
 import {
-  fetchShopProductsForMerch,
-  FETCH_SHOP_PRODUCTS_MERCH,
+  fetchShopOrdersForMerch,
+  FETCH_SHOP_ORDERS_MERCH,
 } from "services/merchant";
-import { Product } from "models/Product";
 import { formatCcy } from "utils";
 import Pagination from "components/Pagination";
+import { Order, OrderStatusMapLang } from "models/Order";
+import Empty from "components/common/Empty";
 
 const selectStyle = {
   _selected: {
@@ -42,29 +45,27 @@ const selectStyle = {
   },
 };
 
-const ProductRow: React.FC<{ product: Product }> = ({ product }) => {
+const OrderRow: React.FC<{ order: Order }> = ({ order }) => {
   return (
     <Tr>
-      <Td>{product.name}</Td>
-      <Td>{product.sku}</Td>
-      <Td>{formatCcy(product.discount_price ?? product.orig_price, true)}</Td>
-      <Td>{formatCcy(product.quantity, true)}</Td>
-      <Td>{formatCcy(product.sales_volume ?? 0, true)}</Td>
+      <Td>{order.code}</Td>
+      <Td>
+        <Badge p={1} colorScheme={OrderStatusMapLang[order.status].color}>
+          {OrderStatusMapLang[order.status].label}
+        </Badge>
+      </Td>
+      <Td>{formatCcy(order.total_price, true)}</Td>
+      <Td>{moment(order.created_at).format("HH:mm:ss DD/MM/YYYY")}</Td>
+      <Td>{moment(order.updated_at).format("HH:mm:ss DD/MM/YYYY")}</Td>
     </Tr>
   );
 };
 
-const TabMode: Record<number, string> = {
-  0: "pending",
-  1: "approved",
-  2: "blocked",
-};
-
-const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
+const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
   token,
   shopId,
 }) => {
-  const [currentItems, setCurrentItems] = React.useState<Product[]>([]);
+  const [currentItems, setCurrentItems] = React.useState<Order[]>([]);
   const [mode, setMode] = React.useState<number>(0);
   const handleTabChange = React.useCallback(
     (tabIdx: number) => setMode(tabIdx),
@@ -76,18 +77,19 @@ const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
     isFetching,
     isRefetching,
   } = useQuery({
-    queryKey: [FETCH_SHOP_PRODUCTS_MERCH, token, shopId],
+    queryKey: [FETCH_SHOP_ORDERS_MERCH, token, shopId],
     queryFn: ({ queryKey }) =>
-      fetchShopProductsForMerch(queryKey[1], queryKey[2]),
+      fetchShopOrdersForMerch(queryKey[1], queryKey[2]),
   });
 
-  const products = React.useMemo(
-    () => response?.data.products ?? [],
-    [response?.data.products]
+  const orders = React.useMemo(
+    () => response?.data.orders ?? [],
+    [response?.data.orders]
   );
-  const isProductsLoading = React.useMemo(
-    () => isLoading || isFetching || isRefetching || !products,
-    [products, isLoading, isFetching, isRefetching]
+
+  const isOrdersLoading = React.useMemo(
+    () => isLoading || isFetching || isRefetching || !orders,
+    [orders, isLoading, isFetching, isRefetching]
   );
 
   return (
@@ -111,36 +113,16 @@ const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
         >
           <TabList>
             <Tab {...selectStyle}>Chờ duyệt</Tab>
-            <Tab {...selectStyle}>Đã duyệt</Tab>
-            <Tab {...selectStyle}>Đã bị chặn</Tab>
+            <Tab {...selectStyle}>Chờ lấy hàng</Tab>
+            <Tab {...selectStyle}>Đang giao</Tab>
+            <Tab {...selectStyle}>Đã giao</Tab>
+            <Tab {...selectStyle}>Đã huỷ</Tab>
+            <Tab {...selectStyle}>Đã hoàn trả</Tab>
+            <Tab {...selectStyle}>Giao thất bại</Tab>
           </TabList>
         </Tabs>
       </HStack>
-      <HStack>
-        <InputGroup size="sm" minW="500px">
-          <InputLeftAddon p={0} borderWidth={0} borderLeftRadius="md">
-            <Select
-              size="sm"
-              w="full"
-              focusBorderColor="none"
-              borderRightWidth={0}
-              borderLeftRadius="md"
-              defaultValue="option1"
-            >
-              <option value="option1">Tên sản phẩm</option>
-              <option value="option2">SKU</option>
-            </Select>
-          </InputLeftAddon>
-          <Input
-            focusBorderColor="none"
-            borderRightRadius="md"
-            colorScheme="brand"
-            variant="outline"
-            placeholder="Tìm kiếm"
-          />
-        </InputGroup>
-      </HStack>
-      {isProductsLoading && (
+      {isOrdersLoading && (
         <Center w="full">
           <Spinner
             thickness="4px"
@@ -154,23 +136,27 @@ const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
       <Table variant="striped" colorScheme="gray" size="sm">
         <Thead>
           <Tr>
-            <Th>Tên sản phẩm</Th>
-            <Th>SKU</Th>
-            <Th>Giá</Th>
-            <Th>Kho hàng</Th>
-            <Th>Đã bán</Th>
+            <Th>Mã đơn</Th>
+            <Th>Trạng thái</Th>
+            <Th>Tổng giá</Th>
+            <Th>Ngày tạo</Th>
+            <Th>Lần chỉnh sửa gần nhất</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {!isProductsLoading &&
-            products?.map((p, idx) => <ProductRow key={idx} product={p} />)}
+          {!isOrdersLoading &&
+            orders?.map((o, idx) => <OrderRow key={idx} order={o} />)}
         </Tbody>
       </Table>
-      <Pagination
-        items={products}
-        itemPerPage={20}
-        setCurrentItems={setCurrentItems}
-      />
+      {!isOrdersLoading && orders && orders.length < 1 && <Empty />}
+
+      {orders && orders.length > 0 && (
+        <Pagination
+          items={orders}
+          itemPerPage={20}
+          setCurrentItems={setCurrentItems}
+        />
+      )}
     </VStack>
   );
 };
@@ -187,8 +173,8 @@ const handler: NextSsrIronHandler = async function ({ req, res, query }) {
 
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(
-    [FETCH_SHOP_PRODUCTS_MERCH, auth, shop_id as string],
-    ({ queryKey }) => fetchShopProductsForMerch(queryKey[1], queryKey[2])
+    [FETCH_SHOP_ORDERS_MERCH, auth, shop_id as string],
+    ({ queryKey }) => fetchShopOrdersForMerch(queryKey[1], queryKey[2])
   );
 
   return {
@@ -203,4 +189,4 @@ const handler: NextSsrIronHandler = async function ({ req, res, query }) {
 
 export const getServerSideProps = withSession(handler);
 
-export default MerchantProducts;
+export default MerchantOrders;
