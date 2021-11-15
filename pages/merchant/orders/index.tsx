@@ -34,7 +34,12 @@ import {
 } from "services/merchant";
 import { formatCcy } from "utils";
 import Pagination from "components/Pagination";
-import { Order, OrderStatusMapLang } from "models/Order";
+import {
+  Order,
+  OrderStatus,
+  OrderStatusesArr,
+  OrderStatusMapLang,
+} from "models/Order";
 import Empty from "components/common/Empty";
 
 const selectStyle = {
@@ -65,21 +70,25 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
   token,
   shopId,
 }) => {
-  const [currentItems, setCurrentItems] = React.useState<Order[]>([]);
-  const [mode, setMode] = React.useState<number>(0);
-  const handleTabChange = React.useCallback(
-    (tabIdx: number) => setMode(tabIdx),
-    []
+  const [orderStatus, setOrderStatus] = React.useState<OrderStatus>(
+    OrderStatus.PENDING
   );
+  const [currentItems, setCurrentItems] = React.useState<Order[]>([]);
+
   const {
     data: response,
     isLoading,
     isFetching,
     isRefetching,
+    refetch: refetchOrders,
   } = useQuery({
-    queryKey: [FETCH_SHOP_ORDERS_MERCH, token, shopId],
+    queryKey: [FETCH_SHOP_ORDERS_MERCH, token, shopId, orderStatus],
     queryFn: ({ queryKey }) =>
-      fetchShopOrdersForMerch(queryKey[1], queryKey[2]),
+      fetchShopOrdersForMerch(
+        queryKey[1],
+        queryKey[2],
+        queryKey[3] as OrderStatus
+      ),
   });
 
   const orders = React.useMemo(
@@ -91,6 +100,15 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
     () => isLoading || isFetching || isRefetching || !orders,
     [orders, isLoading, isFetching, isRefetching]
   );
+
+  const handleTabChange = React.useCallback(
+    (tabIdx: number) => setOrderStatus(OrderStatusesArr[tabIdx]),
+    [setOrderStatus]
+  );
+
+  React.useEffect(() => {
+    refetchOrders();
+  }, [orderStatus, refetchOrders]);
 
   return (
     <VStack
@@ -109,7 +127,7 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
           w="full"
           variant="enclosed"
           onChange={handleTabChange}
-          index={mode}
+          index={OrderStatusesArr.indexOf(orderStatus)}
         >
           <TabList>
             <Tab {...selectStyle}>Chờ duyệt</Tab>
@@ -122,17 +140,7 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
           </TabList>
         </Tabs>
       </HStack>
-      {isOrdersLoading && (
-        <Center w="full">
-          <Spinner
-            thickness="4px"
-            speed="0.65s"
-            emptyColor="gray.200"
-            color="blue.500"
-            size="md"
-          />
-        </Center>
-      )}
+
       <Table variant="striped" colorScheme="gray" size="sm">
         <Thead>
           <Tr>
@@ -148,6 +156,17 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
             orders?.map((o, idx) => <OrderRow key={idx} order={o} />)}
         </Tbody>
       </Table>
+      {isOrdersLoading && (
+        <Center w="full">
+          <Spinner
+            thickness="4px"
+            speed="0.65s"
+            emptyColor="gray.200"
+            color="blue.500"
+            size="md"
+          />
+        </Center>
+      )}
       {!isOrdersLoading && orders && orders.length < 1 && <Empty />}
 
       {orders && orders.length > 0 && (

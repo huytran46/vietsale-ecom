@@ -265,8 +265,12 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
       weight: 1,
     },
     validationSchema: CreateProductSchema,
-    onSubmit(values) {
-      mutateAsync(values)
+    onSubmit(values, actions) {
+      mutateAsync(values, {
+        onSettled() {
+          actions.setSubmitting(false);
+        },
+      })
         .then((res) => {
           if (!res.success) {
             toast({

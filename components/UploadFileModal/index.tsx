@@ -217,6 +217,15 @@ const UploadFileModal: React.FC<Props> = ({
     return setSingleMode(false);
   }, [defaultPanel]);
 
+  React.useEffect(() => {
+    return () => {
+      setTempFiles([]);
+      setSingleMode(true);
+      setFileId(undefined);
+      handleSelectFileId(undefined);
+    };
+  }, []);
+
   return (
     <>
       {React.cloneElement(children as any, { onClick: onOpen })}

@@ -9,7 +9,8 @@ import {
   CreateProductPayload,
   UploadFilePayload,
 } from "models/request-response/Merchant";
-import { Order } from "models/Order";
+import { Order, OrderStatus } from "models/Order";
+import { stringifyUrl } from "query-string";
 
 export const FETCH_SHOP_PRODUCTS_MERCH = "/merchant/products";
 type ProductsResponse = BaseReponse<{ products: Product[] }> | undefined;
@@ -190,11 +191,17 @@ type OrdersResponse = BaseReponse<{ orders: Order[] }> | undefined;
 export async function fetchShopOrdersForMerch(
   token: string,
   shopId: string,
-  params?: HttpQueryParam
+  status?: OrderStatus
 ): Promise<OrdersResponse> {
   try {
     const res = await axios.get<OrdersResponse>(
-      HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/order`,
+      stringifyUrl(
+        {
+          url: HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/order`,
+          query: { status },
+        },
+        { skipEmptyString: true, skipNull: true }
+      ),
       {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -6,7 +6,7 @@ type FileContext = {
   selectedFileIds: string[];
   setFileId: React.Dispatch<React.SetStateAction<string | undefined>>;
   selectedFileId?: string;
-  handleSelectFileId: (fid: string) => void;
+  handleSelectFileId: (fid?: string) => void;
   setFiles: React.Dispatch<React.SetStateAction<MyFile[]>>;
   selectedFiles: MyFile[];
   selectedMyFiles: (MyFile | undefined)[];
@@ -34,7 +34,11 @@ export const FileProvider: React.FC = ({ children }) => {
   );
 
   const handleSelectFileId = React.useCallback(
-    (fid: string) => {
+    (fid?: string) => {
+      if (!fid) {
+        setSelFileIds([]);
+        return;
+      }
       const idx = selectedFileIds.indexOf(fid);
       const next = [...selectedFileIds];
       if (idx < 0) {

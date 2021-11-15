@@ -181,19 +181,25 @@ const MerchantAddProducts: NextPage<{
   const queryClient = useQueryClient();
   const toast = useToast();
   const [categoryName, setCategoryName] = React.useState("");
-  const [selectedCategoryIds, setCategoryIds] = React.useState<string[]>([]);
+
   const [isProductCategoryPopup, setPCPopup] = React.useState(false);
   const openPopup = () => setPCPopup(true);
   const closePopup = () => setPCPopup(false);
 
-  const { selectedMyFile, selectedMyFiles } = useFileCtx();
-
   const [isUploadFileOpen, uploadModalHandler] = useBoolean();
 
-  const { mutateAsync } = useMutation({
+  const { mutate } = useMutation({
     mutationKey: UPDATE_SHOP_PRODUCT_MERCH,
     mutationFn: (payload: CreateProductPayload) =>
       doEditShopProduct(token, shopId, pid, payload),
+    onSettled: () => {
+      queryClient.invalidateQueries([
+        FETCH_SHOP_PRODUCT_DETAIL_MERCH,
+        token,
+        shopId,
+        pid,
+      ]);
+    },
   });
 
   const {
@@ -231,34 +237,42 @@ const MerchantAddProducts: NextPage<{
     handleSubmit,
     values,
     errors,
-    touched,
     handleChange,
     isSubmitting,
     isValid,
     setFieldValue,
-    resetForm,
   } = useFormik<CreateProductPayload>({
     initialValues: {
-      productName: "",
-      cover: "",
-      unitValueID: 0,
-      cateIDs: [],
-      fileIDs: [],
-      desc: "",
-      isPercentDiscount: false,
-      discountValue: 0,
-      height: 1,
-      width: 1,
-      length: 1,
-      sku: "",
-      price: 1000,
-      quantity: 1,
-      weight: 1,
+      productName: productDetail?.name ?? "",
+      cover: productDetail?.edges?.cover?.id ?? "",
+      unitValueID: productDetail?.edges?.uom_using?.id ?? 0,
+      cateIDs: productDetail?.edges?.categories?.map((ct) => ct.id) ?? [],
+      fileIDs: productDetail?.edges?.files?.map((f) => f.id) ?? [],
+      shortDesc: productDetail?.short_desc ?? "",
+      desc: productDetail?.desc ?? "",
+      isPercentDiscount: productDetail?.is_percent_discount ?? false,
+      discountValue: productDetail?.discount_value ?? 0,
+      height: productDetail?.height ?? 1,
+      width: productDetail?.width ?? 1,
+      length: productDetail?.length ?? 1,
+      sku: productDetail?.sku ?? "",
+      price: productDetail?.orig_price ?? 1000,
+      quantity: productDetail?.quantity ?? 1,
+      weight: productDetail?.weight ?? 1,
     },
     validationSchema: UpdateProductSchema,
-    onSubmit(values) {
-      mutateAsync(values)
-        .then((res) => {
+    onSubmit(values, actions) {
+      mutate(values, {
+        onSettled() {
+          queryClient.invalidateQueries([
+            FETCH_SHOP_PRODUCT_DETAIL_MERCH,
+            token,
+            shopId,
+            pid,
+          ]);
+          actions.setSubmitting(false);
+        },
+        onSuccess(res) {
           if (!res.success) {
             toast({
               status: "error",
@@ -272,17 +286,19 @@ const MerchantAddProducts: NextPage<{
             title: "Thành công",
             description: "Cập nhật sản phẩm thành công, vui lòng đợi QTV duyệt",
           });
-          queryClient.invalidateQueries([
-            FETCH_SHOP_PRODUCTS_MERCH,
-            token,
-            shopId,
-          ]);
-          resetForm();
-        })
-        .catch((e) => console.log(e))
-        .finally();
+
+          actions.resetForm();
+        },
+      });
     },
   });
+
+  const [selectedCategoryIds, setCategoryIds] = React.useState<string[]>(
+    productDetail?.edges?.categories?.map((ct) => ct.id) ?? []
+  );
+
+  const { selectedMyFile, selectedMyFiles, setSelFileIds, setFileId } =
+    useFileCtx();
 
   const { shopInfo } = useUser();
 
@@ -349,6 +365,19 @@ const MerchantAddProducts: NextPage<{
   }, [categoryName]);
 
   React.useEffect(() => {
+    if (!productDetail) return;
+    setFileId(productDetail.edges?.cover?.id ?? "");
+    setSelFileIds(productDetail?.edges?.files?.map((f) => f.id) ?? []);
+    const uomValueId = productDetail?.edges?.uom_using?.id;
+    if (!uomValueId) return;
+    const uom = UOMs.find((u) =>
+      u.edges.values.find((uv) => uv.id === uomValueId)
+    );
+    setUOM(uom?.id);
+    setFieldValue("unitValueID", uomValueId);
+  }, [productDetail, setSelFileIds, setFileId, setFieldValue, UOMs]);
+
+  React.useEffect(() => {
     setFieldValue("cateIDs", selectedCategoryIds);
   }, [selectedCategoryIds, setFieldValue]);
 
@@ -371,7 +400,7 @@ const MerchantAddProducts: NextPage<{
     );
   }, [selectedMyFiles, setFieldValue]);
 
-  if (!isProductDetailLoading) {
+  if (isProductDetailLoading) {
     return (
       <Box w="full" p={3}>
         <Text>Đang tải...</Text>
@@ -410,7 +439,7 @@ const MerchantAddProducts: NextPage<{
         </Alert>
       </Box>
 
-      {Object.values(errors).length > 0 && Object.values(touched).length > 0 && (
+      {Object.values(errors).length > 0 && (
         <Box w="full">
           <Alert
             status="error"
@@ -743,7 +772,8 @@ const MerchantAddProducts: NextPage<{
                   colorScheme="brand"
                   variant="outline"
                   placeholder="Tên sản phẩm"
-                  onChange={_debounce(handleChange, 500, { trailing: true })}
+                  value={values.productName}
+                  onChange={handleChange}
                 />
               </MyFormControl>
             </WrapItem>
@@ -764,7 +794,9 @@ const MerchantAddProducts: NextPage<{
                   colorScheme="brand"
                   variant="outline"
                   placeholder="Ví dụ: SK01ABD,..."
-                  onChange={_debounce(handleChange, 500, { trailing: true })}
+                  value={values.sku}
+                  onChange={handleChange}
+                  // onChange={_debounce(handleChange, 500, { trailing: true })}
                 />
               </MyFormControl>
             </WrapItem>
@@ -785,7 +817,9 @@ const MerchantAddProducts: NextPage<{
                   variant="outline"
                   fontSize="sm"
                   placeholder="Mô tả nội dung, tính năng, điểm nổi bật sản phẩm..."
-                  onChange={_debounce(handleChange, 500, { trailing: true })}
+                  value={values.shortDesc}
+                  onChange={handleChange}
+                  // onChange={_debounce(handleChange, 500, { trailing: true })}
                 />
               </MyFormControl>
             </WrapItem>
@@ -811,6 +845,7 @@ const MerchantAddProducts: NextPage<{
                       m={0}
                       w="full"
                       onChange={(e) => setUOM(parseInt(e.target.value))}
+                      value={selectedUOM}
                     >
                       {UOMs.map((uom, idx) => (
                         <option key={idx} value={uom.id}>
@@ -825,6 +860,7 @@ const MerchantAddProducts: NextPage<{
                     focusBorderColor="none"
                     borderLeftRadius="sm"
                     colorScheme="brand"
+                    value={`${values.unitValueID}`}
                     onChange={(e) =>
                       setFieldValue("unitValueID", parseInt(e.target.value))
                     }
@@ -861,11 +897,8 @@ const MerchantAddProducts: NextPage<{
                     borderLeftRadius="sm"
                     min={1}
                     defaultValue={1}
-                    onChange={_debounce(
-                      (_, num) => setFieldValue("quantity", num),
-                      500,
-                      { trailing: true }
-                    )}
+                    onChange={(_, num) => setFieldValue("quantity", num)}
+                    value={values.quantity}
                   >
                     <NumberInputField />
                     <NumberInputStepper>
@@ -893,11 +926,8 @@ const MerchantAddProducts: NextPage<{
                     borderLeftRadius="sm"
                     min={1}
                     defaultValue={1}
-                    onChange={_debounce(
-                      (_, num) => setFieldValue("weight", num),
-                      500,
-                      { trailing: true }
-                    )}
+                    onChange={(_, num) => setFieldValue("weight", num)}
+                    value={values.weight}
                   >
                     <NumberInputField />
                     <NumberInputStepper>
@@ -931,11 +961,8 @@ const MerchantAddProducts: NextPage<{
                     min={1000}
                     step={1000}
                     defaultValue={1000}
-                    onChange={_debounce(
-                      (_, num) => setFieldValue("price", num),
-                      500,
-                      { trailing: true }
-                    )}
+                    onChange={(_, num) => setFieldValue("price", num)}
+                    value={values.price}
                   >
                     <NumberInputField />
                     <NumberInputStepper>
@@ -967,15 +994,22 @@ const MerchantAddProducts: NextPage<{
                       h="full"
                       borderWidth="0px"
                       _focus={{ ring: 0 }}
-                      onChange={_debounce(
-                        (e) =>
-                          setFieldValue(
-                            "isPercentDiscount",
-                            e.target.value === "true"
-                          ),
-                        500,
-                        { trailing: true }
-                      )}
+                      onChange={(e) =>
+                        setFieldValue(
+                          "isPercentDiscount",
+                          e.target.value === "true"
+                        )
+                      }
+                      // value={values.price}
+                      // onChange={_debounce(
+                      //   (e) =>
+                      //     setFieldValue(
+                      //       "isPercentDiscount",
+                      //       e.target.value === "true"
+                      //     ),
+                      //   500,
+                      //   { trailing: true }
+                      // )}
                       value={`${values.isPercentDiscount}`}
                     >
                       <option value="true">%</option>
@@ -992,11 +1026,13 @@ const MerchantAddProducts: NextPage<{
                     defaultValue={0}
                     min={0}
                     max={Boolean(values.isPercentDiscount) ? 100 : values.price}
-                    onChange={_debounce(
-                      (_, num) => setFieldValue("discountValue", num),
-                      500,
-                      { trailing: true }
-                    )}
+                    // onChange={_debounce(
+                    //   (_, num) => setFieldValue("discountValue", num),
+                    //   500,
+                    //   { trailing: true }
+                    // )}
+                    onChange={(_, num) => setFieldValue("discountValue", num)}
+                    value={values.discountValue}
                   >
                     <NumberInputField />
 
@@ -1039,13 +1075,10 @@ const MerchantAddProducts: NextPage<{
                       colorScheme="brand"
                       variant="outline"
                       placeholder="Chiều rộng"
-                      onChange={_debounce(
-                        (_, num) => setFieldValue("width", num),
-                        500,
-                        { trailing: true }
-                      )}
                       min={1}
                       defaultValue={1}
+                      onChange={(_, num) => setFieldValue("width", num)}
+                      value={values.width}
                     >
                       <NumberInputField />
                       <NumberInputStepper>
@@ -1065,13 +1098,10 @@ const MerchantAddProducts: NextPage<{
                       colorScheme="brand"
                       variant="outline"
                       placeholder="Chiều dài"
-                      onChange={_debounce(
-                        (_, num) => setFieldValue("length", num),
-                        500,
-                        { trailing: true }
-                      )}
                       min={1}
                       defaultValue={1}
+                      onChange={(_, num) => setFieldValue("length", num)}
+                      value={values.length}
                     >
                       <NumberInputField />
                       <NumberInputStepper>
@@ -1091,13 +1121,15 @@ const MerchantAddProducts: NextPage<{
                       colorScheme="brand"
                       variant="outline"
                       placeholder="Chiều cao"
-                      onChange={_debounce(
-                        (_, num) => setFieldValue("height", num),
-                        500,
-                        { trailing: true }
-                      )}
+                      // onChange={_debounce(
+                      //   (_, num) => setFieldValue("height", num),
+                      //   500,
+                      //   { trailing: true }
+                      // )}
                       min={1}
                       defaultValue={1}
+                      onChange={(_, num) => setFieldValue("height", num)}
+                      value={values.height}
                     >
                       <NumberInputField />
                       <NumberInputStepper>
@@ -1158,7 +1190,7 @@ const MerchantAddProducts: NextPage<{
             onClick={handleSubmit as any}
             disabled={isSubmitting || !isValid}
           >
-            Đăng bán sản phẩm
+            Cập nhật sản phẩm
           </Button>
         </HStack>
       </VStack>
