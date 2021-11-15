@@ -27,8 +27,6 @@ import {
   Grid,
 } from "@chakra-ui/react";
 import { MdRemoveCircleOutline } from "react-icons/md";
-import { BiSelectMultiple } from "react-icons/bi";
-import { HiOutlineCursorClick } from "react-icons/hi";
 
 import { MyImage } from "components/common/MyImage";
 import { useMutation, useQueryClient, useQuery } from "react-query";
@@ -91,6 +89,7 @@ const UploadFileModal: React.FC<Props> = ({
   } = useFileCtx();
 
   const [singleMode, setSingleMode] = React.useState(true);
+  const [tab, setTab] = React.useState<number>(defaultPanel ?? PANEL.UPLOAD);
 
   const { data: response } = useQuery({
     queryKey: [FETCH_SHOP_FILES_MERCH, shopId],
@@ -208,14 +207,27 @@ const UploadFileModal: React.FC<Props> = ({
     [singleMode, handleSelectFileId, setFileId]
   );
 
+  const handleTabChange = React.useCallback(
+    (tabIdx: number) => setTab(tabIdx),
+    [setTab]
+  );
+
   React.useEffect(() => setFiles(files), [setFiles, files]);
 
   React.useEffect(() => {
+    setTab(defaultPanel ?? PANEL.UPLOAD);
     if (defaultPanel === PANEL.PICK) {
       return setSingleMode(true);
     }
     return setSingleMode(false);
   }, [defaultPanel]);
+
+  React.useEffect(() => {
+    if (tab === PANEL.PICK) {
+      return setSingleMode(true);
+    }
+    return setSingleMode(false);
+  }, [tab]);
 
   React.useEffect(() => {
     return () => {
@@ -236,6 +248,8 @@ const UploadFileModal: React.FC<Props> = ({
             size="sm"
             variant="enclosed"
             defaultIndex={defaultPanel ?? PANEL.UPLOAD}
+            onChange={handleTabChange}
+            index={tab}
             isLazy
           >
             <ModalHeader>

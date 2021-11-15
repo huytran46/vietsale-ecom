@@ -5,10 +5,7 @@ import { BaseReponse } from "models/common/BaseResponse";
 import { HttpQueryParam } from "models/common/SearchQuery";
 import { MyFile } from "models/MyFile";
 import { Product, ProductStatus } from "models/Product";
-import {
-  CreateProductPayload,
-  UploadFilePayload,
-} from "models/request-response/Merchant";
+import { CreateProductPayload } from "models/request-response/Merchant";
 import { Order, OrderStatus } from "models/Order";
 import { stringifyUrl } from "query-string";
 
@@ -55,7 +52,6 @@ export async function doCreateShopProduct(
 ): Promise<CreateProductResponse> {
   try {
     const params = new URLSearchParams();
-
     Object.entries(payload).forEach(([key, val]) => {
       if (_isArray(val)) {
         val.forEach((singleVal) => params.append(key, singleVal));
@@ -80,7 +76,10 @@ export async function doCreateShopProduct(
       config
     );
     return res.data;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.response) {
+      return error.response.data;
+    }
     return {} as CreateProductResponse;
   }
 }
@@ -119,7 +118,10 @@ export async function doEditShopProduct(
       config
     );
     return res.data;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.response) {
+      return error.response.data;
+    }
     return {} as CreateProductResponse;
   }
 }
@@ -143,7 +145,10 @@ export async function fetchShopProductDetailForMerch(
     );
 
     return res.data?.data?.product ?? ({} as Product);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.response) {
+      return error.response.data;
+    }
     return {} as Product;
   }
 }
@@ -165,7 +170,10 @@ export async function fetchShopFilesForMerch(
     );
 
     return res.data;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.response) {
+      return error.response.data;
+    }
     return {} as FilesResponse;
   }
 }
@@ -192,7 +200,10 @@ export async function doUploadFile(
       }
     );
     return res.data;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.response) {
+      return error.response.data;
+    }
     return {} as UploadFileResponse;
   }
 }
@@ -222,7 +233,10 @@ export async function fetchShopOrdersForMerch(
     );
 
     return res.data;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.response) {
+      return error.response.data;
+    }
     return {} as OrdersResponse;
   }
 }

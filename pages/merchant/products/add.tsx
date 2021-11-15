@@ -77,6 +77,7 @@ import { useFileCtx } from "context/FileProvider";
 import { MyImage } from "components/common/MyImage";
 import { FETCH_CATEGORIES, fetchProductCategories } from "services/public";
 import { useUser } from "context/UserProvider";
+import { ProductStatus } from "models/Product";
 
 type MyFormControlProps = {
   id: string;
@@ -245,7 +246,6 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
     isSubmitting,
     isValid,
     setFieldValue,
-    resetForm,
   } = useFormik<CreateProductPayload>({
     initialValues: {
       productName: "",
@@ -266,12 +266,27 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
     },
     validationSchema: CreateProductSchema,
     onSubmit(values, actions) {
+      if (!isValid) {
+        toast({
+          status: "error",
+          title: "Lỗi",
+          description: "Kiểm tra lại",
+        });
+        return;
+      }
+
       mutateAsync(values, {
         onSettled() {
+          queryClient.invalidateQueries([
+            FETCH_SHOP_PRODUCTS_MERCH,
+            token,
+            shopId,
+            ProductStatus.PENDING,
+            "1",
+          ]);
           actions.setSubmitting(false);
         },
-      })
-        .then((res) => {
+        onSuccess(res) {
           if (!res.success) {
             toast({
               status: "error",
@@ -285,15 +300,9 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
             title: "Thành công",
             description: "Thêm sản phẩm thành công, vui lòng đợi QTV duyệt",
           });
-          queryClient.invalidateQueries([
-            FETCH_SHOP_PRODUCTS_MERCH,
-            token,
-            shopId,
-          ]);
-          resetForm();
-        })
-        .catch((e) => console.log(e))
-        .finally();
+          actions.resetForm();
+        },
+      });
     },
   });
 
@@ -977,15 +986,12 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                       h="full"
                       borderWidth="0px"
                       _focus={{ ring: 0 }}
-                      onChange={_debounce(
-                        (e) =>
-                          setFieldValue(
-                            "isPercentDiscount",
-                            e.target.value === "true"
-                          ),
-                        500,
-                        { trailing: true }
-                      )}
+                      onChange={(e) =>
+                        setFieldValue(
+                          "isPercentDiscount",
+                          e.target.value === "true"
+                        )
+                      }
                       value={`${values.isPercentDiscount}`}
                     >
                       <option value="true">%</option>
@@ -1166,7 +1172,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
               bg: "red.700",
             }}
             onClick={handleSubmit as any}
-            disabled={isSubmitting || !isValid}
+            disabled={isSubmitting}
           >
             Đăng bán sản phẩm
           </Button>
