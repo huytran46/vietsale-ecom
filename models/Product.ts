@@ -35,3 +35,11 @@ export type ProductEdge = {
   categories?: ProductCategory[];
   uom_using?: UomValue;
 };
+
+export enum ProductStatus {
+  PENDING = "pending",
+  APPROVED = "approved",
+  BLOCKED = "blocked",
+}
+
+export const ProductStatusesArr = Object.values(ProductStatus);

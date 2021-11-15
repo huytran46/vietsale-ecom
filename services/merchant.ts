@@ -4,7 +4,7 @@ import { HOST_URL_FOR_EXTERNAL_CALL } from "constants/platform";
 import { BaseReponse } from "models/common/BaseResponse";
 import { HttpQueryParam } from "models/common/SearchQuery";
 import { MyFile } from "models/MyFile";
-import { Product } from "models/Product";
+import { Product, ProductStatus } from "models/Product";
 import {
   CreateProductPayload,
   UploadFilePayload,
@@ -17,11 +17,22 @@ type ProductsResponse = BaseReponse<{ products: Product[] }> | undefined;
 export async function fetchShopProductsForMerch(
   token: string,
   shopId: string,
+  status?: ProductStatus,
   params?: HttpQueryParam
 ): Promise<ProductsResponse> {
   try {
     const res = await axios.get<ProductsResponse>(
-      HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/product`,
+      stringifyUrl(
+        {
+          url: HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/product`,
+          query: {
+            ...params,
+            _appr: `${Boolean(status === ProductStatus.APPROVED)}`,
+            _blocked: `${Boolean(status === ProductStatus.BLOCKED)}`,
+          },
+        },
+        { skipEmptyString: true, skipNull: true }
+      ),
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -191,14 +202,15 @@ type OrdersResponse = BaseReponse<{ orders: Order[] }> | undefined;
 export async function fetchShopOrdersForMerch(
   token: string,
   shopId: string,
-  status?: OrderStatus
+  status?: OrderStatus,
+  params?: HttpQueryParam
 ): Promise<OrdersResponse> {
   try {
     const res = await axios.get<OrdersResponse>(
       stringifyUrl(
         {
           url: HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/order`,
-          query: { status },
+          query: { ...params, status },
         },
         { skipEmptyString: true, skipNull: true }
       ),

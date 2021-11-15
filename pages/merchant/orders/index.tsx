@@ -33,7 +33,7 @@ import {
   FETCH_SHOP_ORDERS_MERCH,
 } from "services/merchant";
 import { formatCcy } from "utils";
-import Pagination from "components/Pagination";
+import Pagination from "components/Pagination/dynamic";
 import {
   Order,
   OrderStatus,
@@ -41,6 +41,8 @@ import {
   OrderStatusMapLang,
 } from "models/Order";
 import Empty from "components/common/Empty";
+import { useRouter } from "next/router";
+import { stringifyUrl } from "query-string";
 
 const selectStyle = {
   _selected: {
@@ -70,9 +72,14 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
   token,
   shopId,
 }) => {
+  const router = useRouter();
+
   const [orderStatus, setOrderStatus] = React.useState<OrderStatus>(
     OrderStatus.PENDING
   );
+
+  const [pageNo, setPageNo] = React.useState<number>(1);
+
   const [currentItems, setCurrentItems] = React.useState<Order[]>([]);
 
   const {
@@ -82,12 +89,19 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
     isRefetching,
     refetch: refetchOrders,
   } = useQuery({
-    queryKey: [FETCH_SHOP_ORDERS_MERCH, token, shopId, orderStatus],
+    queryKey: [
+      FETCH_SHOP_ORDERS_MERCH,
+      token,
+      shopId,
+      orderStatus,
+      `${pageNo}`,
+    ],
     queryFn: ({ queryKey }) =>
       fetchShopOrdersForMerch(
         queryKey[1],
         queryKey[2],
-        queryKey[3] as OrderStatus
+        queryKey[3] as OrderStatus,
+        { page: parseInt(queryKey[4]) }
       ),
   });
 
@@ -97,8 +111,8 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
   );
 
   const isOrdersLoading = React.useMemo(
-    () => isLoading || isFetching || isRefetching || !orders,
-    [orders, isLoading, isFetching, isRefetching]
+    () => isLoading || isFetching || isRefetching || !orders || !response,
+    [orders, isLoading, isFetching, isRefetching, response]
   );
 
   const handleTabChange = React.useCallback(
@@ -109,6 +123,14 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
   React.useEffect(() => {
     refetchOrders();
   }, [orderStatus, refetchOrders]);
+
+  React.useEffect(() => {
+    const nextPath = stringifyUrl({
+      url: router.asPath,
+      query: { page_no: pageNo, status: orderStatus },
+    });
+    router.replace(nextPath);
+  }, [pageNo, orderStatus, router]);
 
   return (
     <VStack
@@ -169,11 +191,12 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
       )}
       {!isOrdersLoading && orders && orders.length < 1 && <Empty />}
 
-      {orders && orders.length > 0 && (
+      {!isOrdersLoading && (
         <Pagination
-          items={orders}
-          itemPerPage={20}
-          setCurrentItems={setCurrentItems}
+          pageNo={response?.page_no ?? 1}
+          pageSize={response?.page_size ?? 20}
+          totalPages={response?.total_page ?? 2}
+          onPageChange={(nextPage) => setPageNo(nextPage)}
         />
       )}
     </VStack>
@@ -182,7 +205,7 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
 
 const handler: NextSsrIronHandler = async function ({ req, res, query }) {
   const auth = req.session.get(IronSessionKey.AUTH);
-  const { shop_id } = query;
+  const { shop_id, status, page_no } = query;
   if (auth === undefined || !shop_id || shop_id === "") {
     res.setHeader("location", "/");
     res.statusCode = 302;
@@ -192,8 +215,20 @@ const handler: NextSsrIronHandler = async function ({ req, res, query }) {
 
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(
-    [FETCH_SHOP_ORDERS_MERCH, auth, shop_id as string],
-    ({ queryKey }) => fetchShopOrdersForMerch(queryKey[1], queryKey[2])
+    [
+      FETCH_SHOP_ORDERS_MERCH,
+      auth,
+      shop_id as string,
+      status ?? OrderStatus.PENDING,
+      `${page_no ?? 1}`,
+    ],
+    ({ queryKey }) =>
+      fetchShopOrdersForMerch(
+        queryKey[1],
+        queryKey[2],
+        queryKey[3] as OrderStatus,
+        { page: parseInt(queryKey[4]) }
+      )
   );
 
   return {

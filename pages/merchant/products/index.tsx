@@ -21,6 +21,7 @@ import {
   Center,
   Spinner,
   Icon,
+  Text,
 } from "@chakra-ui/react";
 import { MdModeEdit } from "react-icons/md";
 import { dehydrate, QueryClient, useQuery } from "react-query";
@@ -32,9 +33,11 @@ import {
   fetchShopProductsForMerch,
   FETCH_SHOP_PRODUCTS_MERCH,
 } from "services/merchant";
-import { Product } from "models/Product";
+import { Product, ProductStatus, ProductStatusesArr } from "models/Product";
 import { formatCcy } from "utils";
-import Pagination from "components/Pagination";
+import Pagination from "components/Pagination/dynamic";
+import { OrderStatus, OrderStatusesArr } from "models/Order";
+import { stringifyUrl } from "query-string";
 
 const selectStyle = {
   _selected: {
@@ -82,31 +85,57 @@ const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
   token,
   shopId,
 }) => {
-  const [currentItems, setCurrentItems] = React.useState<Product[]>([]);
-  const [mode, setMode] = React.useState<number>(0);
-  const handleTabChange = React.useCallback(
-    (tabIdx: number) => setMode(tabIdx),
-    []
+  const router = useRouter();
+  const [productStatus, setProductStatus] = React.useState<ProductStatus>(
+    ProductStatus.PENDING
   );
+
+  const [pageNo, setPageNo] = React.useState<number>(1);
+
   const {
     data: response,
     isLoading,
     isFetching,
     isRefetching,
   } = useQuery({
-    queryKey: [FETCH_SHOP_PRODUCTS_MERCH, token, shopId],
+    queryKey: [
+      FETCH_SHOP_PRODUCTS_MERCH,
+      token,
+      shopId,
+      productStatus,
+      `${pageNo}`,
+    ],
     queryFn: ({ queryKey }) =>
-      fetchShopProductsForMerch(queryKey[1], queryKey[2]),
+      fetchShopProductsForMerch(
+        queryKey[1],
+        queryKey[2],
+        queryKey[3] as ProductStatus,
+        { page: parseInt(queryKey[4]) }
+      ),
   });
 
   const products = React.useMemo(
     () => response?.data.products ?? [],
     [response?.data.products]
   );
+
   const isProductsLoading = React.useMemo(
-    () => isLoading || isFetching || isRefetching || !products,
-    [products, isLoading, isFetching, isRefetching]
+    () => isLoading || isFetching || isRefetching || !products || !response,
+    [products, isLoading, isFetching, isRefetching, response]
   );
+
+  const handleTabChange = React.useCallback(
+    (tabIdx: number) => setProductStatus(ProductStatusesArr[tabIdx]),
+    [setProductStatus]
+  );
+
+  React.useEffect(() => {
+    const nextPath = stringifyUrl({
+      url: router.asPath,
+      query: { page_no: pageNo, status: productStatus },
+    });
+    router.replace(nextPath);
+  }, [pageNo, productStatus, router]);
 
   return (
     <VStack
@@ -125,7 +154,7 @@ const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
           w="full"
           variant="enclosed"
           onChange={handleTabChange}
-          index={mode}
+          index={ProductStatusesArr.indexOf(productStatus)}
         >
           <TabList>
             <Tab {...selectStyle}>Chờ duyệt</Tab>
@@ -186,18 +215,21 @@ const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
             ))}
         </Tbody>
       </Table>
-      <Pagination
-        items={products}
-        itemPerPage={20}
-        setCurrentItems={setCurrentItems}
-      />
+      {!isProductsLoading && (
+        <Pagination
+          pageNo={response?.page_no ?? 1}
+          pageSize={response?.page_size ?? 20}
+          totalPages={response?.total_page ?? 2}
+          onPageChange={(nextPage) => setPageNo(nextPage)}
+        />
+      )}
     </VStack>
   );
 };
 
 const handler: NextSsrIronHandler = async function ({ req, res, query }) {
   const auth = req.session.get(IronSessionKey.AUTH);
-  const { shop_id } = query;
+  const { shop_id, page_no, status } = query;
   if (auth === undefined || !shop_id || shop_id === "") {
     res.setHeader("location", "/");
     res.statusCode = 302;
@@ -207,8 +239,20 @@ const handler: NextSsrIronHandler = async function ({ req, res, query }) {
 
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(
-    [FETCH_SHOP_PRODUCTS_MERCH, auth, shop_id as string],
-    ({ queryKey }) => fetchShopProductsForMerch(queryKey[1], queryKey[2])
+    [
+      FETCH_SHOP_PRODUCTS_MERCH,
+      auth,
+      shop_id as string,
+      status ?? ProductStatus.PENDING,
+      `${page_no ?? 1}`,
+    ],
+    ({ queryKey }) =>
+      fetchShopProductsForMerch(
+        queryKey[1],
+        queryKey[2],
+        queryKey[3] as ProductStatus,
+        { page: parseInt(queryKey[4]) }
+      )
   );
 
   return {
