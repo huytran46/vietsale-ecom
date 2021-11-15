@@ -115,8 +115,8 @@ const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
   });
 
   const products = React.useMemo(
-    () => response?.data.products ?? [],
-    [response?.data.products]
+    () => response?.data?.products ?? [],
+    [response?.data?.products]
   );
 
   const isProductsLoading = React.useMemo(
@@ -135,7 +135,7 @@ const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
       query: { page_no: pageNo, status: productStatus },
     });
     router.replace(nextPath);
-  }, [pageNo, productStatus, router]);
+  }, [pageNo, productStatus]);
 
   return (
     <VStack

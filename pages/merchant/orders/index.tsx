@@ -1,8 +1,9 @@
 import React from "react";
 import type { NextPage } from "next";
 import {
+  chakra,
   VStack,
-  Box,
+  Image,
   Text,
   HStack,
   Table,
@@ -14,16 +15,15 @@ import {
   Tabs,
   TabList,
   Tab,
-  InputGroup,
-  InputLeftAddon,
-  Input,
-  Select,
   Center,
   Spinner,
   Badge,
+  Icon,
+  StackDivider,
 } from "@chakra-ui/react";
 import { dehydrate, QueryClient, useQuery } from "react-query";
 import moment from "moment";
+import { BiBarcode } from "react-icons/bi";
 
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
@@ -43,6 +43,7 @@ import {
 import Empty from "components/common/Empty";
 import { useRouter } from "next/router";
 import { stringifyUrl } from "query-string";
+import MyLinkOverlay from "components/common/MyLinkOverlay";
 
 const selectStyle = {
   _selected: {
@@ -53,13 +54,73 @@ const selectStyle = {
 };
 
 const OrderRow: React.FC<{ order: Order }> = ({ order }) => {
+  const OrderedProducts = React.useMemo(() => {
+    if (!order?.edges?.has_items) return [];
+    const orderItems = order.edges.has_items;
+    return orderItems.map((oi, idx) => {
+      const cartItem = oi?.edges?.is_cart_item;
+      if (!cartItem) return;
+      const product = cartItem.edges.is_product;
+      if (!product) return;
+      const productCover = product.edges?.cover?.file_thumbnail;
+      return (
+        <HStack key={idx} w="full" spacing={3} alignItems="flex-start">
+          <MyLinkOverlay
+            href={`/products/${product.id}`}
+            borderRadius="md"
+            borderWidth="1px"
+            borderColor="gray.400"
+          >
+            <Image
+              borderRadius="md"
+              boxSize="104px"
+              objectFit="cover"
+              src={productCover}
+              alt={product.name}
+            />
+          </MyLinkOverlay>
+          <VStack justifyContent="flex-start" alignItems="flex-start">
+            <Text fontSize="sm" fontWeight="medium">
+              {product.name}
+            </Text>
+            <VStack divider={<StackDivider borderColor="gray.500" />} w="full">
+              <HStack w="full" justifyContent="center">
+                <Text fontSize="sm">{cartItem.qty}</Text>
+                <Text fontSize="sm">x</Text>
+                <Text fontSize="sm">{formatCcy(cartItem.orig_price)} đ</Text>
+              </HStack>
+              <Text
+                textAlign="center"
+                fontWeight="medium"
+                fontSize="sm"
+                color="red.500"
+              >
+                {formatCcy(cartItem.qty * cartItem.orig_price)} đ
+              </Text>
+            </VStack>
+          </VStack>
+        </HStack>
+      );
+    });
+  }, [order.edges.has_items]);
+
   return (
     <Tr>
-      <Td>{order.code}</Td>
+      <Td>
+        <chakra.code fontSize="xs" fontWeight="medium" p={1}>
+          <Icon as={BiBarcode} fontSize="lg" mr={2} />
+          {order.code.toLocaleUpperCase()}
+        </chakra.code>
+      </Td>
       <Td>
         <Badge p={1} colorScheme={OrderStatusMapLang[order.status].color}>
           {OrderStatusMapLang[order.status].label}
         </Badge>
+      </Td>
+      <Td>
+        <VStack w="full" spacing={1}>
+          {OrderedProducts}
+        </VStack>
       </Td>
       <Td>{formatCcy(order.total_price, true)}</Td>
       <Td>{moment(order.created_at).format("HH:mm:ss DD/MM/YYYY")}</Td>
@@ -79,8 +140,6 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
   );
 
   const [pageNo, setPageNo] = React.useState<number>(1);
-
-  const [currentItems, setCurrentItems] = React.useState<Order[]>([]);
 
   const {
     data: response,
@@ -106,8 +165,8 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
   });
 
   const orders = React.useMemo(
-    () => response?.data.orders ?? [],
-    [response?.data.orders]
+    () => response?.data?.orders ?? [],
+    [response?.data?.orders]
   );
 
   const isOrdersLoading = React.useMemo(
@@ -130,7 +189,7 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
       query: { page_no: pageNo, status: orderStatus },
     });
     router.replace(nextPath);
-  }, [pageNo, orderStatus, router]);
+  }, [pageNo, orderStatus]);
 
   return (
     <VStack
@@ -168,6 +227,7 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
           <Tr>
             <Th>Mã đơn</Th>
             <Th>Trạng thái</Th>
+            <Th>Sản phẩm</Th>
             <Th>Tổng giá</Th>
             <Th>Ngày tạo</Th>
             <Th>Lần chỉnh sửa gần nhất</Th>

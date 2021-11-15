@@ -28,6 +28,7 @@ const OrderItem: React.FC<Props> = ({ order }) => {
     () => order?.edges?.shop,
     [order?.edges?.shop]
   );
+
   const OrderedProducts = React.useMemo(() => {
     if (!order?.edges?.has_items) return [];
     const orderItems = order.edges.has_items;
