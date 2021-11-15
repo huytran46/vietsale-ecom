@@ -10,6 +10,10 @@ module.exports = {
         source: "/dev/:path*",
         destination: "http://157.245.61.181:8081/api/v1/:path*",
       },
+      {
+        source: "/pro/:path*",
+        destination: "http://157.245.156.225:8081/api/v1/:path*",
+      },
     ];
   },
 };
