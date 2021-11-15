@@ -1,9 +1,9 @@
 import React from "react";
 import type { NextPage } from "next";
+import { useRouter } from "next/router";
+
 import {
   VStack,
-  Box,
-  Text,
   HStack,
   Table,
   Thead,
@@ -20,7 +20,9 @@ import {
   Select,
   Center,
   Spinner,
+  Icon,
 } from "@chakra-ui/react";
+import { MdModeEdit } from "react-icons/md";
 import { dehydrate, QueryClient, useQuery } from "react-query";
 
 import withSession, { NextSsrIronHandler } from "utils/session";
@@ -42,10 +44,26 @@ const selectStyle = {
   },
 };
 
-const ProductRow: React.FC<{ product: Product }> = ({ product }) => {
+const ProductRow: React.FC<{ product: Product; shopId: string }> = ({
+  product,
+  shopId,
+}) => {
+  const router = useRouter();
   return (
     <Tr>
-      <Td>{product.name}</Td>
+      <Td>
+        {product.name}
+        <Icon
+          cursor="pointer"
+          ml={2}
+          as={MdModeEdit}
+          onClick={() =>
+            router.push(
+              `/merchant/products/edit?shop_id=${shopId}&pid=${product.id}`
+            )
+          }
+        />
+      </Td>
       <Td>{product.sku}</Td>
       <Td>{formatCcy(product.discount_price ?? product.orig_price, true)}</Td>
       <Td>{formatCcy(product.quantity, true)}</Td>
@@ -54,11 +72,11 @@ const ProductRow: React.FC<{ product: Product }> = ({ product }) => {
   );
 };
 
-const TabMode: Record<number, string> = {
-  0: "pending",
-  1: "approved",
-  2: "blocked",
-};
+// const TabMode: Record<number, string> = {
+//   0: "pending",
+//   1: "approved",
+//   2: "blocked",
+// };
 
 const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
   token,
@@ -163,7 +181,9 @@ const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
         </Thead>
         <Tbody>
           {!isProductsLoading &&
-            products?.map((p, idx) => <ProductRow key={idx} product={p} />)}
+            products?.map((p, idx) => (
+              <ProductRow key={idx} product={p} shopId={shopId} />
+            ))}
         </Tbody>
       </Table>
       <Pagination

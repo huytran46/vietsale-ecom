@@ -73,6 +73,69 @@ export async function doCreateShopProduct(
   }
 }
 
+export const UPDATE_SHOP_PRODUCT_MERCH = "/merchant/products";
+type UpdateProductResponse = BaseReponse<{ product: Product }>;
+export async function doEditShopProduct(
+  token: string,
+  shopId: string,
+  pid: string,
+  payload: CreateProductPayload
+): Promise<UpdateProductResponse> {
+  try {
+    const params = new URLSearchParams();
+    Object.entries(payload).forEach(([key, val]) => {
+      if (_isArray(val)) {
+        val.forEach((singleVal) => params.append(key, singleVal));
+        return;
+      }
+      params.append(key, val);
+    });
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    };
+
+    const res = await axios.put<
+      URLSearchParams,
+      AxiosResponse<UpdateProductResponse>
+    >(
+      HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/product/${pid}`,
+      params,
+      config
+    );
+    return res.data;
+  } catch (error) {
+    return {} as CreateProductResponse;
+  }
+}
+
+export const FETCH_SHOP_PRODUCT_DETAIL_MERCH = "/merchant/products/detail";
+type ProductDetailResponse = BaseReponse<{ product: Product }> | undefined;
+export async function fetchShopProductDetailForMerch(
+  token: string,
+  shopId: string,
+  pid: string,
+  params?: HttpQueryParam
+): Promise<Product> {
+  try {
+    const res = await axios.get<ProductDetailResponse>(
+      HOST_URL_FOR_EXTERNAL_CALL + `/merchant/shop/${shopId}/product/${pid}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return res.data?.data?.product ?? ({} as Product);
+  } catch (error) {
+    return {} as Product;
+  }
+}
+
 export const FETCH_SHOP_FILES_MERCH = "/merchant/files";
 type FilesResponse = BaseReponse<{ upload_files: MyFile[] }> | undefined;
 export async function fetchShopFilesForMerch(
