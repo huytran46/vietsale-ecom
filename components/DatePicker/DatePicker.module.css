@@ -1,0 +1,6 @@
+.DatePicker {
+  padding: 4px;
+  font-size: 12px;
+  border: 1px solid var(--chakra-colors-gray-200);
+  border-radius: var(--chakra-radii-md);
+}

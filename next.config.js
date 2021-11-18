@@ -12,7 +12,7 @@ module.exports = {
       },
       {
         source: "/pro/:path*",
-        destination: "http://157.245.156.225:8081/api/v1/:path*",
+        destination: "https://api.vietsale.vn/api/v1/:path*",
       },
     ];
   },

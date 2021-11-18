@@ -6,7 +6,7 @@ import { HttpQueryParam } from "models/common/SearchQuery";
 import { MyFile } from "models/MyFile";
 import { Product, ProductStatus } from "models/Product";
 import { CreateProductPayload } from "models/request-response/Merchant";
-import { Order, OrderStatus } from "models/Order";
+import { ApproveOrderPayload, Order, OrderStatus } from "models/Order";
 import { stringifyUrl } from "query-string";
 
 export const FETCH_SHOP_PRODUCTS_MERCH = "/merchant/products";
@@ -184,8 +184,7 @@ type UploadFileResponse = BaseReponse<{ upload_file: MyFile }>;
 export async function doUploadFile(
   token: string,
   shopId: string,
-  payload: FormData,
-  onUploadProgress?: UploadProgressCallback
+  payload: FormData
 ): Promise<UploadFileResponse> {
   try {
     const res = await axios.post<FormData, AxiosResponse<UploadFileResponse>>(
@@ -194,9 +193,7 @@ export async function doUploadFile(
       {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
-        onUploadProgress,
       }
     );
     return res.data;
@@ -238,5 +235,42 @@ export async function fetchShopOrdersForMerch(
       return error.response.data;
     }
     return {} as OrdersResponse;
+  }
+}
+
+export const APPROVE_ORDER_MERCHANT = "/merchant/order/approve";
+type ApproveOrderResponse = BaseReponse<{
+  order_number: number;
+  print_link?: string;
+}>;
+export async function doApproveOrder(
+  token: string,
+  shopId: string,
+  orderId: string,
+  service: "viettel-post" | "vn-post-fast",
+  payload: ApproveOrderPayload
+): Promise<ApproveOrderResponse> {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    const res = await axios.post<
+      ApproveOrderPayload,
+      AxiosResponse<ApproveOrderResponse>
+    >(
+      HOST_URL_FOR_EXTERNAL_CALL +
+        `/merchant/shop/${shopId}/order/${orderId}/process/${service}`,
+      payload,
+      config
+    );
+    return res.data;
+  } catch (error: any) {
+    if (error.response) {
+      return error.response.data;
+    }
+    return {} as ApproveOrderResponse;
   }
 }

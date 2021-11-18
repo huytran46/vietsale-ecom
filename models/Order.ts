@@ -78,3 +78,10 @@ export interface Order {
     logistic_service: LogisticService;
   };
 }
+
+export interface ApproveOrderPayload {
+  delivery_date: string;
+  note: string;
+  post_office: boolean;
+  is_viewable?: boolean;
+}

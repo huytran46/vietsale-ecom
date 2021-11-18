@@ -18,10 +18,6 @@ import {
   Icon,
   Wrap,
   WrapItem,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  FormHelperText,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -81,14 +77,7 @@ import { useFileCtx } from "context/FileProvider";
 import { MyImage } from "components/common/MyImage";
 import { FETCH_CATEGORIES, fetchProductCategories } from "services/public";
 import { useUser } from "context/UserProvider";
-
-type MyFormControlProps = {
-  id: string;
-  isInvalid?: boolean;
-  label: string;
-  helperTxt?: string;
-  errorTxt?: string;
-};
+import MyFormControl from "components/MyFormControl";
 
 const modules = {
   toolbar: [
@@ -134,26 +123,6 @@ const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
 });
-
-const MyFormControl: React.FC<MyFormControlProps> = ({
-  id,
-  isInvalid,
-  label,
-  helperTxt,
-  errorTxt,
-  children,
-}) => {
-  return (
-    <FormControl isInvalid={Boolean(isInvalid)} id={id}>
-      <FormLabel fontSize="sm" fontWeight="medium">
-        {label}
-      </FormLabel>
-      {children}
-      <FormHelperText fontSize="xs">{helperTxt}</FormHelperText>
-      <FormErrorMessage fontSize="sm">{errorTxt}</FormErrorMessage>
-    </FormControl>
-  );
-};
 
 const UpdateProductSchema = Yup.object().shape({
   productName: Yup.string().min(5, "Tên sản phẩm phải có ít nhất 5 kí tự"),
@@ -411,18 +380,12 @@ const MerchantAddProducts: NextPage<{
   return (
     <VStack spacing={6} pb={12}>
       <Box w="full">
-        <Alert
-          status="info"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          height="320px"
-        >
+        <Alert status="info" flexDirection="column" alignItems="center">
           <AlertIcon />
           <AlertTitle mt={4} mb={1} fontSize="lg">
             Quy trình cập nhật sản phẩm
           </AlertTitle>
-          <AlertDescription fontSize="sm" maxWidth="sm">
+          <AlertDescription fontSize="sm" maxWidth="xl">
             <Text>
               Sau khi cập nhật thông tin sản phẩm, đội Quản trị viên{" "}
               <b>Việt Sale</b> sẽ kiểm duyệt sản phẩm trong vòng 24h. Nếu sản

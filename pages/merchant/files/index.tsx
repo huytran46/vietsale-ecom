@@ -73,8 +73,9 @@ const MerchantFiles: NextPage<{ token: string; shopId: string }> = ({
   const [viewMode, setViewMode] = React.useState<ViewMode>(ViewMode.TABLE);
 
   const { data: response } = useQuery({
-    queryKey: [FETCH_SHOP_FILES_MERCH, shopId],
-    queryFn: ({ queryKey }) => fetchShopFilesForMerch(token, queryKey[1]),
+    queryKey: [FETCH_SHOP_FILES_MERCH, token, shopId],
+    queryFn: ({ queryKey }) => fetchShopFilesForMerch(queryKey[1], queryKey[2]),
+    enabled: shopId.length > 0 && token.length > 0,
   });
 
   const files = React.useMemo(
@@ -186,7 +187,7 @@ const MerchantFiles: NextPage<{ token: string; shopId: string }> = ({
 const handler: NextSsrIronHandler = async function ({ req, res, query }) {
   const auth = req.session.get(IronSessionKey.AUTH);
   const { shop_id } = query;
-  if (auth === undefined || !shop_id || shop_id === "") {
+  if (auth === undefined || !shop_id) {
     res.setHeader("location", "/");
     res.statusCode = 302;
     res.end();
@@ -195,8 +196,8 @@ const handler: NextSsrIronHandler = async function ({ req, res, query }) {
 
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(
-    [FETCH_SHOP_FILES_MERCH, shop_id as string],
-    ({ queryKey }) => fetchShopFilesForMerch(auth, queryKey[2])
+    [FETCH_SHOP_FILES_MERCH, auth, shop_id as string],
+    ({ queryKey }) => fetchShopFilesForMerch(queryKey[1], queryKey[2])
   );
 
   return {

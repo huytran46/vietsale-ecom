@@ -18,6 +18,7 @@ import moment from "moment";
 import { Order, OrderStatusMapLang } from "models/Order";
 import MyLinkOverlay from "components/common/MyLinkOverlay";
 import { formatCcy } from "utils";
+import OrderedProducts from "./OrderedProducts";
 
 type Props = {
   order: Order;
@@ -28,54 +29,6 @@ const OrderItem: React.FC<Props> = ({ order }) => {
     () => order?.edges?.shop,
     [order?.edges?.shop]
   );
-
-  const OrderedProducts = React.useMemo(() => {
-    if (!order?.edges?.has_items) return [];
-    const orderItems = order.edges.has_items;
-    return orderItems.map((oi, idx) => {
-      const cartItem = oi?.edges?.is_cart_item;
-      if (!cartItem) return;
-      const product = cartItem.edges.is_product;
-      if (!product) return;
-      const productCover = product.edges?.cover?.file_thumbnail;
-      return (
-        <HStack key={idx} w="full" spacing={3}>
-          <MyLinkOverlay
-            href={`/products/${product.id}`}
-            borderRadius="md"
-            borderWidth="1px"
-            borderColor="gray.400"
-          >
-            <Image
-              borderRadius="md"
-              boxSize="104px"
-              objectFit="cover"
-              src={productCover}
-              alt={product.name}
-            />
-          </MyLinkOverlay>
-          <Text flex="1" fontSize="sm">
-            {product.name}
-          </Text>
-          <Text fontSize="sm" fontWeight="medium">
-            {cartItem.qty}
-          </Text>
-          <Text fontSize="sm">x</Text>
-          <Text flex="1" fontSize="sm" fontWeight="medium">
-            {formatCcy(cartItem.orig_price)} đ
-          </Text>
-          <Text
-            textAlign="center"
-            fontSize="sm"
-            fontWeight="medium"
-            color="red.500"
-          >
-            {formatCcy(cartItem.qty * cartItem.orig_price)} đ
-          </Text>
-        </HStack>
-      );
-    });
-  }, [order.edges.has_items]);
 
   return (
     <VStack
@@ -132,7 +85,9 @@ const OrderItem: React.FC<Props> = ({ order }) => {
           </Text>
         </HStack>
       )}
-      <VStack w="full">{OrderedProducts}</VStack>
+      <VStack w="full">
+        <OrderedProducts order={order} />
+      </VStack>
       <Divider />
       <VStack w="full" spacing={0} pt={1} pb={3}>
         <HStack p={0} pl={3} w="full">

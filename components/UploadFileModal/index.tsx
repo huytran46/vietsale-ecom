@@ -97,8 +97,7 @@ const UploadFileModal: React.FC<Props> = ({
   });
 
   const { mutate: upload } = useMutation({
-    mutationFn: (file: FormData, cb?: UploadProgressCallback) =>
-      doUploadFile(token, shopId, file, cb),
+    mutationFn: (file: FormData) => doUploadFile(token, shopId, file),
   });
 
   const toast = useToast();
@@ -159,11 +158,12 @@ const UploadFileModal: React.FC<Props> = ({
       formData.append("uploadFile", file.raw);
       upload(formData, {
         onSuccess(data) {
-          if (data.success === false) {
+          if (data.success === false || !data) {
             toast({
               variant: "subtle",
               status: "error",
-              description: data.message,
+              description:
+                data?.message ?? "Đã xảy ra lỗi, không thể tải tệp lên",
             });
             return;
           }

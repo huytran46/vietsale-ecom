@@ -19,6 +19,8 @@ import "swiper/css/navigation";
 
 // React Quill HTML Editor
 import "react-quill/dist/quill.snow.css";
+// react-datepicker
+import "react-datepicker/dist/react-datepicker.css";
 
 // Custom context
 import { LayoutProvider } from "context/LayoutProvider";

@@ -34,7 +34,7 @@ type NavItemP = {
 
 const NavItem: React.FC<NavItemP> = ({ label, path }) => {
   const router = useRouter();
-  const isActive = router.asPath === path;
+  const isActive = router.asPath.includes(path);
   return (
     <ListItem
       d="flex"

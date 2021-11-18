@@ -1,7 +1,7 @@
 import React from "react";
 import type { NextPage } from "next";
 import {
-  chakra,
+  useBoolean,
   VStack,
   Image,
   Text,
@@ -44,6 +44,7 @@ import Empty from "components/common/Empty";
 import { useRouter } from "next/router";
 import { stringifyUrl } from "query-string";
 import MyLinkOverlay from "components/common/MyLinkOverlay";
+import ApproveOrderModal from "components/ApproveOrderModal";
 
 const selectStyle = {
   _selected: {
@@ -53,7 +54,13 @@ const selectStyle = {
   },
 };
 
-const OrderRow: React.FC<{ order: Order }> = ({ order }) => {
+const OrderRow: React.FC<{ order: Order; token: string; shopId: string }> = ({
+  order,
+  token,
+  shopId,
+}) => {
+  const [isModalOpen, modalHandler] = useBoolean();
+  const [isModalOpen2, modalHandler2] = useBoolean();
   const OrderedProducts = React.useMemo(() => {
     if (!order?.edges?.has_items) return [];
     const orderItems = order.edges.has_items;
@@ -87,7 +94,16 @@ const OrderRow: React.FC<{ order: Order }> = ({ order }) => {
               <HStack w="full" justifyContent="center">
                 <Text fontSize="sm">{cartItem.qty}</Text>
                 <Text fontSize="sm">x</Text>
-                <Text fontSize="sm">{formatCcy(cartItem.orig_price)} đ</Text>
+                <HStack w="full">
+                  <Text
+                    fontSize="xs"
+                    color="gray.500"
+                    textDecorationLine="line-through"
+                  >
+                    {formatCcy(cartItem.orig_price)} đ
+                  </Text>
+                  <Text fontSize="sm">{formatCcy(cartItem.price)}đ</Text>
+                </HStack>
               </HStack>
               <Text
                 textAlign="center"
@@ -95,7 +111,7 @@ const OrderRow: React.FC<{ order: Order }> = ({ order }) => {
                 fontSize="sm"
                 color="red.500"
               >
-                {formatCcy(cartItem.qty * cartItem.orig_price)} đ
+                {formatCcy(cartItem.qty * cartItem.price)} đ
               </Text>
             </VStack>
           </VStack>
@@ -107,10 +123,57 @@ const OrderRow: React.FC<{ order: Order }> = ({ order }) => {
   return (
     <Tr>
       <Td>
-        <chakra.code fontSize="xs" fontWeight="medium" p={1}>
+        <HStack alignItems="flex-start" fontSize="xs" fontWeight="medium">
           <Icon as={BiBarcode} fontSize="lg" mr={2} />
-          {order.code.toLocaleUpperCase()}
-        </chakra.code>
+          <VStack w="full" alignItems="flex-start">
+            <Text as="code">{order.code.toLocaleUpperCase()}</Text>
+            <HStack
+              w="full"
+              justifyContent="flex-start"
+              divider={<StackDivider />}
+            >
+              <ApproveOrderModal
+                token={token}
+                shopId={shopId}
+                isOpen={isModalOpen}
+                onOpen={modalHandler.on}
+                onClose={modalHandler.off}
+                order={order}
+              >
+                <Text
+                  color="brand.500"
+                  fontSize="11px"
+                  cursor="pointer"
+                  _hover={{
+                    textDecoration: "underline",
+                  }}
+                >
+                  Chuẩn bị hàng
+                </Text>
+              </ApproveOrderModal>
+              <ApproveOrderModal
+                token={token}
+                shopId={shopId}
+                isOpen={isModalOpen2}
+                onOpen={modalHandler2.on}
+                onClose={modalHandler2.off}
+                order={order}
+                postOfficeType
+              >
+                <Text
+                  color="brand.500"
+                  fontSize="11px"
+                  cursor="pointer"
+                  _hover={{
+                    textDecoration: "underline",
+                  }}
+                >
+                  Gửi bưu cục
+                </Text>
+              </ApproveOrderModal>
+            </HStack>
+          </VStack>
+        </HStack>
       </Td>
       <Td>
         <Badge p={1} colorScheme={OrderStatusMapLang[order.status].color}>
@@ -162,6 +225,7 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
         queryKey[3] as OrderStatus,
         { page: parseInt(queryKey[4]) }
       ),
+    enabled: token?.length > 0 && shopId?.length > 0,
   });
 
   const orders = React.useMemo(
@@ -189,6 +253,8 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
       query: { page_no: pageNo, status: orderStatus },
     });
     router.replace(nextPath);
+
+    // eslint-disable-next-line
   }, [pageNo, orderStatus]);
 
   return (
@@ -235,7 +301,9 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
         </Thead>
         <Tbody>
           {!isOrdersLoading &&
-            orders?.map((o, idx) => <OrderRow key={idx} order={o} />)}
+            orders?.map((o, idx) => (
+              <OrderRow key={idx} order={o} token={token} shopId={shopId} />
+            ))}
         </Tbody>
       </Table>
       {isOrdersLoading && (
