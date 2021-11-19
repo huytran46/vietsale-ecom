@@ -67,11 +67,17 @@ const ProductDetail: NextPage = () => {
   const { pid } = router.query;
   const { data: productDetail, isLoading } = useQuery(
     [FETCH_PRODUCT_DETAIL_URI, pid],
-    ({ queryKey }) => fetchProductDetail(queryKey[1] as string)
+    ({ queryKey }) => fetchProductDetail(queryKey[1] as string),
+    {
+      enabled: (pid?.length ?? 0) > 0,
+    }
   );
   const { data: productRelatives, isLoading: isRelativeLoading } = useQuery(
     [FETCH_PRODUCT_DETAIL_RELATIVE_URI, pid],
-    ({ queryKey }) => fetchProductDetailRelatives(queryKey[1] as string)
+    ({ queryKey }) => fetchProductDetailRelatives(queryKey[1] as string),
+    {
+      enabled: (pid?.length ?? 0) > 0,
+    }
   );
 
   const [amt, setValue] = React.useState(DEFAULT_QTY);
@@ -142,10 +148,14 @@ const ProductDetail: NextPage = () => {
     return productRelatives && productRelatives.slice(idx, idx + 6);
   }, [productRelatives]);
 
+  React.useEffect(() => {
+    setCoverUrl(productCoverUrl);
+  }, [productCoverUrl]);
+
   if (isLoading) return <Text>Đang tải trang...</Text>;
   if (!productDetail) return null;
 
-  const handleChangeAmt = (valueAsString: string, valueAsNumber: number) =>
+  const handleChangeAmt = (_: string, valueAsNumber: number) =>
     setValue(valueAsNumber);
 
   const closeImageViewer = () => {
