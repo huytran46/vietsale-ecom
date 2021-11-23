@@ -40,10 +40,7 @@ export const UserProvider: React.FC = ({ children }) => {
   const [platform, setPlatform] = React.useState("");
   const [user, setUser] = React.useState<User>();
   const [userAddresses, setUserAddresses] = React.useState<UserAddress[]>([]);
-  // const { data: userAddresses, refetch: fetchUserAddresses } = useQuery(
-  //   FETCH_DEFAULT_ADDRESS_URI,
-  //   doFetchDefaultAddress
-  // );
+
   const username = React.useMemo(() => {
     if (!user || user.email === "") return "";
     const split = user?.email?.split("@");
@@ -54,7 +51,6 @@ export const UserProvider: React.FC = ({ children }) => {
   const defaultAddress = React.useMemo(() => {
     if (!userAddresses) return;
     if (!userAddresses.length) return;
-    // if (typeof userAddresses === "string") return;
     if (!Array.isArray(userAddresses)) return;
     return userAddresses?.find((ad) => ad.is_default === true);
   }, [userAddresses]);
@@ -99,9 +95,6 @@ export const UserProvider: React.FC = ({ children }) => {
     setPlatform(pl);
   }, [promiseOfPlatform]);
 
-  // const getProvinces = React.useCallback(async () => {}, []);
-  // const getDistricts = React.useCallback(async () => {}, []);
-  // const getWards = React.useCallback(async () => {}, []);
   const fetchUserAddresses = React.useCallback(() => {
     if (!user) return;
     doFetchDefaultAddress()

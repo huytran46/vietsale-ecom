@@ -90,8 +90,9 @@ const Precheckout: NextPage<{ token: string }> = ({ token }) => {
     mutationKey: POST_PRECHECKOUT_URI,
   });
 
-  const { data: cartInfo, isLoading } = useQuery([FETCH_CART_URI, token], () =>
-    fetchCartInfo()
+  const { data: cartInfo, isLoading } = useQuery(
+    [FETCH_CART_URI, token],
+    ({ queryKey }) => fetchCartInfo(queryKey[1])
   );
 
   const [logChannels, setLogChannels] = React.useState<PreCheckoutResponse>();
@@ -487,8 +488,8 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
     return { props: {} };
   }
   const queryClient = new QueryClient();
-  await queryClient.prefetchQuery([FETCH_CART_URI, auth], () =>
-    fetchCartInfo()
+  await queryClient.prefetchQuery([FETCH_CART_URI, auth], ({ queryKey }) =>
+    fetchCartInfo(queryKey[1])
   );
 
   return {

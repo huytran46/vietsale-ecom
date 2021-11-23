@@ -28,19 +28,16 @@ import { useCartCtx } from "context/CartProvider";
 import { useUser } from "context/UserProvider";
 import MyLinkOverlay from "components/common/MyLinkOverlay";
 import { formatCcy } from "utils";
-// import {
-//   doFetchDefaultAddress,
-//   FETCH_DEFAULT_ADDRESS_URI,
-// } from "services/user";
 
-const Cart: NextPage = () => {
+const Cart: NextPage<{ token: string }> = ({ token }) => {
   const router = useRouter();
-  // const refetchTimes = React.useRef<number>(1);
   const {
     data: cartInfo,
     isLoading,
     refetch: refetchCartInfo,
-  } = useQuery(FETCH_CART_URI, () => fetchCartInfo());
+  } = useQuery([FETCH_CART_URI, token], ({ queryKey }) =>
+    fetchCartInfo(queryKey[1])
+  );
 
   const { setCartInfo, selectCartItems, selectedCartItems } = useCartCtx();
 
@@ -338,14 +335,13 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
   }
 
   const queryClient = new QueryClient();
-  await queryClient.prefetchQuery(FETCH_CART_URI, () => fetchCartInfo());
-  // await queryClient.prefetchQuery(
-  //   FETCH_DEFAULT_ADDRESS_URI,
-  //   doFetchDefaultAddress
-  // );
+  await queryClient.prefetchQuery([FETCH_CART_URI, auth], ({ queryKey }) =>
+    fetchCartInfo(queryKey[1])
+  );
 
   return {
     props: {
+      token: auth,
       dehydratedState: dehydrate(queryClient),
     },
   };

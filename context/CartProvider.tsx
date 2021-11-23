@@ -12,6 +12,7 @@ import {
   FETCH_CART_URI,
 } from "services/cart";
 import { ErrorCode, ErrorMap } from "constants/error";
+import { useUser } from "./UserProvider";
 type CartContext = {
   updateCartItem: (productId: string, qty: number) => void;
   removeCartItem: (cartItemId: string, qty: number) => void;
@@ -25,6 +26,7 @@ const CartCtx = React.createContext({} as CartContext);
 
 export const CartProvider: React.FC = ({ children }) => {
   const queryClient = useQueryClient();
+  const {} = useUser();
   const toast = useToast();
   const { mutate: addToTheCart } = useMutation({
     mutationKey: ADD_TO_CART_URI,

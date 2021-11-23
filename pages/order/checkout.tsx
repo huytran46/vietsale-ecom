@@ -26,7 +26,7 @@ import OrderGroupInfo from "components/Order/OrderGroup";
 import { useOrderCtx } from "context/OrderProvider";
 import { postCheckout, POST_CHECKOUT_URI } from "services/order";
 
-const Checkout: NextPage = () => {
+const Checkout: NextPage<{ token: string }> = ({ token }) => {
   const router = useRouter();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -66,7 +66,7 @@ const Checkout: NextPage = () => {
           duration: 1000,
           isClosable: true,
         });
-        await queryClient.invalidateQueries(FETCH_CART_URI);
+        await queryClient.invalidateQueries([FETCH_CART_URI, token]);
         await router.push("/order/success", "/thanh-cong");
       },
       onError() {
@@ -149,10 +149,13 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
     return { props: {} };
   }
   const queryClient = new QueryClient();
-  await queryClient.prefetchQuery(FETCH_CART_URI, () => fetchCartInfo());
+  await queryClient.prefetchQuery([FETCH_CART_URI, auth], ({ queryKey }) =>
+    fetchCartInfo(queryKey[1])
+  );
 
   return {
     props: {
+      token: auth,
       dehydratedState: dehydrate(queryClient),
     },
   };

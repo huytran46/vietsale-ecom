@@ -6,12 +6,7 @@ import { PreCheckoutResponse } from "models/request-response/Cart";
 import { Order, OrderStatus } from "models/Order";
 import { stringifyUrl } from "query-string";
 import { BaseReponse } from "models/common/BaseResponse";
-
-const config = (token: string) => ({
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+import { configHeader } from "utils";
 
 export const POST_PRECHECKOUT_URI = "/user/cart/checkout/pre";
 export async function postPrecheckout(
@@ -26,7 +21,7 @@ export async function postPrecheckout(
       >(
         HOST_URL_FOR_EXTERNAL_CALL + POST_PRECHECKOUT_URI,
         payload,
-        config(token)
+        configHeader(token)
       )
     );
 

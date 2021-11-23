@@ -1,10 +1,12 @@
 import axios from "axios";
-import { HOST_URL } from "constants/platform";
+import { HOST_URL, HOST_URL_FOR_EXTERNAL_CALL } from "constants/platform";
 import { Cart, CartInfo } from "models/Cart";
+import { BaseReponse } from "models/common/BaseResponse";
 import {
   AddToCartPayload,
   RemoveFromCartPayload,
 } from "models/request-response/Cart";
+import { configHeader } from "utils";
 
 export const ADD_TO_CART_URI = "/api/cart/add";
 export async function addToCart(payload: AddToCartPayload): Promise<Cart> {
@@ -34,11 +36,15 @@ export async function removeFromCart(
   }
 }
 
-export const FETCH_CART_URI = "/api/cart";
-export async function fetchCartInfo(): Promise<CartInfo> {
+export const FETCH_CART_URI = "/user/cart";
+export async function fetchCartInfo(token: string): Promise<CartInfo> {
   try {
-    const res = await axios.get<CartInfo>(HOST_URL + FETCH_CART_URI);
-    return res.data;
+    const res = await axios.get<BaseReponse<CartInfo>>(
+      HOST_URL_FOR_EXTERNAL_CALL + FETCH_CART_URI,
+      configHeader(token)
+    );
+    if (!res.data) return {} as any;
+    return res.data.data;
   } catch (error) {
     return {} as CartInfo;
   }

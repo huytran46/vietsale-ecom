@@ -116,3 +116,9 @@ export function splitName(name: string): string {
   const split = name.toLocaleLowerCase().trim().split(" ");
   return split.join("-");
 }
+
+export const configHeader = (token: string) => ({
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
