@@ -1,25 +1,37 @@
 import axios, { AxiosResponse } from "axios";
 import to from "await-to-js";
-import { HOST_URL } from "constants/platform";
+import { HOST_URL, HOST_URL_FOR_EXTERNAL_CALL } from "constants/platform";
 import { CheckoutPayload, PreCheckoutPayload } from "models/Cart";
 import { PreCheckoutResponse } from "models/request-response/Cart";
 import { Order, OrderStatus } from "models/Order";
 import { stringifyUrl } from "query-string";
+import { BaseReponse } from "models/common/BaseResponse";
 
-export const POST_PRECHECKOUT_URI = "/api/order/pre";
+const config = (token: string) => ({
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
+
+export const POST_PRECHECKOUT_URI = "/user/cart/checkout/pre";
 export async function postPrecheckout(
+  token: string,
   payload: PreCheckoutPayload
 ): Promise<PreCheckoutResponse> {
   try {
     const [err, res] = await to(
-      axios.post<PreCheckoutPayload, AxiosResponse<PreCheckoutResponse>>(
-        HOST_URL + POST_PRECHECKOUT_URI,
-        payload
+      axios.post<
+        PreCheckoutPayload,
+        AxiosResponse<BaseReponse<PreCheckoutResponse>>
+      >(
+        HOST_URL_FOR_EXTERNAL_CALL + POST_PRECHECKOUT_URI,
+        payload,
+        config(token)
       )
     );
 
-    if (err || !res) return {} as PreCheckoutResponse;
-    return res.data;
+    if (err || !res || !res.data) return {} as PreCheckoutResponse;
+    return res.data.data;
   } catch (error) {
     return {} as PreCheckoutResponse;
   }

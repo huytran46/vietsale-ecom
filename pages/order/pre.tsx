@@ -44,7 +44,7 @@ type OrderInfo = {
   finalOrderTotalAmt: number;
 };
 
-const Precheckout: NextPage = () => {
+const Precheckout: NextPage<{ token: string }> = ({ token }) => {
   const router = useRouter();
 
   const checkoutItems = React.useMemo(() => {
@@ -80,12 +80,17 @@ const Precheckout: NextPage = () => {
     [checkoutItems]
   );
 
-  const { mutate: doPrecheckout } = useMutation({
-    mutationFn: postPrecheckout,
+  const {
+    mutate: doPrecheckout,
+    isLoading: precheckoutLoading,
+    isError: precheckoutThrownError,
+  } = useMutation({
+    mutationFn: (payload: PreCheckoutPayload) =>
+      postPrecheckout(token, payload),
     mutationKey: POST_PRECHECKOUT_URI,
   });
 
-  const { data: cartInfo, isLoading } = useQuery(FETCH_CART_URI, () =>
+  const { data: cartInfo, isLoading } = useQuery([FETCH_CART_URI, token], () =>
     fetchCartInfo()
   );
 
@@ -101,6 +106,7 @@ const Precheckout: NextPage = () => {
   } = useOrderCtx();
 
   const orderGroups: Array<OrderGroup | undefined> = React.useMemo(() => {
+    if (precheckoutThrownError || precheckoutLoading) return [];
     if (!cartInfo || !logChannels || checkoutItems.length < 1) return [];
     const isCheckoutItemInvalid = checkoutItems.find(
       (coi) => coi === undefined
@@ -125,13 +131,10 @@ const Precheckout: NextPage = () => {
           cumm += qty * price;
           return cumm;
         }, 0);
-
         const orderLogChans = logChannels.logistic_channels?.find(
           (chann) => chann.shop_id === coi.shopID
         )?.channels;
-
         if (!orderLogChans) return;
-
         obj = {
           shopID: coi.shopID,
           shopName: group.shop_name,
@@ -142,11 +145,17 @@ const Precheckout: NextPage = () => {
         return obj;
       })
       .filter((_) => _ !== undefined);
-    if (!og || og.length < 1 || (og.length > 0 && !og[0])) return [];
+    if (!og || og.length < 1) return [];
     return og;
-  }, [logChannels, checkoutItems, cartInfo]);
+  }, [
+    logChannels,
+    checkoutItems,
+    cartInfo,
+    precheckoutThrownError,
+    precheckoutLoading,
+  ]);
 
-  const isItemLoading = React.useMemo(() => {
+  const isProcessingOrderGroups = React.useMemo(() => {
     return !orderGroups || orderGroups?.length < 1;
   }, [orderGroups]);
 
@@ -178,14 +187,99 @@ const Precheckout: NextPage = () => {
         setLogChannels(data);
       },
     });
-  }, [doPrecheckout, payload, setLogChannels]);
+  }, []);
 
-  if (isLoading || !cartInfo)
+  if (isLoading || isProcessingOrderGroups || !cartInfo || precheckoutLoading) {
     return (
-      <Box p={3} m={3}>
-        Đang tải...
-      </Box>
+      <VStack
+        h="fit-content"
+        alignItems="flex-start"
+        w="full"
+        spacing={6}
+        py={16}
+      >
+        <VStack w="full">
+          <Progress borderRadius="md" w="full" hasStripe value={50} />
+          <HStack w="full">
+            <Text
+              color="brand.700"
+              fontSize="xs"
+              fontWeight="medium"
+              maxW="100px"
+            >
+              Chọn phương thức thanh toán
+            </Text>
+            <Spacer />
+            <Text color="gray.500" textAlign="right" fontSize="xs" maxW="100px">
+              Xác nhận đơn hàng
+            </Text>
+          </HStack>
+        </VStack>
+        <Text fontSize="xl" textTransform="uppercase" fontWeight="bold">
+          Chọn phương thức vận chuyển
+        </Text>
+        <HStack
+          w="full"
+          mt={6}
+          alignItems="center"
+          justifyContent="center"
+          p={3}
+        >
+          <Spinner
+            thickness="2px"
+            speed="0.65s"
+            emptyColor="gray.200"
+            color="brand.500"
+            size="md"
+          />
+        </HStack>
+      </VStack>
     );
+  }
+
+  if (precheckoutThrownError) {
+    return (
+      <VStack
+        h="fit-content"
+        alignItems="flex-start"
+        w="full"
+        spacing={6}
+        py={16}
+      >
+        <VStack w="full">
+          <Progress borderRadius="md" w="full" hasStripe value={50} />
+          <HStack w="full">
+            <Text
+              color="brand.700"
+              fontSize="xs"
+              fontWeight="medium"
+              maxW="100px"
+            >
+              Chọn phương thức thanh toán
+            </Text>
+            <Spacer />
+            <Text color="gray.500" textAlign="right" fontSize="xs" maxW="100px">
+              Xác nhận đơn hàng
+            </Text>
+          </HStack>
+        </VStack>
+        <Text fontSize="xl" textTransform="uppercase" fontWeight="bold">
+          Chọn phương thức vận chuyển
+        </Text>
+        <HStack
+          w="full"
+          mt={6}
+          alignItems="center"
+          justifyContent="center"
+          p={3}
+        >
+          <Text color="danger">
+            Đã có lỗi xảy ra. Vui lòng thử lại sau ít phút
+          </Text>
+        </HStack>
+      </VStack>
+    );
+  }
 
   return (
     <VStack
@@ -217,18 +311,6 @@ const Precheckout: NextPage = () => {
       </Text>
       <Grid w="full" templateColumns="repeat(8, 1fr)" gap={4}>
         <GridItem colSpan={[8, 8, 6]}>
-          {isItemLoading && (
-            <HStack w="full" mt={6} justifyContent="center" p={3}>
-              <Spinner
-                thickness="2px"
-                speed="0.65s"
-                emptyColor="gray.200"
-                color="brand.500"
-                size="md"
-              />
-            </HStack>
-          )}
-
           <VStack w="full" spacing={6}>
             {orderGroups
               ?.filter((_) => _)
@@ -361,8 +443,7 @@ const Precheckout: NextPage = () => {
                       fontSize={totalFinalPrice === 0 ? "sm" : "md"}
                       fontWeight="medium"
                     >
-                      {!isItemLoading &&
-                      (totalFinalPrice === 0 || isNaN(totalFinalPrice))
+                      {totalFinalPrice === 0 || isNaN(totalFinalPrice)
                         ? "0đ"
                         : formatCcy(totalFinalPrice) + " đ"}
                     </Text>
@@ -406,10 +487,13 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
     return { props: {} };
   }
   const queryClient = new QueryClient();
-  await queryClient.prefetchQuery(FETCH_CART_URI, () => fetchCartInfo());
+  await queryClient.prefetchQuery([FETCH_CART_URI, auth], () =>
+    fetchCartInfo()
+  );
 
   return {
     props: {
+      token: auth,
       dehydratedState: dehydrate(queryClient),
     },
   };

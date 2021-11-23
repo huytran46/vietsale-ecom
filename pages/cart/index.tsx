@@ -100,8 +100,8 @@ const Cart: NextPage = () => {
       stringifyUrl({
         url: "/order/pre",
         query: { selItems: selItemStr, orderInfo: orderInfoStr },
-      }),
-      "chon-phuong-thuc-thanh-toan"
+      })
+      // "chon-phuong-thuc-thanh-toan"
     );
   }, [
     selectedCartItems,
