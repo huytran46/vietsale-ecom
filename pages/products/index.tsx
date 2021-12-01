@@ -22,7 +22,7 @@ import { MdClose } from "react-icons/md";
 import { fetchProducts, FETCH_PRODUCT_URI } from "services/product";
 import ProductItem from "components/ProductItem";
 import { Product } from "models/Product";
-import { parse } from "query-string";
+import { stringifyUrl } from "query-string";
 
 const PAGE_SIZE = 60;
 
@@ -51,18 +51,41 @@ const Products: NextPage = () => {
 
   const [productData, setProductData] = React.useState<Product[]>([]);
 
-  const removeQueries = React.useCallback(() => {
-    const currentPath = window.location.search.substring(1);
-    const queryObj = JSON.parse(
-      '{"' +
-        decodeURI(currentPath)
-          .replace(/"/g, '\\"')
-          .replace(/&/g, '","')
-          .replace(/=/g, '":"') +
-        '"}'
-    );
-    router.replace("/products");
-  }, [router]);
+  const removeQueries = React.useCallback(
+    (key: string | string[]) => {
+      const currentPath = window.location.search.substring(1);
+      const queryObj = JSON.parse(
+        '{"' +
+          decodeURI(currentPath)
+            .replace(/"/g, '\\"')
+            .replace(/&/g, '","')
+            .replace(/=/g, '":"') +
+          '"}'
+      );
+
+      if (typeof key === "string") {
+        let foundK: string = "";
+        if (
+          Object.entries(queryObj).find(([k, val]) => {
+            if (val === key) {
+              foundK = k;
+            }
+            return val === key;
+          })
+        ) {
+          queryObj[foundK] = undefined;
+        }
+      }
+
+      const newUrl = stringifyUrl({
+        url: window.location.pathname,
+        query: queryObj,
+      });
+
+      router.replace(newUrl);
+    },
+    [router]
+  );
 
   React.useEffect(() => {
     if (justMounted.current) {
@@ -82,7 +105,7 @@ const Products: NextPage = () => {
     if (isOldProductData || isProductRefetching || !products) return;
     if (products.length < PAGE_SIZE) {
       setNoMoreDate(true);
-      return;
+      // return;
     } else {
       setNoMoreDate(false);
     }
@@ -108,7 +131,7 @@ const Products: NextPage = () => {
     [_q, pc_name]
   );
 
-  if (isLoading) return null;
+  if (isLoading) return <></>;
   if (!products || !productData) return NotFound;
 
   function triggerBottomState(isVisible: boolean) {
@@ -121,8 +144,8 @@ const Products: NextPage = () => {
 
   return (
     <VStack h="fit-content" w="full" spacing={10} py={10}>
-      {(pc_name || _q) && (
-        <Wrap w="full">
+      <Wrap w="full">
+        {_q && (
           <WrapItem>
             <Badge
               opacity={1}
@@ -132,18 +155,39 @@ const Products: NextPage = () => {
               p={1}
             >
               <Text fontWeight="bold" textTransform="none" color="white" mr="1">
-                {_q ?? pc_name}
+                {_q}
               </Text>
               <Icon
                 color="white"
                 cursor="pointer"
                 as={MdClose}
-                onClick={removeQueries}
+                onClick={() => removeQueries(_q)}
               />
             </Badge>
           </WrapItem>
-        </Wrap>
-      )}
+        )}
+        {pc_name && (
+          <WrapItem>
+            <Badge
+              opacity={1}
+              d="flex"
+              alignItems="center"
+              colorScheme="brand"
+              p={1}
+            >
+              <Text fontWeight="bold" textTransform="none" color="white" mr="1">
+                {pc_name}
+              </Text>
+              <Icon
+                color="white"
+                cursor="pointer"
+                as={MdClose}
+                onClick={() => removeQueries(pc_name)}
+              />
+            </Badge>
+          </WrapItem>
+        )}
+      </Wrap>
 
       {productData.length < 1 && isNoMore ? (
         NotFound

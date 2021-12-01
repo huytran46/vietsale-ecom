@@ -127,7 +127,7 @@ const CreateProductSchema = Yup.object().shape({
     .nullable(false)
     .required("Không thể thiếu tên sản phẩm"),
   cover: Yup.string().nullable(false).required("Không thể thiếu ảnh đại diện"),
-  sku: Yup.string().nullable(false).required("Không thể thiếu SKU sản phẩm"),
+  sku: Yup.string(),
   unitValueID: Yup.number()
     .min(0, "Đơn vị tính không hợp lệ")
     .nullable(false)
@@ -335,11 +335,6 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
   }, [selectedCategoryIds, productCategories]);
 
   React.useEffect(() => {
-    if (!categoryName || categoryName === "") return;
-    openPopup();
-  }, [categoryName]);
-
-  React.useEffect(() => {
     setFieldValue("cateIDs", selectedCategoryIds);
   }, [selectedCategoryIds, setFieldValue]);
 
@@ -425,103 +420,104 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
         boxShadow="md"
         borderRadius="sm"
       >
-        <Box>
-          <MyFormControl
-            id="cateName"
-            label="Chọn danh mục sản phẩm"
-            errorTxt={`${errors.cateIDs}`}
+        <MyFormControl
+          id="cateName"
+          label="Chọn danh mục sản phẩm*"
+          errorTxt={`${errors.cateIDs}`}
+        >
+          <Popover
+            returnFocusOnClose={true}
+            isOpen={isProductCategoryPopup}
+            onClose={closePopup}
+            placement="bottom"
+            closeOnBlur={false}
+            autoFocus={false}
           >
-            <Popover
-              returnFocusOnClose={true}
-              isOpen={isProductCategoryPopup}
-              onClose={closePopup}
-              placement="bottom"
-              closeOnBlur={false}
-              autoFocus={false}
-            >
-              <PopoverTrigger>
-                <Input
-                  id="cateName"
-                  name="cateName"
-                  type="text"
-                  focusBorderColor="none"
-                  borderLeftRadius="sm"
-                  colorScheme="brand"
-                  variant="outline"
-                  placeholder="Nhập tên danh mục"
-                  onChange={_debounce(
-                    (e) => setCategoryName(e.target.value),
-                    500,
-                    { trailing: true }
-                  )}
-                />
-              </PopoverTrigger>
-              <PopoverContent>
-                <PopoverHeader>
-                  <HStack>
-                    <Text fontWeight="semibold">Chọn danh mục sản phẩm</Text>
-                    <PopoverCloseButton top="8px" />
-                  </HStack>
-                </PopoverHeader>
-                <PopoverArrow />
-                <PopoverBody minH="300px" maxH="500px" overflowY="auto">
-                  {!isCategoriesLoading && (
-                    <List size="sm" w="full" spacing={3}>
-                      {productCategories
-                        ?.filter((pc) =>
-                          pc.category_name
-                            .trim()
-                            .toLowerCase()
-                            .includes(categoryName.trim().toLowerCase())
-                        )
-                        .map((pc, idx) => (
-                          <ListItem key={idx}>
-                            <Flex alignItems="center" w="full">
-                              <Text fontSize="sm" isTruncated>
-                                <Highlighter
-                                  searchWords={[categoryName]}
-                                  autoEscape={true}
-                                  textToHighlight={pc.category_name}
-                                />
-                              </Text>
-                              <Spacer />
-                              <ListIcon
-                                as={BsCircle}
-                                bg={
-                                  selectedCategoryIds.indexOf(pc.id) > -1
-                                    ? "brand.500"
-                                    : ""
-                                }
-                                color={
-                                  selectedCategoryIds.indexOf(pc.id) > -1
-                                    ? "brand.900"
-                                    : ""
-                                }
-                                onClick={() => addCategory(pc.id)}
-                                borderRadius="50%"
-                                cursor="pointer"
+            <PopoverTrigger>
+              <Input
+                id="cateName"
+                name="cateName"
+                type="text"
+                focusBorderColor="none"
+                borderLeftRadius="sm"
+                colorScheme="brand"
+                variant="outline"
+                placeholder="Nhập tên danh mục"
+                onChange={_debounce(
+                  (e) => {
+                    setPCPopup(true);
+                    setCategoryName(e.target.value);
+                  },
+                  500,
+                  { trailing: true }
+                )}
+              />
+            </PopoverTrigger>
+            <PopoverContent>
+              <PopoverHeader>
+                <HStack>
+                  <Text fontWeight="semibold">Chọn danh mục sản phẩm</Text>
+                  <PopoverCloseButton top="8px" />
+                </HStack>
+              </PopoverHeader>
+              <PopoverArrow />
+              <PopoverBody minH="300px" maxH="500px" overflowY="auto">
+                {!isCategoriesLoading && (
+                  <List size="sm" w="full" spacing={3}>
+                    {productCategories
+                      ?.filter((pc) =>
+                        pc.category_name
+                          .trim()
+                          .toLowerCase()
+                          .includes(categoryName.trim().toLowerCase())
+                      )
+                      .map((pc, idx) => (
+                        <ListItem key={idx}>
+                          <Flex alignItems="center" w="full">
+                            <Text fontSize="sm" isTruncated>
+                              <Highlighter
+                                searchWords={[categoryName]}
+                                autoEscape={true}
+                                textToHighlight={pc.category_name}
                               />
-                            </Flex>
-                          </ListItem>
-                        ))}
-                    </List>
-                  )}
-                  {isCategoriesLoading && (
-                    <Center minH="300px" w="full" h="full">
-                      <Spinner
-                        thickness="4px"
-                        speed="0.65s"
-                        emptyColor="gray.200"
-                        color="blue.500"
-                        size="xl"
-                      />
-                    </Center>
-                  )}
-                </PopoverBody>
-              </PopoverContent>
-            </Popover>
-          </MyFormControl>
-        </Box>
+                            </Text>
+                            <Spacer />
+                            <ListIcon
+                              as={BsCircle}
+                              bg={
+                                selectedCategoryIds.indexOf(pc.id) > -1
+                                  ? "brand.500"
+                                  : ""
+                              }
+                              color={
+                                selectedCategoryIds.indexOf(pc.id) > -1
+                                  ? "brand.900"
+                                  : ""
+                              }
+                              onClick={() => addCategory(pc.id)}
+                              borderRadius="50%"
+                              cursor="pointer"
+                            />
+                          </Flex>
+                        </ListItem>
+                      ))}
+                  </List>
+                )}
+                {isCategoriesLoading && (
+                  <Center minH="300px" w="full" h="full">
+                    <Spinner
+                      thickness="4px"
+                      speed="0.65s"
+                      emptyColor="gray.200"
+                      color="blue.500"
+                      size="xl"
+                    />
+                  </Center>
+                )}
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
+        </MyFormControl>
 
         <MyFormControl label="Danh mục đang chọn" id="cateIDs">
           <Wrap>
@@ -573,7 +569,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
             <WrapItem>
               <MyFormControl
                 id="cover"
-                label="Hình ảnh đại diện"
+                label="Hình ảnh đại diện*"
                 errorTxt={errors.cover}
               >
                 <VStack alignItems="flex-start">
@@ -713,7 +709,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
             <WrapItem>
               <MyFormControl
                 id="productName"
-                label="Tên sản phẩm"
+                label="Tên sản phẩm*"
                 errorTxt={errors.productName}
               >
                 <Input
@@ -776,7 +772,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
           <Wrap spacing={12} maxW="full">
             <WrapItem>
               <MyFormControl
-                label="Đơn vị"
+                label="Đơn vị*"
                 id="unitValueID"
                 helperTxt="Chọn đơn vị cho sản phẩm"
                 errorTxt={errors.unitValueID}
@@ -824,7 +820,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
             <WrapItem>
               <MyFormControl
                 id="quantity"
-                label="Số lượng"
+                label="Số lượng*"
                 errorTxt={errors.quantity}
               >
                 <InputGroup w="200px">
@@ -862,7 +858,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
             <WrapItem>
               <MyFormControl
                 id="weight"
-                label="Cân nặng"
+                label="Cân nặng*"
                 errorTxt={errors.weight}
               >
                 <InputGroup w="200px">
@@ -897,7 +893,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
             <WrapItem>
               <MyFormControl
                 id="price"
-                label="Giá sản phẩm"
+                label="Giá sản phẩm*"
                 helperTxt={`Giá hiển thị ${formatCcy(values.price)}đ`}
                 errorTxt={errors.price}
               >
@@ -993,7 +989,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
             <WrapItem>
               <MyFormControl
                 id="size"
-                label="Kích thước"
+                label="Kích thước*"
                 helperTxt="Kích thước sẽ được dùng để tính cước vận chuyển cho món hàng."
                 errorTxt={errors.length ?? errors.width ?? errors.height}
               >
@@ -1106,7 +1102,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
         <Box maxW="full">
           <MyFormControl
             id="desc"
-            label="Mô tả đầy đủ sản phẩm"
+            label="Mô tả đầy đủ sản phẩm*"
             errorTxt={errors.desc}
           >
             <QuillNoSSRWrapper
@@ -1141,6 +1137,28 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
           </Button>
         </HStack>
       </VStack>
+      {Object.values(errors).length > 0 && Object.values(touched).length > 0 && (
+        <Box w="full">
+          <Alert
+            status="error"
+            flexDirection="column"
+            alignItems="flex-start"
+            justifyContent="center"
+          >
+            <AlertTitle d="flex" mt={4} mb={1} fontSize="lg">
+              <AlertIcon />
+              Lỗi
+            </AlertTitle>
+            <AlertDescription fontSize="sm" maxWidth="sm">
+              <OrderedList w="full">
+                {Object.values(errors).map((e, idx) => (
+                  <ListItem key={idx}>{e}</ListItem>
+                ))}
+              </OrderedList>
+            </AlertDescription>
+          </Alert>
+        </Box>
+      )}
     </VStack>
   );
 };

@@ -1,17 +1,16 @@
 import React from "react";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { useRouter } from "next/router";
-import { useQuery } from "react-query";
+import { useToast } from "@chakra-ui/react";
 
 import { User } from "models/User";
 import { UserAddress } from "models/UserAddress";
-import {
-  doFetchDefaultAddress,
-  FETCH_DEFAULT_ADDRESS_URI,
-} from "services/user";
+import { doFetchDefaultAddress } from "services/user";
 import { LocalStorageKey } from "constants/local-storage";
 import { doLogout } from "services/auth";
 import { Shop } from "models/Shop";
+import { fetchDistricts, fetchProvinces, fetchWards } from "services/public";
+import { District, Province, Ward } from "models/Location";
 
 type UserContext = {
   visitorId: string;
@@ -26,6 +25,22 @@ type UserContext = {
   logout: () => Promise<void>;
   shopId?: string;
   shopInfo?: Shop;
+
+  provinces: Province[];
+  districts: District[];
+  wards: Ward[];
+
+  selectedProvince?: Province;
+  selectedDistrict?: District;
+  selectedWard?: Ward;
+
+  setSelectedProvince: (next: Province) => void;
+  setSelectedDistrict: (next: District) => void;
+  setSelectedWard: (next: Ward) => void;
+
+  doFetchProvinces: () => void;
+  doFetchDistricts: (parentId: number) => void;
+  doFetchWards: (parentId: number) => void;
 };
 
 const UserCtx = React.createContext<UserContext>({} as UserContext);
@@ -36,10 +51,19 @@ const fpPromise =
 
 export const UserProvider: React.FC = ({ children }) => {
   const router = useRouter();
+  const toaster = useToast();
+
   const [visitorId, setVisitorId] = React.useState("");
   const [platform, setPlatform] = React.useState("");
   const [user, setUser] = React.useState<User>();
   const [userAddresses, setUserAddresses] = React.useState<UserAddress[]>([]);
+
+  const [provinces, setProvinces] = React.useState<Province[]>([]);
+  const [selectedProvince, setSelectedProvince] = React.useState<Province>();
+  const [districts, setDistricts] = React.useState<District[]>([]);
+  const [selectedDistrict, setSelectedDistrict] = React.useState<District>();
+  const [wards, setWards] = React.useState<Ward[]>([]);
+  const [selectedWard, setSelectedWard] = React.useState<Ward>();
 
   const username = React.useMemo(() => {
     if (!user || user.email === "") return "";
@@ -132,6 +156,48 @@ export const UserProvider: React.FC = ({ children }) => {
     return shopInfo.id;
   }, [user, shopInfo]);
 
+  const doFetchProvinces = React.useCallback(() => {
+    fetchProvinces()
+      .then((res) => setProvinces(res))
+      .catch((err) =>
+        toaster({
+          description: err,
+          title: "Lỗi",
+          status: "error",
+        })
+      );
+  }, [toaster]);
+
+  const doFetchDistricts = React.useCallback(
+    (provinceId: number) => {
+      fetchDistricts({ province_id: provinceId })
+        .then((res) => setDistricts(res))
+        .catch((err) =>
+          toaster({
+            description: err,
+            title: "Lỗi",
+            status: "error",
+          })
+        );
+    },
+    [toaster]
+  );
+
+  const doFetchWards = React.useCallback(
+    (districtId: number) => {
+      fetchWards({ district_id: districtId })
+        .then((res) => setWards(res))
+        .catch((err) =>
+          toaster({
+            description: err,
+            title: "Lỗi",
+            status: "error",
+          })
+        );
+    },
+    [toaster]
+  );
+
   React.useEffect(() => {
     if (defaultAddress) return;
     fetchUserAddresses();
@@ -151,6 +217,17 @@ export const UserProvider: React.FC = ({ children }) => {
     doGetPlatform();
   }, [visitorId, doGetVisitorId, doGetPlatform]);
 
+  React.useEffect(() => {
+    if (!selectedProvince) return;
+    console.log("selectedProvince:", selectedProvince.name);
+    doFetchDistricts(selectedProvince.id);
+  }, [selectedProvince]);
+
+  React.useEffect(() => {
+    if (!selectedDistrict) return;
+    doFetchWards(selectedDistrict.id);
+  }, [selectedDistrict]);
+
   return (
     <UserCtx.Provider
       value={{
@@ -166,6 +243,22 @@ export const UserProvider: React.FC = ({ children }) => {
         logout,
         shopId,
         shopInfo,
+
+        provinces,
+        districts,
+        wards,
+
+        selectedProvince,
+        selectedDistrict,
+        selectedWard,
+
+        setSelectedProvince,
+        setSelectedDistrict,
+        setSelectedWard,
+
+        doFetchProvinces,
+        doFetchDistricts,
+        doFetchWards,
       }}
     >
       {children}

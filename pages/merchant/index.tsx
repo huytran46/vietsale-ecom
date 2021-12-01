@@ -21,7 +21,7 @@ const MerchantHome: NextPage = () => {
   return (
     <VStack h="fit-content" alignItems="flex-start" w="full" spacing={6} py={6}>
       <Text w="full" fontSize="lg" fontWeight="bold" textTransform="uppercase">
-        Quản lý đơn mua
+        Kênh dành cho người bán
       </Text>
     </VStack>
   );

@@ -58,11 +58,13 @@ import ProductItem from "components/ProductItem";
 import UserAddressModal from "components/UserAddressModal";
 import { useCartCtx } from "context/CartProvider";
 import MyLinkOverlay from "components/common/MyLinkOverlay";
+import withSession, { NextSsrIronHandler } from "utils/session";
+import { IronSessionKey } from "constants/session";
 
 const DEFAULT_QTY = 1;
 const MINIMUM_QTY = 1;
 
-const ProductDetail: NextPage = () => {
+const ProductDetail: NextPage<{ token?: string }> = ({ token }) => {
   const router = useRouter();
   const { pid } = router.query;
   const { data: productDetail, isLoading } = useQuery(
@@ -332,7 +334,8 @@ const ProductDetail: NextPage = () => {
                     <Text fontSize="xs">{fullDetailAddress}</Text>
                   </VStack>
                 )}
-                {!Boolean(user) && (
+
+                {(!Boolean(user) || !Boolean(token)) && (
                   <VStack>
                     <Text fontSize="xs">
                       Hãy{" "}
@@ -349,7 +352,8 @@ const ProductDetail: NextPage = () => {
                     </Text>
                   </VStack>
                 )}
-                {Boolean(user) && !Boolean(defaultAddress) && (
+
+                {Boolean(user) && Boolean(token) && !Boolean(defaultAddress) && (
                   <VStack>
                     <Text fontSize="xs">
                       Hãy nhập địa chỉ để nhận báo giá chính xác về phí vận
@@ -359,6 +363,7 @@ const ProductDetail: NextPage = () => {
                       isOpen={isOpen}
                       onOpen={onOpen}
                       onClose={onClose}
+                      token={token}
                     >
                       <Text
                         cursor="pointer"
@@ -600,8 +605,16 @@ const ProductDetail: NextPage = () => {
   );
 };
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  if (!context.params) {
+const handler: NextSsrIronHandler = async function ({ req, res, query }) {
+  const auth = req.session.get(IronSessionKey.AUTH);
+  // if (auth === undefined) {
+  //   res.setHeader("location", "/");
+  //   res.statusCode = 302;
+  //   res.end();
+  //   return { props: {} };
+  // }
+
+  if (!query) {
     return {
       redirect: {
         destination: "/",
@@ -609,7 +622,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
     };
   }
-  const { pid } = context.params;
+
+  const { pid } = query;
   if (!pid) {
     return {
       redirect: {
@@ -632,9 +646,48 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
+      token: auth,
       dehydratedState: dehydrate(queryClient),
     },
   };
-}
+};
+
+export const getServerSideProps = withSession(handler);
+// export async function getServerSideProps(context: GetServerSidePropsContext) {
+//   if (!context.params) {
+//     return {
+//       redirect: {
+//         destination: "/",
+//         permanent: false,
+//       },
+//     };
+//   }
+//   const { pid } = context.params;
+//   if (!pid) {
+//     return {
+//       redirect: {
+//         destination: "/",
+//         permanent: false,
+//       },
+//     };
+//   }
+//   const queryClient = new QueryClient();
+
+//   await queryClient.prefetchQuery(
+//     [FETCH_PRODUCT_DETAIL_URI, pid],
+//     ({ queryKey }) => fetchProductDetail(queryKey[1] as string)
+//   );
+
+//   await queryClient.prefetchQuery(
+//     [FETCH_PRODUCT_DETAIL_RELATIVE_URI, pid],
+//     ({ queryKey }) => fetchProductDetailRelatives(queryKey[1] as string)
+//   );
+
+//   return {
+//     props: {
+//       dehydratedState: dehydrate(queryClient),
+//     },
+//   };
+// }
 
 export default ProductDetail;

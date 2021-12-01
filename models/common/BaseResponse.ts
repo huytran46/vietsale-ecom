@@ -11,4 +11,4 @@ export interface BaseReponse<T> {
   action: number;
 }
 
-export type Base<T> = AxiosResponse<BaseReponse<T>>;
+export type BasePostResponse<T> = AxiosResponse<BaseReponse<T>>;

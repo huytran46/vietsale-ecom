@@ -1,3 +1,4 @@
+import { number } from "yup/lib/locale";
 import { District, Province, Ward } from "./Location";
 
 type UserAddressEdges = {
@@ -16,3 +17,13 @@ export interface UserAddress {
   updated_at: string;
   edges: UserAddressEdges;
 }
+
+export type AddAddressPayload = {
+  fullname: string;
+  phone: string;
+  address: string;
+  provinceID: number;
+  districtID: number;
+  wardID: number;
+  isDefault: boolean;
+};

@@ -4,8 +4,7 @@ import { useRouter } from "next/router";
 import {
   VStack,
   Box,
-  Grid,
-  GridItem,
+  HStack,
   Image,
   Avatar,
   SimpleGrid,
@@ -19,9 +18,13 @@ import { Autoplay, Pagination, Navigation } from "swiper";
 import { dehydrate, QueryClient, useQuery } from "react-query";
 import VisibilitySensor from "react-visibility-sensor";
 
-import { fetchHome, FETCH_HOME_URI } from "services/public";
+import {
+  fetchHome,
+  fetchProductCategories,
+  FETCH_CATEGORIES,
+  FETCH_HOME_URI,
+} from "services/public";
 import { HomeInfo } from "models/request-response/Home";
-import { ProductCategory } from "models/ProductCategory";
 import MetaCard from "components/MetaCard";
 import ProductItem from "components/ProductItem";
 import { fetchProducts, FETCH_PRODUCT_URI } from "services/product";
@@ -45,20 +48,34 @@ const Home: NextPage = () => {
     fetchProducts({ page: productPage, pageSize: PAGE_SIZE })
   );
 
+  const { data: categories, isLoading: categoriesLoading } = useQuery(
+    FETCH_CATEGORIES,
+    fetchProductCategories
+  );
+
   const [productData, setProductData] = React.useState<Product[]>([]);
 
   const productCategories = React.useMemo(() => {
-    if (!data?.product_categories) return [];
-    return data.product_categories.sort(
-      (a: ProductCategory, b: ProductCategory) => {
-        const aP = a.priority ?? 0;
-        const bP = b.priority ?? 0;
-        if (aP < bP) return 1;
-        if (aP > bP) return -1;
-        return 0;
-      }
+    if (!data?.product_categories || categoriesLoading || !categories)
+      return [];
+
+    const prodCategories = categories
+      .filter((pc) => Boolean(pc.edges?.children?.length))
+      .map((pc) => pc.edges?.children)
+      .filter((pc) => Boolean(pc))
+      .flat();
+
+    return [...prodCategories, ...data.product_categories].filter(
+      (pc) => !Boolean(pc?.priority)
     );
-  }, [data?.product_categories]);
+    // return mergedCategories.sort((a?: ProductCategory, b?: ProductCategory) => {
+    //   const aP = a?.priority ?? 0;
+    //   const bP = b?.priority ?? 0;
+    //   if (aP < bP) return 1;
+    //   if (aP > bP) return -1;
+    //   return 0;
+    // });
+  }, [data?.product_categories, categories, categoriesLoading]);
 
   const totalAvailableProducts = React.useMemo(
     () => productData?.length ?? 0,
@@ -97,62 +114,32 @@ const Home: NextPage = () => {
     <VStack h="fit-content" w="full" spacing={10} py={10}>
       {/* Banner */}
       {data?.banners && (
-        <Grid columnGap={2} templateColumns="repeat(4, 1fr)" w="full" h="auto">
-          <GridItem colSpan={3} w="full">
-            <Swiper
-              modules={[Autoplay, Pagination, Navigation]}
-              spaceBetween={50}
-              slidesPerView={1}
-              autoplay={{ delay: 3000 }}
-              pagination={{ clickable: true }}
-              navigation
-            >
-              {data?.banners &&
-                data.banners.map((banner, idx) => (
-                  <SwiperSlide key={idx}>
-                    <Box bg="brand.500" w="full" h={300}>
-                      <Image
-                        src={banner.edges?.cover?.file_thumbnail}
-                        alt="a-shop-in-vs"
-                        w="full"
-                        maxH="full"
-                        maxW="full"
-                        objectFit="cover"
-                      />
-                    </Box>
-                  </SwiperSlide>
-                ))}
-            </Swiper>
-          </GridItem>
-          <GridItem colSpan={1} w="full">
-            <VStack w="full" h={300}>
-              <Box w="full" h="50%">
-                <Image
-                  src={
-                    data?.banners[1].edges?.cover?.file_thumbnail ??
-                    "https://fakeimg.pl/300/"
-                  }
-                  alt="a-shop-in-vs"
-                  maxH="full"
-                  maxW="full"
-                  w="full"
-                />
-              </Box>
-              <Box w="full" h="47%">
-                <Image
-                  src={
-                    data?.banners[2].edges?.cover?.file_thumbnail ??
-                    "https://fakeimg.pl/300/"
-                  }
-                  alt="a-shop-in-vs"
-                  maxH="full"
-                  maxW="full"
-                  w="full"
-                />
-              </Box>
-            </VStack>
-          </GridItem>
-        </Grid>
+        <HStack w="full">
+          <Swiper
+            modules={[Autoplay, Pagination, Navigation]}
+            spaceBetween={50}
+            slidesPerView={1}
+            autoplay={{ delay: 3000 }}
+            pagination={{ clickable: true }}
+            navigation
+          >
+            {data?.banners &&
+              data.banners.map((banner, idx) => (
+                <SwiperSlide key={idx}>
+                  <Box bg="brand.500" w="full" h={300}>
+                    <Image
+                      src={banner.edges?.cover?.file_thumbnail}
+                      alt="a-shop-in-vs"
+                      w="full"
+                      maxH="full"
+                      maxW="full"
+                      objectFit="cover"
+                    />
+                  </Box>
+                </SwiperSlide>
+              ))}
+          </Swiper>
+        </HStack>
       )}
 
       {/* Hot deals */}
@@ -205,18 +192,20 @@ const Home: NextPage = () => {
               cursor="pointer"
               onClick={async () =>
                 router.push(
-                  `/products?pc=${cate.id}&pc_name=${cate.category_name}`
+                  `/products?pc=${cate?.id}&pc_name=${cate?.category_name}`
                 )
               }
             >
               <Avatar
                 size="md"
-                name={cate.category_name}
-                src={cate.edges?.icon?.file_thumbnail}
+                name={cate?.category_name}
+                src={cate?.edges?.icon?.file_thumbnail ?? "favicon.png"}
                 mb={2}
+                borderWidth="1px"
+                borderColor="brand.700"
               />
               <Text maxWidth="full" fontSize="xs" isTruncated>
-                {cate.category_name}
+                {cate?.category_name}
               </Text>
             </Box>
           ))}
@@ -296,6 +285,10 @@ const handler: NextSsrIronHandler = async function ({ req, res }) {
   await queryClient.prefetchQuery(FETCH_PRODUCT_URI, () =>
     fetchProducts({ pageSize: PAGE_SIZE })
   );
+  await queryClient.prefetchQuery(FETCH_CATEGORIES, () =>
+    fetchProductCategories()
+  );
+
   return {
     props: {
       dehydratedState: dehydrate(queryClient),
