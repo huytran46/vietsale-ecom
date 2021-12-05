@@ -53,7 +53,7 @@ const Login: NextPage = () => {
     mutationFn: doLogin,
   });
 
-  const { visitorId, platform, setUser } = useUser();
+  const { visitorId, platform, setUser, setToken } = useUser();
 
   const { handleSubmit, values, errors, touched, handleChange, isSubmitting } =
     useFormik<LoginPayload>({
@@ -103,6 +103,7 @@ const Login: NextPage = () => {
                   JSON.stringify(shopInfo ?? "")
                 );
               }
+              setToken(data.token.access_token);
               actions.resetForm();
               toast({
                 title: "Thành công",

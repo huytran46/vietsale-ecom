@@ -41,7 +41,7 @@ import { HiLocationMarker } from "react-icons/hi";
 import ImageViewer from "react-simple-image-viewer";
 import ReactHtmlParser from "react-html-parser";
 
-import { NextPage, GetServerSidePropsContext } from "next";
+import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { dehydrate, QueryClient, useQuery } from "react-query";
 
@@ -512,6 +512,9 @@ const ProductDetail: NextPage<{ token?: string }> = ({ token }) => {
                     size="sm"
                     w="full"
                     leftIcon={<Icon fontSize="16px" as={AiOutlineShop} />}
+                    onClick={async () =>
+                      await router.push(`/shop/${shopInfo?.id}/products`)
+                    }
                   >
                     Xem shop
                   </Button>
@@ -607,12 +610,6 @@ const ProductDetail: NextPage<{ token?: string }> = ({ token }) => {
 
 const handler: NextSsrIronHandler = async function ({ req, res, query }) {
   const auth = req.session.get(IronSessionKey.AUTH);
-  // if (auth === undefined) {
-  //   res.setHeader("location", "/");
-  //   res.statusCode = 302;
-  //   res.end();
-  //   return { props: {} };
-  // }
 
   if (!query) {
     return {
@@ -632,6 +629,7 @@ const handler: NextSsrIronHandler = async function ({ req, res, query }) {
       },
     };
   }
+
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery(
@@ -653,41 +651,5 @@ const handler: NextSsrIronHandler = async function ({ req, res, query }) {
 };
 
 export const getServerSideProps = withSession(handler);
-// export async function getServerSideProps(context: GetServerSidePropsContext) {
-//   if (!context.params) {
-//     return {
-//       redirect: {
-//         destination: "/",
-//         permanent: false,
-//       },
-//     };
-//   }
-//   const { pid } = context.params;
-//   if (!pid) {
-//     return {
-//       redirect: {
-//         destination: "/",
-//         permanent: false,
-//       },
-//     };
-//   }
-//   const queryClient = new QueryClient();
-
-//   await queryClient.prefetchQuery(
-//     [FETCH_PRODUCT_DETAIL_URI, pid],
-//     ({ queryKey }) => fetchProductDetail(queryKey[1] as string)
-//   );
-
-//   await queryClient.prefetchQuery(
-//     [FETCH_PRODUCT_DETAIL_RELATIVE_URI, pid],
-//     ({ queryKey }) => fetchProductDetailRelatives(queryKey[1] as string)
-//   );
-
-//   return {
-//     props: {
-//       dehydratedState: dehydrate(queryClient),
-//     },
-//   };
-// }
 
 export default ProductDetail;

@@ -10,7 +10,7 @@ interface Location {
 }
 
 export interface Ward extends Location {
-  ward_id: string;
+  ward_id?: string;
   edges: WardEdge;
 }
 
@@ -19,7 +19,7 @@ export type WardEdge = {
 };
 
 export interface District extends Location {
-  district_id: string;
+  district_id?: string;
   edges: DistrictEdge;
 }
 export type DistrictEdge = {
@@ -27,5 +27,5 @@ export type DistrictEdge = {
 };
 
 export interface Province extends Location {
-  province_id: string;
+  province_id?: string;
 }

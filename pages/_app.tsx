@@ -74,7 +74,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             <CartProvider>
               <OrderProvider>
                 <FileProvider>
-                  <LayoutProvider>
+                  <LayoutProvider token={pageProps.token}>
                     {layoutLoader(
                       pageProps.layout as LayoutType,
                       Component,

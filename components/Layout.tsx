@@ -27,8 +27,6 @@ import { useLayoutCtx } from "context/LayoutProvider";
 import { useCartCtx } from "context/CartProvider";
 import { useUser } from "context/UserProvider";
 import DownloadAppModal from "./DownloadAppModal";
-import { LocalStorageKey } from "constants/local-storage";
-import { Shop } from "models/Shop";
 
 const headerBarHeight = 131;
 const highestZIndex = 3;
@@ -57,8 +55,8 @@ const MainHeader: React.FC = ({}) => {
       bgGradient="linear(to-b, brand.700, brand.300)"
       color="white"
       height={headerBarHeight}
-      position="fixed"
-      top={0}
+      // position="fixed"
+      // top={0}
       w="full"
       zIndex={highestZIndex}
       py={2}
@@ -234,7 +232,7 @@ const Layout: React.FC = ({ children }) => {
         maxW="container.xl"
         h="full"
         minH="100vh"
-        marginTop={headerBarHeight}
+        // marginTop={headerBarHeight}
       >
         {isGlobalLoading ? (
           <VStack alignItems="center" p={10} w="full" h="100vh">

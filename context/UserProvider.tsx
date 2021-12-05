@@ -2,10 +2,14 @@ import React from "react";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { useRouter } from "next/router";
 import { useToast } from "@chakra-ui/react";
+import { useQuery } from "react-query";
 
 import { User } from "models/User";
 import { UserAddress } from "models/UserAddress";
-import { doFetchDefaultAddress } from "services/user";
+import {
+  doFetchDefaultAddress,
+  FETCH_DEFAULT_ADDRESS_URI,
+} from "services/user";
 import { LocalStorageKey } from "constants/local-storage";
 import { doLogout } from "services/auth";
 import { Shop } from "models/Shop";
@@ -15,14 +19,20 @@ import { District, Province, Ward } from "models/Location";
 type UserContext = {
   visitorId: string;
   platform: string;
+
   user?: User;
   setUser: (nextState: User) => void;
   username: string;
+  token?: string;
+  setToken: (b: string) => void;
+
   userAddresses: UserAddress[];
   defaultAddress?: UserAddress;
   fullDetailAddress: string;
   fetchUserAddresses: () => void;
+
   logout: () => Promise<void>;
+
   shopId?: string;
   shopInfo?: Shop;
 
@@ -56,7 +66,8 @@ export const UserProvider: React.FC = ({ children }) => {
   const [visitorId, setVisitorId] = React.useState("");
   const [platform, setPlatform] = React.useState("");
   const [user, setUser] = React.useState<User>();
-  const [userAddresses, setUserAddresses] = React.useState<UserAddress[]>([]);
+  const [token, setToken] = React.useState<string>();
+  // const [userAddresses, setUserAddresses] = React.useState<UserAddress[]>([]);
 
   const [provinces, setProvinces] = React.useState<Province[]>([]);
   const [selectedProvince, setSelectedProvince] = React.useState<Province>();
@@ -64,6 +75,16 @@ export const UserProvider: React.FC = ({ children }) => {
   const [selectedDistrict, setSelectedDistrict] = React.useState<District>();
   const [wards, setWards] = React.useState<Ward[]>([]);
   const [selectedWard, setSelectedWard] = React.useState<Ward>();
+
+  const { data: userAddresses, refetch: fetchUserAddresses } = useQuery<
+    UserAddress[]
+  >(
+    [FETCH_DEFAULT_ADDRESS_URI, token],
+    ({ queryKey }) => doFetchDefaultAddress(queryKey[1] as string),
+    {
+      enabled: Boolean(token),
+    }
+  );
 
   const username = React.useMemo(() => {
     if (!user || user.email === "") return "";
@@ -119,17 +140,17 @@ export const UserProvider: React.FC = ({ children }) => {
     setPlatform(pl);
   }, [promiseOfPlatform]);
 
-  const fetchUserAddresses = React.useCallback(() => {
-    if (!user) return;
-    doFetchDefaultAddress()
-      .then((userAddresses) => {
-        if (Array.isArray(userAddresses)) {
-          setUserAddresses(userAddresses);
-        }
-      })
-      .catch((err) => console.error(err))
-      .finally();
-  }, [user]);
+  // const fetchUserAddresses = React.useCallback(() => {
+  //   if (!user || !token) return;
+  //   doFetchDefaultAddress(token)
+  //     .then((userAddresses) => {
+  //       if (Array.isArray(userAddresses)) {
+  //         setUserAddresses(userAddresses);
+  //       }
+  //     })
+  //     .catch((err) => console.error(err))
+  //     .finally();
+  // }, [user, token]);
 
   const logout = React.useCallback(async () => {
     if (!user) return;
@@ -234,6 +255,8 @@ export const UserProvider: React.FC = ({ children }) => {
         visitorId,
         user,
         setUser,
+        token,
+        setToken,
         platform,
         username,
         userAddresses: userAddresses ?? [],

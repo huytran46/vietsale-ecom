@@ -244,7 +244,7 @@ const MerchantRegister: NextPage = () => {
   );
 };
 
-const handler: NextSsrIronHandler = async function ({ req, res }) {
+const handler: NextSsrIronHandler = async function () {
   return {
     props: { layout: LayoutType.NONE },
   };

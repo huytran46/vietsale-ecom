@@ -66,7 +66,7 @@ export const theme = extendTheme(
   },
   withDefaultColorScheme({
     colorScheme: "brand",
-    components: ["Checkbox", "Button", "Tabs"],
+    components: ["Checkbox", "Button", "Tabs", "Input", "Select"],
   }),
   withDefaultProps({
     defaultProps: {
