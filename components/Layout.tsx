@@ -176,20 +176,20 @@ const MainHeader: React.FC = ({}) => {
                 />
               </InputGroup>
               <HStack spacing={10}>
-                <MyLinkOverlay href="/products">
-                  <Text fontSize="xs">Bánh trung thu</Text>
+                <MyLinkOverlay href="/products?_q=quà tặng giáng sinh">
+                  <Text fontSize="xs">Quà tặng giáng sinh</Text>
                 </MyLinkOverlay>
-                <MyLinkOverlay href="/products">
+                <MyLinkOverlay href="/products?_q=voucher xịn">
                   <Text fontSize="xs">Voucher</Text>
                 </MyLinkOverlay>
-                <MyLinkOverlay href="/products">
+                <MyLinkOverlay href="/products?_q=iphone 13 pro max">
                   <Text fontSize="xs">iPhone 13</Text>
                 </MyLinkOverlay>
-                <MyLinkOverlay href="/products">
+                <MyLinkOverlay href="/products?_q=macbook air m1">
                   <Text fontSize="xs">Macbook Air M1</Text>
                 </MyLinkOverlay>
-                <MyLinkOverlay href="/products">
-                  <Text fontSize="xs">Galaxy Fold Z3</Text>
+                <MyLinkOverlay href="/products?_q=imac">
+                  <Text fontSize="xs">iMac</Text>
                 </MyLinkOverlay>
               </HStack>
             </Stack>
@@ -228,12 +228,7 @@ const Layout: React.FC = ({ children }) => {
   return (
     <Box bg="gray.light" w="full" h="auto">
       <MainHeader />
-      <Container
-        maxW="container.xl"
-        h="full"
-        minH="100vh"
-        // marginTop={headerBarHeight}
-      >
+      <Container maxW="container.xl" h="full" minH="100vh">
         {isGlobalLoading ? (
           <VStack alignItems="center" p={10} w="full" h="100vh">
             <Spinner

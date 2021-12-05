@@ -146,45 +146,40 @@ const Products: NextPage = () => {
     <VStack h="fit-content" w="full" spacing={10} py={10}>
       <Wrap w="full">
         {_q && (
-          <WrapItem>
-            <Badge
-              opacity={1}
-              d="flex"
-              alignItems="center"
-              colorScheme="brand"
-              p={1}
-            >
-              <Text fontWeight="bold" textTransform="none" color="white" mr="1">
-                {_q}
-              </Text>
-              <Icon
-                color="white"
-                cursor="pointer"
-                as={MdClose}
-                onClick={() => removeQueries(_q)}
-              />
-            </Badge>
+          <WrapItem
+            d="flex"
+            alignItems="center"
+            p={1}
+            bgGradient="linear(to-b, brand.300, brand.700)"
+            borderRadius="md"
+          >
+            <Text fontWeight="bold" textTransform="none" color="white" mr="1">
+              {_q}
+            </Text>
+            <Icon
+              color="white"
+              cursor="pointer"
+              as={MdClose}
+              onClick={() => removeQueries(_q)}
+            />
           </WrapItem>
         )}
         {pc_name && (
-          <WrapItem>
-            <Badge
-              opacity={1}
-              d="flex"
-              alignItems="center"
-              colorScheme="brand"
-              p={1}
-            >
-              <Text fontWeight="bold" textTransform="none" color="white" mr="1">
-                {pc_name}
-              </Text>
-              <Icon
-                color="white"
-                cursor="pointer"
-                as={MdClose}
-                onClick={() => removeQueries(pc_name)}
-              />
-            </Badge>
+          <WrapItem
+            p={1}
+            d="flex"
+            alignItems="center"
+            bgGradient="linear(to-b, brand.300, brand.700)"
+          >
+            <Text fontWeight="bold" textTransform="none" color="white" mr="1">
+              {pc_name}
+            </Text>
+            <Icon
+              color="white"
+              cursor="pointer"
+              as={MdClose}
+              onClick={() => removeQueries(pc_name)}
+            />
           </WrapItem>
         )}
       </Wrap>

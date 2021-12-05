@@ -41,6 +41,7 @@ import {
 } from "services/shop";
 import moment from "moment";
 import ProductItem from "components/ProductItem";
+import Empty from "components/common/Empty";
 
 const MetaInfo: React.FC<{
   label: string;
@@ -62,7 +63,8 @@ const CategoryItem: React.FC<{
   onClick: () => void;
 }> = ({ isSelected, label, onClick }) => (
   <WrapItem
-    p={2}
+    p={1}
+    px={3}
     borderWidth="1px"
     borderRadius="sm"
     cursor="pointer"
@@ -205,11 +207,10 @@ const ShopProducts: NextPage<{ shop_id?: string }> = ({ shop_id }) => {
               textTransform="uppercase"
               fontWeight="bold"
               fontSize="xs"
-              _hover={{
-                bg: "white",
-                color: "brand.500",
-                boxShadow: "none",
-              }}
+              // _hover={{
+              //   bg: "white",
+              //   color: "brand.500",
+              // }}
             >
               <Icon as={BsPlus} />
               &nbsp;Theo dõi
@@ -226,10 +227,10 @@ const ShopProducts: NextPage<{ shop_id?: string }> = ({ shop_id }) => {
               textTransform="uppercase"
               fontWeight="bold"
               fontSize="xs"
-              _hover={{
-                bg: "white",
-                color: "brand.500",
-              }}
+              // _hover={{
+              //   bg: "white",
+              //   color: "brand.500",
+              // }}
             >
               <Icon as={BsChatDots} />
               &nbsp;Chat với shop
@@ -372,13 +373,17 @@ const ShopProducts: NextPage<{ shop_id?: string }> = ({ shop_id }) => {
         Sản phẩm của cửa hàng
       </Text>
 
-      {!isProductLoading && (
-        <SimpleGrid gap={3} columns={[1, 2, 4, 6]}>
-          {productsInShop?.map((prod, idx) => (
+      {!isProductLoading && (productsInShop?.length ?? 0) < 1 && (
+        <Box w="full">
+          <Empty />
+        </Box>
+      )}
+      <SimpleGrid columns={[1, 2, 4, 6]} gap={3} w="full">
+        {!isProductLoading &&
+          productsInShop?.map((prod, idx) => (
             <ProductItem key={idx} product={prod} />
           ))}
-        </SimpleGrid>
-      )}
+      </SimpleGrid>
 
       {isProductLoading && (
         <Center w="full" h="full" minHeight="300px">
