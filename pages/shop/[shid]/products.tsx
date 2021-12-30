@@ -261,62 +261,6 @@ const ShopProducts: NextPage<{ shop_id?: string }> = ({ shop_id }) => {
               value={`${joinDates} Ngày Trước`}
             />
           </GridItem>
-
-          <GridItem>
-            <MetaInfo
-              label="Sản phẩm"
-              icon={AiOutlineShop}
-              value={shopDetail?.edges.products?.length}
-            />
-          </GridItem>
-
-          <GridItem>
-            <MetaInfo
-              label="Tham gia"
-              icon={FaRegHandshake}
-              value={`${joinDates} Ngày Trước`}
-            />
-          </GridItem>
-
-          <GridItem>
-            <MetaInfo
-              label="Sản phẩm"
-              icon={AiOutlineShop}
-              value={shopDetail?.edges.products?.length}
-            />
-          </GridItem>
-
-          <GridItem>
-            <MetaInfo
-              label="Tham gia"
-              icon={FaRegHandshake}
-              value={`${joinDates} Ngày Trước`}
-            />
-          </GridItem>
-
-          <GridItem>
-            <MetaInfo
-              label="Sản phẩm"
-              icon={AiOutlineShop}
-              value={shopDetail?.edges.products?.length}
-            />
-          </GridItem>
-
-          <GridItem>
-            <MetaInfo
-              label="Tham gia"
-              icon={FaRegHandshake}
-              value={`${joinDates} Ngày Trước`}
-            />
-          </GridItem>
-
-          <GridItem>
-            <MetaInfo
-              label="Sản phẩm"
-              icon={AiOutlineShop}
-              value={shopDetail?.edges.products?.length}
-            />
-          </GridItem>
         </Grid>
       </HStack>
       <VStack w="full" bg="white" px={10} py={6} alignItems="start" spacing={4}>
