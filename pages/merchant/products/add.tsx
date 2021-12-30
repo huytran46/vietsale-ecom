@@ -24,27 +24,14 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
   Textarea,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverHeader,
-  PopoverBody,
-  PopoverArrow,
-  PopoverCloseButton,
-  List,
   ListItem,
-  ListIcon,
-  Flex,
-  Spacer,
-  Spinner,
-  Center,
   AlertIcon,
   Alert,
   AlertTitle,
   AlertDescription,
   OrderedList,
 } from "@chakra-ui/react";
-import { BsImage, BsCircle } from "react-icons/bs";
+import { BsImage, BsXCircle } from "react-icons/bs";
 import {
   useMutation,
   useQuery,
@@ -55,7 +42,6 @@ import {
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import _debounce from "lodash/debounce";
-import Highlighter from "react-highlight-words";
 
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
@@ -75,6 +61,7 @@ import { FETCH_CATEGORIES, fetchProductCategories } from "services/public";
 import { useUser } from "context/UserProvider";
 import { ProductStatus } from "models/Product";
 import MyFormControl from "components/MyFormControl";
+import { Autocomplete } from "components/common/Autocomplete";
 
 const modules = {
   toolbar: [
@@ -177,12 +164,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
   const toast = useToast();
   const [categoryName, setCategoryName] = React.useState("");
   const [selectedCategoryIds, setCategoryIds] = React.useState<string[]>([]);
-  const [isProductCategoryPopup, setPCPopup] = React.useState(false);
-  const openPopup = () => setPCPopup(true);
-  const closePopup = () => setPCPopup(false);
-
   const { selectedMyFile, selectedMyFiles } = useFileCtx();
-
   const [isUploadFileOpen, uploadModalHandler] = useBoolean();
 
   const { mutateAsync } = useMutation({
@@ -313,7 +295,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
     [selectedMyFiles]
   );
 
-  const addCategory = React.useCallback(
+  const toggleCategory = React.useCallback(
     (pcid: string) => {
       const idx = selectedCategoryIds.indexOf(pcid);
       const next = [...selectedCategoryIds];
@@ -425,98 +407,24 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
           label="Chọn danh mục sản phẩm*"
           errorTxt={`${errors.cateIDs}`}
         >
-          <Popover
-            returnFocusOnClose={true}
-            isOpen={isProductCategoryPopup}
-            onClose={closePopup}
-            placement="bottom"
-            closeOnBlur={false}
-            autoFocus={false}
-          >
-            <PopoverTrigger>
-              <Input
-                id="cateName"
-                name="cateName"
-                type="text"
-                focusBorderColor="none"
-                borderLeftRadius="sm"
-                colorScheme="brand"
-                variant="outline"
-                placeholder="Nhập tên danh mục"
-                onChange={_debounce(
-                  (e) => {
-                    setPCPopup(true);
-                    setCategoryName(e.target.value);
-                  },
-                  500,
-                  { trailing: true }
-                )}
-              />
-            </PopoverTrigger>
-            <PopoverContent>
-              <PopoverHeader>
-                <HStack>
-                  <Text fontWeight="semibold">Chọn danh mục sản phẩm</Text>
-                  <PopoverCloseButton top="8px" />
-                </HStack>
-              </PopoverHeader>
-              <PopoverArrow />
-              <PopoverBody minH="300px" maxH="500px" overflowY="auto">
-                {!isCategoriesLoading && (
-                  <List size="sm" w="full" spacing={3}>
-                    {productCategories
-                      ?.filter((pc) =>
-                        pc.category_name
-                          .trim()
-                          .toLowerCase()
-                          .includes(categoryName.trim().toLowerCase())
-                      )
-                      .map((pc, idx) => (
-                        <ListItem key={idx}>
-                          <Flex alignItems="center" w="full">
-                            <Text fontSize="sm" isTruncated>
-                              <Highlighter
-                                searchWords={[categoryName]}
-                                autoEscape={true}
-                                textToHighlight={pc.category_name}
-                              />
-                            </Text>
-                            <Spacer />
-                            <ListIcon
-                              as={BsCircle}
-                              bg={
-                                selectedCategoryIds.indexOf(pc.id) > -1
-                                  ? "brand.500"
-                                  : ""
-                              }
-                              color={
-                                selectedCategoryIds.indexOf(pc.id) > -1
-                                  ? "brand.900"
-                                  : ""
-                              }
-                              onClick={() => addCategory(pc.id)}
-                              borderRadius="50%"
-                              cursor="pointer"
-                            />
-                          </Flex>
-                        </ListItem>
-                      ))}
-                  </List>
-                )}
-                {isCategoriesLoading && (
-                  <Center minH="300px" w="full" h="full">
-                    <Spinner
-                      thickness="4px"
-                      speed="0.65s"
-                      emptyColor="gray.200"
-                      color="blue.500"
-                      size="xl"
-                    />
-                  </Center>
-                )}
-              </PopoverBody>
-            </PopoverContent>
-          </Popover>
+          <Autocomplete
+            isLoading={isCategoriesLoading}
+            placeholder="Nhập tên danh mục"
+            headerText="Chọn danh mục sản phẩm"
+            suggestions={
+              productCategories?.map((pc, idx) => ({
+                idx,
+                label: pc.category_name,
+                id: pc.id,
+              })) ?? []
+            }
+            selectedSuggestions={selectedCategoryIds}
+            userInput={categoryName}
+            onChange={(input: string) => {
+              setCategoryName(input);
+            }}
+            onSelect={(id: string) => toggleCategory(id)}
+          />
         </MyFormControl>
 
         <MyFormControl label="Danh mục đang chọn" id="cateIDs">
@@ -540,14 +448,19 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
             {selectedProductCategories?.map((pc, idx) => (
               <WrapItem
                 key={idx}
-                d="grid"
-                placeItems="center"
+                d="flex"
+                alignItems="center"
                 borderWidth="1px"
                 borderRadius="sm"
                 h="32px"
                 px={1}
+                cursor="pointer"
+                onClick={() => toggleCategory(pc.id)}
               >
-                <Text fontSize="xs">{pc.category_name}</Text>
+                <Text fontSize="xs" mr={2}>
+                  {pc.category_name}
+                </Text>
+                <Icon color="gray" as={BsXCircle} />
               </WrapItem>
             ))}
           </Wrap>
@@ -1137,6 +1050,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
           </Button>
         </HStack>
       </VStack>
+
       {Object.values(errors).length > 0 && Object.values(touched).length > 0 && (
         <Box w="full">
           <Alert

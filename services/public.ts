@@ -26,7 +26,7 @@ export async function fetchHome(): Promise<HomeInfo> {
 //     return [];
 //   }
 // }
-export const FETCH_CATEGORIES = "/public/product/category";
+export const FETCH_CATEGORIES = "/public/product/category-child";
 export function fetchProductCategories(): Promise<ProductCategory[]> {
   return new Promise<ProductCategory[]>((resolve, reject) => {
     const cached = lsTimeToLive.get(LocalStorageKey.CATEGORIES);
@@ -42,7 +42,7 @@ export function fetchProductCategories(): Promise<ProductCategory[]> {
           lsTimeToLive.set(
             LocalStorageKey.CATEGORIES,
             JSON.stringify(data),
-            1000 * 60 * 60 * 60 * 24 * 7 // a week
+            1000 * 60 * 60 // 1 hour
           );
           resolve(data);
         })

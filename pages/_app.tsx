@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import type { AppProps } from "next/app";
 import { NextComponentType, NextPageContext } from "next";
 import { ChakraProvider } from "@chakra-ui/react";
@@ -29,6 +29,10 @@ import { CartProvider } from "context/CartProvider";
 import { OrderProvider } from "context/OrderProvider";
 import { LayoutType } from "constants/common";
 import { FileProvider } from "context/FileProvider";
+import { FORCED_CLEAR_KEYS } from "constants/platform";
+import { lsTimeToLive } from "utils/local-storage";
+import { LocalStorageKey } from "constants/local-storage";
+import { isArray } from "lodash";
 
 function layoutLoader(
   layout: LayoutType,
@@ -65,6 +69,33 @@ function MyApp({ Component, pageProps }: AppProps) {
         },
       })
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const forcedClearValues = window.localStorage.getItem(
+      LocalStorageKey.FORCE_CLEAR
+    );
+
+    let shouldBeAddedValues: string[] = [];
+    const empty = {
+      value: [],
+      expiration: 0,
+    };
+
+    const jsonForcedKeys = forcedClearValues
+      ? JSON.parse(forcedClearValues)
+      : empty;
+
+    FORCED_CLEAR_KEYS.forEach((key) => {
+      const shouldBeAdded = !jsonForcedKeys?.value?.includes(key + "--");
+      if (shouldBeAdded) {
+        shouldBeAddedValues.push(key, `${key}--`);
+      } else {
+        shouldBeAddedValues.push(`${key}--`);
+      }
+    });
+    lsTimeToLive.set(LocalStorageKey.FORCE_CLEAR, shouldBeAddedValues);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
