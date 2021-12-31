@@ -64,7 +64,7 @@ export const Autocomplete: React.FC<Props> = ({
 
   function resetStates() {
     setActiveSuggestion(undefined);
-    off();
+    on();
   }
 
   function onInputChange(input: string) {
