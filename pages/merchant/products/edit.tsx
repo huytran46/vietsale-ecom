@@ -198,7 +198,7 @@ const MerchantAddProducts: NextPage<{
       unitValueID: productDetail?.edges?.uom_using?.id ?? 0,
       cateIDs: productDetail?.edges?.categories?.map((ct) => ct.id) ?? [],
       fileIDs: productDetail?.edges?.files?.map((f) => f.id) ?? [],
-      shortDesc: productDetail?.short_desc ?? "",
+      // shortDesc: productDetail?.short_desc ?? "",
       desc: productDetail?.desc ?? "",
       isPercentDiscount: productDetail?.is_percent_discount ?? false,
       discountValue: productDetail?.discount_value ?? 0,
@@ -671,7 +671,7 @@ const MerchantAddProducts: NextPage<{
               </MyFormControl>
             </WrapItem>
 
-            <WrapItem minW="400px">
+            {/* <WrapItem minW="400px">
               <MyFormControl
                 id="shortDesc"
                 label="Mô tả ngắn"
@@ -692,7 +692,7 @@ const MerchantAddProducts: NextPage<{
                   // onChange={_debounce(handleChange, 500, { trailing: true })}
                 />
               </MyFormControl>
-            </WrapItem>
+            </WrapItem> */}
           </Wrap>
 
           <Wrap spacing={12} maxW="full">

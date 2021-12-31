@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import type { NextPage } from "next";
 import dynamic from "next/dynamic";
 import {
@@ -316,15 +316,15 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
     );
   }, [selectedCategoryIds, productCategories]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setFieldValue("cateIDs", selectedCategoryIds);
   }, [selectedCategoryIds, setFieldValue]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setFieldValue("cover", selectedMyFile?.id);
   }, [selectedMyFile, setFieldValue]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const nextFiles = selectedMyFiles
       ?.filter((_) => Boolean(_))
       .map((f) => f?.id);
@@ -660,7 +660,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
               </MyFormControl>
             </WrapItem>
 
-            <WrapItem minW="400px">
+            {/* <WrapItem minW="400px">
               <MyFormControl
                 id="shortDesc"
                 label="Mô tả ngắn"
@@ -679,7 +679,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                   onChange={_debounce(handleChange, 500, { trailing: true })}
                 />
               </MyFormControl>
-            </WrapItem>
+            </WrapItem> */}
           </Wrap>
 
           <Wrap spacing={12} maxW="full">
