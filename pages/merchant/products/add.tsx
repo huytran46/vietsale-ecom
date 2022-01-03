@@ -524,7 +524,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                   </Box>
 
                   <UploadFileModal
-                    isOpen={isUploadFileOpen}
+                    isOpen={isUploadFileOpen && uploadMode === 1}
                     token={token}
                     shopId={shopId}
                     onClose={uploadModalHandler.off}
@@ -565,7 +565,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                 errorTxt={errors.fileIDs}
               >
                 <UploadFileModal
-                  isOpen={isUploadFileOpen}
+                  isOpen={isUploadFileOpen && uploadMode === 2}
                   token={token}
                   shopId={shopId}
                   onClose={uploadModalHandler.off}
