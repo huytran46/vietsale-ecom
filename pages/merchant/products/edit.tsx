@@ -41,7 +41,6 @@ import {
 } from "react-query";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import _debounce from "lodash/debounce";
 
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
@@ -666,7 +665,6 @@ const MerchantAddProducts: NextPage<{
                   placeholder="Ví dụ: SK01ABD,..."
                   value={values.sku}
                   onChange={handleChange}
-                  // onChange={_debounce(handleChange, 500, { trailing: true })}
                 />
               </MyFormControl>
             </WrapItem>
@@ -689,7 +687,7 @@ const MerchantAddProducts: NextPage<{
                   placeholder="Mô tả nội dung, tính năng, điểm nổi bật sản phẩm..."
                   value={values.shortDesc}
                   onChange={handleChange}
-                  // onChange={_debounce(handleChange, 500, { trailing: true })}
+                  // onChange={handleChange}
                 />
               </MyFormControl>
             </WrapItem> */}
@@ -816,7 +814,11 @@ const MerchantAddProducts: NextPage<{
               <MyFormControl
                 id="price"
                 label="Giá sản phẩm"
-                helperTxt={`Giá hiển thị ${formatCcy(values.price)}đ`}
+                helperTxt={`Giá hiển thị ${
+                  values.price
+                    ? `${formatCcy(values.price)}đ`
+                    : '"Liên hệ báo giá"'
+                }`}
                 errorTxt={errors.price}
               >
                 <InputGroup w="200px">
@@ -828,7 +830,7 @@ const MerchantAddProducts: NextPage<{
                     colorScheme="brand"
                     focusBorderColor="none"
                     borderLeftRadius="sm"
-                    min={1000}
+                    min={0}
                     step={1000}
                     defaultValue={1000}
                     onChange={(_, num) => setFieldValue("price", num)}
@@ -976,11 +978,6 @@ const MerchantAddProducts: NextPage<{
                       colorScheme="brand"
                       variant="outline"
                       placeholder="Chiều cao"
-                      // onChange={_debounce(
-                      //   (_, num) => setFieldValue("height", num),
-                      //   500,
-                      //   { trailing: true }
-                      // )}
                       min={1}
                       defaultValue={1}
                       onChange={(_, num) => setFieldValue("height", num)}

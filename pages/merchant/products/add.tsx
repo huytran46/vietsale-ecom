@@ -41,7 +41,6 @@ import {
 } from "react-query";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import _debounce from "lodash/debounce";
 
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
@@ -634,7 +633,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                   colorScheme="brand"
                   variant="outline"
                   placeholder="Tên sản phẩm"
-                  onChange={_debounce(handleChange, 500, { trailing: true })}
+                  onChange={handleChange}
                 />
               </MyFormControl>
             </WrapItem>
@@ -655,7 +654,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                   colorScheme="brand"
                   variant="outline"
                   placeholder="Ví dụ: SK01ABD,..."
-                  onChange={_debounce(handleChange, 500, { trailing: true })}
+                  onChange={handleChange}
                 />
               </MyFormControl>
             </WrapItem>
@@ -676,7 +675,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                   variant="outline"
                   fontSize="sm"
                   placeholder="Mô tả nội dung, tính năng, điểm nổi bật sản phẩm..."
-                  onChange={_debounce(handleChange, 500, { trailing: true })}
+                  onChange={handleChange}
                 />
               </MyFormControl>
             </WrapItem> */}
@@ -752,11 +751,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                     borderLeftRadius="sm"
                     min={1}
                     defaultValue={1}
-                    onChange={_debounce(
-                      (_, num) => setFieldValue("quantity", num),
-                      500,
-                      { trailing: true }
-                    )}
+                    onChange={(_, num) => setFieldValue("quantity", num)}
                   >
                     <NumberInputField />
                     <NumberInputStepper>
@@ -784,11 +779,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                     borderLeftRadius="sm"
                     min={1}
                     defaultValue={1}
-                    onChange={_debounce(
-                      (_, num) => setFieldValue("weight", num),
-                      500,
-                      { trailing: true }
-                    )}
+                    onChange={(_, num) => setFieldValue("weight", num)}
                   >
                     <NumberInputField />
                     <NumberInputStepper>
@@ -807,7 +798,11 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
               <MyFormControl
                 id="price"
                 label="Giá sản phẩm*"
-                helperTxt={`Giá hiển thị ${formatCcy(values.price)}đ`}
+                helperTxt={`Giá hiển thị ${
+                  values.price
+                    ? `${formatCcy(values.price)}đ`
+                    : '"Liên hệ báo giá"'
+                }`}
                 errorTxt={errors.price}
               >
                 <InputGroup w="200px">
@@ -819,14 +814,10 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                     colorScheme="brand"
                     focusBorderColor="none"
                     borderLeftRadius="sm"
-                    min={1000}
+                    min={0}
                     step={1000}
                     defaultValue={1000}
-                    onChange={_debounce(
-                      (_, num) => setFieldValue("price", num),
-                      500,
-                      { trailing: true }
-                    )}
+                    onChange={(_, num) => setFieldValue("price", num)}
                   >
                     <NumberInputField />
                     <NumberInputStepper>
@@ -880,11 +871,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                     defaultValue={0}
                     min={0}
                     max={Boolean(values.isPercentDiscount) ? 100 : values.price}
-                    onChange={_debounce(
-                      (_, num) => setFieldValue("discountValue", num),
-                      500,
-                      { trailing: true }
-                    )}
+                    onChange={(_, num) => setFieldValue("discountValue", num)}
                   >
                     <NumberInputField />
 
@@ -927,11 +914,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                       colorScheme="brand"
                       variant="outline"
                       placeholder="Chiều rộng"
-                      onChange={_debounce(
-                        (_, num) => setFieldValue("width", num),
-                        500,
-                        { trailing: true }
-                      )}
+                      onChange={(_, num) => setFieldValue("width", num)}
                       min={1}
                       defaultValue={1}
                     >
@@ -953,11 +936,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                       colorScheme="brand"
                       variant="outline"
                       placeholder="Chiều dài"
-                      onChange={_debounce(
-                        (_, num) => setFieldValue("length", num),
-                        500,
-                        { trailing: true }
-                      )}
+                      onChange={(_, num) => setFieldValue("length", num)}
                       min={1}
                       defaultValue={1}
                     >
@@ -979,11 +958,7 @@ const MerchantAddProducts: NextPage<{ token: string; shopId: string }> = ({
                       colorScheme="brand"
                       variant="outline"
                       placeholder="Chiều cao"
-                      onChange={_debounce(
-                        (_, num) => setFieldValue("height", num),
-                        500,
-                        { trailing: true }
-                      )}
+                      onChange={(_, num) => setFieldValue("height", num)}
                       min={1}
                       defaultValue={1}
                     >
