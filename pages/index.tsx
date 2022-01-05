@@ -58,15 +58,16 @@ const Home: NextPage = () => {
   const productCategories = React.useMemo(() => {
     if (!data?.product_categories || categoriesLoading || !categories)
       return [];
-
-    const prodCategories = categories
-      .filter((pc) => Boolean(pc.edges?.children?.length))
-      .map((pc) => pc.edges?.children)
-      .filter((pc) => Boolean(pc))
-      .flat();
-
-    return [...prodCategories, ...data.product_categories].filter(
-      (pc) => !Boolean(pc?.priority)
+    const _prodCategories = categories.filter((pc) => Boolean(pc)).flat();
+    return (
+      // [..._prodCategories, ...data.product_categories]
+      //   .filter((pc) => !Boolean(pc?.priority))
+      [..._prodCategories, ...data.product_categories].sort(function (a, b) {
+        if (!a || !b) return 0;
+        if ((a?.priority ?? 0) < (b?.priority ?? 0)) return -1;
+        if ((a?.priority ?? 0) > (b?.priority ?? 0)) return 1;
+        return 0;
+      })
     );
     // return mergedCategories.sort((a?: ProductCategory, b?: ProductCategory) => {
     //   const aP = a?.priority ?? 0;
