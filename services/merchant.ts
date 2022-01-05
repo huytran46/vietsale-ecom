@@ -274,3 +274,29 @@ export async function doApproveOrder(
     return {} as ApproveOrderResponse;
   }
 }
+
+export const DELETE_SHOP_PRODUCT_MERCH = "/merchant/product/delete";
+export async function deleteShopProduct(
+  token: string,
+  shopId: string,
+  productId: string
+): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    axios
+      .delete(
+        HOST_URL_FOR_EXTERNAL_CALL +
+          `/merchant/shop/${shopId}/product/${productId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then(() => resolve(true))
+      .catch((error) => {
+        if (error.response) {
+          reject(error.response.data);
+        }
+      });
+  });
+}

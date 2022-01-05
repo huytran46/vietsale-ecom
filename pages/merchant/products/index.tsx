@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -21,10 +21,10 @@ import {
   Center,
   Spinner,
   Icon,
-  Text,
 } from "@chakra-ui/react";
 import { MdModeEdit } from "react-icons/md";
 import { dehydrate, QueryClient, useQuery } from "react-query";
+import { stringifyUrl } from "query-string";
 
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
@@ -36,8 +36,7 @@ import {
 import { Product, ProductStatus, ProductStatusesArr } from "models/Product";
 import { formatCcy } from "utils";
 import Pagination from "components/Pagination/dynamic";
-import { OrderStatus, OrderStatusesArr } from "models/Order";
-import { stringifyUrl } from "query-string";
+import { ConfirmDeleteProductModal } from "components/ConfirmDeleteProductModal";
 
 const selectStyle = {
   _selected: {
@@ -47,10 +46,12 @@ const selectStyle = {
   },
 };
 
-const ProductRow: React.FC<{ product: Product; shopId: string }> = ({
-  product,
-  shopId,
-}) => {
+const ProductRow: React.FC<{
+  product: Product;
+  token: string;
+  shopId: string;
+  currentQueryKey: string[];
+}> = ({ product, token, shopId, currentQueryKey }) => {
   const router = useRouter();
   return (
     <Tr>
@@ -66,6 +67,15 @@ const ProductRow: React.FC<{ product: Product; shopId: string }> = ({
             )
           }
         />
+        <ConfirmDeleteProductModal
+          productName={product.name}
+          params={{
+            token,
+            shopId,
+            productId: product.id,
+          }}
+          currentQueryKey={currentQueryKey}
+        />
       </Td>
       <Td>{product.sku}</Td>
       <Td>{formatCcy(product.discount_price ?? product.orig_price, true)}</Td>
@@ -74,12 +84,6 @@ const ProductRow: React.FC<{ product: Product; shopId: string }> = ({
     </Tr>
   );
 };
-
-// const TabMode: Record<number, string> = {
-//   0: "pending",
-//   1: "approved",
-//   2: "blocked",
-// };
 
 const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
   token,
@@ -92,19 +96,24 @@ const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
 
   const [pageNo, setPageNo] = React.useState<number>(1);
 
-  const {
-    data: response,
-    isLoading,
-    isFetching,
-    isRefetching,
-  } = useQuery({
-    queryKey: [
+  const currentQueryKey = useMemo(
+    () => [
       FETCH_SHOP_PRODUCTS_MERCH,
       token,
       shopId,
       productStatus,
       `${pageNo}`,
     ],
+    [token, shopId, productStatus, pageNo]
+  );
+
+  const {
+    data: response,
+    isLoading,
+    isFetching,
+    isRefetching,
+  } = useQuery({
+    queryKey: currentQueryKey,
     queryFn: ({ queryKey }) =>
       fetchShopProductsForMerch(
         queryKey[1],
@@ -211,7 +220,13 @@ const MerchantProducts: NextPage<{ token: string; shopId: string }> = ({
         <Tbody>
           {!isProductsLoading &&
             products?.map((p, idx) => (
-              <ProductRow key={idx} product={p} shopId={shopId} />
+              <ProductRow
+                currentQueryKey={currentQueryKey}
+                token={token}
+                key={idx}
+                product={p}
+                shopId={shopId}
+              />
             ))}
         </Tbody>
       </Table>
