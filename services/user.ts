@@ -11,6 +11,11 @@ export async function doFetchDefaultAddress(
   token: string
 ): Promise<UserAddress[]> {
   return new Promise<UserAddress[]>((resolve, reject) => {
+    if (!token) {
+      reject("No token provided");
+      return;
+    }
+
     axios
       .get<BaseReponse<{ user_addresses: UserAddress[] }>>(
         HOST_URL_FOR_EXTERNAL_CALL + "/user/address",

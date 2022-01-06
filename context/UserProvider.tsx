@@ -1,4 +1,12 @@
-import React from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useContext,
+  createContext,
+} from "react";
+
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { useRouter } from "next/router";
 import { useToast } from "@chakra-ui/react";
@@ -53,7 +61,7 @@ type UserContext = {
   doFetchWards: (parentId: number) => void;
 };
 
-const UserCtx = React.createContext<UserContext>({} as UserContext);
+const UserCtx = createContext<UserContext>({} as UserContext);
 
 // Initialize an agent at application startup.
 const fpPromise =
@@ -61,20 +69,23 @@ const fpPromise =
 
 export const UserProvider: React.FC = ({ children }) => {
   const router = useRouter();
-  const toaster = useToast();
+  const toaster = useToast({
+    duration: 3000,
+    position: "bottom",
+  });
 
-  const [visitorId, setVisitorId] = React.useState("");
-  const [platform, setPlatform] = React.useState("");
-  const [user, setUser] = React.useState<User>();
-  const [token, setToken] = React.useState<string>();
-  // const [userAddresses, setUserAddresses] = React.useState<UserAddress[]>([]);
+  const [visitorId, setVisitorId] = useState("");
+  const [platform, setPlatform] = useState("");
+  const [user, setUser] = useState<User>();
+  const [token, setToken] = useState<string>();
+  // const [userAddresses, setUserAddresses] = useState<UserAddress[]>([]);
 
-  const [provinces, setProvinces] = React.useState<Province[]>([]);
-  const [selectedProvince, setSelectedProvince] = React.useState<Province>();
-  const [districts, setDistricts] = React.useState<District[]>([]);
-  const [selectedDistrict, setSelectedDistrict] = React.useState<District>();
-  const [wards, setWards] = React.useState<Ward[]>([]);
-  const [selectedWard, setSelectedWard] = React.useState<Ward>();
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [selectedProvince, setSelectedProvince] = useState<Province>();
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [selectedDistrict, setSelectedDistrict] = useState<District>();
+  const [wards, setWards] = useState<Ward[]>([]);
+  const [selectedWard, setSelectedWard] = useState<Ward>();
 
   const { data: userAddresses, refetch: fetchUserAddresses } = useQuery<
     UserAddress[]
@@ -82,25 +93,25 @@ export const UserProvider: React.FC = ({ children }) => {
     [FETCH_DEFAULT_ADDRESS_URI, token],
     ({ queryKey }) => doFetchDefaultAddress(queryKey[1] as string),
     {
-      enabled: Boolean(token),
+      enabled: typeof token !== "undefined" && token !== "",
     }
   );
 
-  const username = React.useMemo(() => {
+  const username = useMemo(() => {
     if (!user || user.email === "") return "";
     const split = user?.email?.split("@");
     if (!split || split.length < 1) return "";
     return split[0];
   }, [user]);
 
-  const defaultAddress = React.useMemo(() => {
+  const defaultAddress = useMemo(() => {
     if (!userAddresses) return;
     if (!userAddresses.length) return;
     if (!Array.isArray(userAddresses)) return;
     return userAddresses?.find((ad) => ad.is_default === true);
   }, [userAddresses]);
 
-  const fullDetailAddress = React.useMemo(() => {
+  const fullDetailAddress = useMemo(() => {
     if (!defaultAddress) return "";
     const prov = defaultAddress.edges?.in_province?.name;
     const dist = defaultAddress.edges?.in_district?.name;
@@ -110,37 +121,37 @@ export const UserProvider: React.FC = ({ children }) => {
     return full;
   }, [defaultAddress]);
 
-  const fingerPrintResult = React.useMemo(async () => {
+  const fingerPrintResult = useMemo(async () => {
     if (typeof window === "undefined" || !fpPromise) return undefined;
     const fp = await fpPromise;
     return await fp.get();
   }, []);
 
-  const promiseOfVisitorId = React.useMemo(async () => {
+  const promiseOfVisitorId = useMemo(async () => {
     const result = await fingerPrintResult;
     if (!result) return "";
     return result.visitorId;
   }, [fingerPrintResult]);
 
-  const promiseOfPlatform = React.useMemo(async () => {
+  const promiseOfPlatform = useMemo(async () => {
     const result = await fingerPrintResult;
     if (!result) return "";
     return result.components.platform.value;
   }, [fingerPrintResult]);
 
-  const doGetVisitorId = React.useCallback(async () => {
+  const doGetVisitorId = useCallback(async () => {
     const vId = await promiseOfVisitorId;
     if (vId === "") return;
     setVisitorId(vId);
   }, [promiseOfVisitorId]);
 
-  const doGetPlatform = React.useCallback(async () => {
+  const doGetPlatform = useCallback(async () => {
     const pl = await promiseOfPlatform;
     if (!pl) return;
     setPlatform(pl);
   }, [promiseOfPlatform]);
 
-  // const fetchUserAddresses = React.useCallback(() => {
+  // const fetchUserAddresses = useCallback(() => {
   //   if (!user || !token) return;
   //   doFetchDefaultAddress(token)
   //     .then((userAddresses) => {
@@ -152,19 +163,21 @@ export const UserProvider: React.FC = ({ children }) => {
   //     .finally();
   // }, [user, token]);
 
-  const logout = React.useCallback(async () => {
+  const logout = useCallback(async () => {
     if (!user) return;
     try {
       setUser(undefined);
-      localStorage.removeItem(LocalStorageKey.EMAIL);
-      router.push("/login");
       await doLogout();
+      localStorage.removeItem(LocalStorageKey.EMAIL);
+      localStorage.removeItem(LocalStorageKey.ME);
+      localStorage.removeItem(LocalStorageKey.MERCHANT);
+      await router.push("/login");
     } catch (err) {
       console.error(err);
     }
   }, [user, router]);
 
-  const shopInfo = React.useMemo(() => {
+  const shopInfo = useMemo(() => {
     if (!user || !user.is_merchant) return;
     const merch: Shop = JSON.parse(
       localStorage.getItem(LocalStorageKey.MERCHANT) ?? ""
@@ -172,12 +185,12 @@ export const UserProvider: React.FC = ({ children }) => {
     return merch;
   }, [user]);
 
-  const shopId = React.useMemo(() => {
+  const shopId = useMemo(() => {
     if (!user || !user.is_merchant || !shopInfo) return;
     return shopInfo.id;
   }, [user, shopInfo]);
 
-  const doFetchProvinces = React.useCallback(() => {
+  const doFetchProvinces = useCallback(() => {
     fetchProvinces()
       .then((res) => setProvinces(res))
       .catch((err) =>
@@ -189,7 +202,7 @@ export const UserProvider: React.FC = ({ children }) => {
       );
   }, [toaster]);
 
-  const doFetchDistricts = React.useCallback(
+  const doFetchDistricts = useCallback(
     (provinceId: number) => {
       fetchDistricts({ province_id: provinceId })
         .then((res) => setDistricts(res))
@@ -204,7 +217,7 @@ export const UserProvider: React.FC = ({ children }) => {
     [toaster]
   );
 
-  const doFetchWards = React.useCallback(
+  const doFetchWards = useCallback(
     (districtId: number) => {
       fetchWards({ district_id: districtId })
         .then((res) => setWards(res))
@@ -219,12 +232,12 @@ export const UserProvider: React.FC = ({ children }) => {
     [toaster]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (defaultAddress) return;
     fetchUserAddresses();
   }, [defaultAddress, fetchUserAddresses]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const usrRaw = localStorage.getItem(LocalStorageKey.ME);
     if (!usrRaw || usrRaw === "") return;
     const user = JSON.parse(usrRaw);
@@ -232,19 +245,18 @@ export const UserProvider: React.FC = ({ children }) => {
     setUser(user);
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (visitorId !== "") return;
     doGetVisitorId();
     doGetPlatform();
   }, [visitorId, doGetVisitorId, doGetPlatform]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!selectedProvince) return;
-    console.log("selectedProvince:", selectedProvince.name);
     doFetchDistricts(selectedProvince.id);
   }, [selectedProvince]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!selectedDistrict) return;
     doFetchWards(selectedDistrict.id);
   }, [selectedDistrict]);
@@ -289,4 +301,4 @@ export const UserProvider: React.FC = ({ children }) => {
   );
 };
 
-export const useUser = () => React.useContext(UserCtx);
+export const useUser = () => useContext(UserCtx);

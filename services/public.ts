@@ -15,17 +15,6 @@ export async function fetchHome(): Promise<HomeInfo> {
   return await res.json();
 }
 
-// export const FETCH_CATEGORIES = "/public/product/category";
-// export async function fetchProductCategories(): Promise<ProductCategory[]> {
-//   try {
-//     const res = await axios.get<
-//       BaseReponse<{ product_categories: ProductCategory[] }>
-//     >(HOST_URL_FOR_EXTERNAL_CALL + FETCH_CATEGORIES);
-//     return res.data?.data?.product_categories ?? [];
-//   } catch (error) {
-//     return [];
-//   }
-// }
 export const FETCH_CATEGORIES = "/public/product/category-child";
 export function fetchProductCategories(): Promise<ProductCategory[]> {
   return new Promise<ProductCategory[]>((resolve, reject) => {
