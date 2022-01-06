@@ -644,7 +644,7 @@ const handler: NextSsrIronHandler = async function ({ req, res, query }) {
 
   return {
     props: {
-      token: auth,
+      token: auth ?? null,
       dehydratedState: dehydrate(queryClient),
     },
   };
