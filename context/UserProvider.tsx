@@ -167,10 +167,10 @@ export const UserProvider: React.FC = ({ children }) => {
     if (!user) return;
     try {
       setUser(undefined);
-      await doLogout();
       localStorage.removeItem(LocalStorageKey.EMAIL);
       localStorage.removeItem(LocalStorageKey.ME);
       localStorage.removeItem(LocalStorageKey.MERCHANT);
+      await doLogout();
       await router.push("/login");
     } catch (err) {
       console.error(err);
@@ -179,9 +179,11 @@ export const UserProvider: React.FC = ({ children }) => {
 
   const shopInfo = useMemo(() => {
     if (!user || !user.is_merchant) return;
-    const merch: Shop = JSON.parse(
-      localStorage.getItem(LocalStorageKey.MERCHANT) ?? ""
+    const merchantInLocalStorage = localStorage.getItem(
+      LocalStorageKey.MERCHANT
     );
+    if (!merchantInLocalStorage || merchantInLocalStorage === "") return;
+    const merch: Shop = JSON.parse(merchantInLocalStorage);
     return merch;
   }, [user]);
 
