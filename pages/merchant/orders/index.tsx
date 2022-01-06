@@ -54,11 +54,13 @@ const selectStyle = {
   },
 };
 
-const OrderRow: React.FC<{ order: Order; token: string; shopId: string }> = ({
-  order,
-  token,
-  shopId,
-}) => {
+const OrderRow: React.FC<{
+  order: Order;
+  token: string;
+  shopId: string;
+  disableActions: boolean;
+}> = (props) => {
+  const { order, token, shopId, disableActions } = props;
   const [isModalOpen, modalHandler] = useBoolean();
   const [isModalOpen2, modalHandler2] = useBoolean();
   const OrderedProducts = React.useMemo(() => {
@@ -70,6 +72,12 @@ const OrderRow: React.FC<{ order: Order; token: string; shopId: string }> = ({
       const product = cartItem.edges.is_product;
       if (!product) return;
       const productCover = product.edges?.cover?.file_thumbnail;
+
+      const isDiscount = cartItem.price > 0;
+      const finalPrice = isDiscount
+        ? cartItem.qty * cartItem.price
+        : cartItem.qty * cartItem.orig_price;
+
       return (
         <HStack key={idx} w="full" spacing={3} alignItems="flex-start">
           <MyLinkOverlay
@@ -98,11 +106,13 @@ const OrderRow: React.FC<{ order: Order; token: string; shopId: string }> = ({
                   <Text
                     fontSize="xs"
                     color="gray.500"
-                    textDecorationLine="line-through"
+                    textDecorationLine={isDiscount ? "line-through" : ""}
                   >
                     {formatCcy(cartItem.orig_price)} đ
                   </Text>
-                  <Text fontSize="sm">{formatCcy(cartItem.price)}đ</Text>
+                  {isDiscount && (
+                    <Text fontSize="sm">{formatCcy(cartItem.price)}đ</Text>
+                  )}
                 </HStack>
               </HStack>
               <Text
@@ -111,7 +121,7 @@ const OrderRow: React.FC<{ order: Order; token: string; shopId: string }> = ({
                 fontSize="sm"
                 color="red.500"
               >
-                {formatCcy(cartItem.qty * cartItem.price)} đ
+                {formatCcy(finalPrice)} đ
               </Text>
             </VStack>
           </VStack>
@@ -127,51 +137,53 @@ const OrderRow: React.FC<{ order: Order; token: string; shopId: string }> = ({
           <Icon as={BiBarcode} fontSize="lg" mr={2} />
           <VStack w="full" alignItems="flex-start">
             <Text as="code">{order.code.toLocaleUpperCase()}</Text>
-            <HStack
-              w="full"
-              justifyContent="flex-start"
-              divider={<StackDivider />}
-            >
-              <ApproveOrderModal
-                token={token}
-                shopId={shopId}
-                isOpen={isModalOpen}
-                onOpen={modalHandler.on}
-                onClose={modalHandler.off}
-                order={order}
+            {!disableActions && (
+              <HStack
+                w="full"
+                justifyContent="flex-start"
+                divider={<StackDivider />}
               >
-                <Text
-                  color="brand.500"
-                  fontSize="11px"
-                  cursor="pointer"
-                  _hover={{
-                    textDecoration: "underline",
-                  }}
+                <ApproveOrderModal
+                  token={token}
+                  shopId={shopId}
+                  isOpen={isModalOpen}
+                  onOpen={modalHandler.on}
+                  onClose={modalHandler.off}
+                  order={order}
                 >
-                  Chuẩn bị hàng
-                </Text>
-              </ApproveOrderModal>
-              <ApproveOrderModal
-                token={token}
-                shopId={shopId}
-                isOpen={isModalOpen2}
-                onOpen={modalHandler2.on}
-                onClose={modalHandler2.off}
-                order={order}
-                postOfficeType
-              >
-                <Text
-                  color="brand.500"
-                  fontSize="11px"
-                  cursor="pointer"
-                  _hover={{
-                    textDecoration: "underline",
-                  }}
+                  <Text
+                    color="brand.500"
+                    fontSize="11px"
+                    cursor="pointer"
+                    _hover={{
+                      textDecoration: "underline",
+                    }}
+                  >
+                    Chuẩn bị hàng
+                  </Text>
+                </ApproveOrderModal>
+                <ApproveOrderModal
+                  token={token}
+                  shopId={shopId}
+                  isOpen={isModalOpen2}
+                  onOpen={modalHandler2.on}
+                  onClose={modalHandler2.off}
+                  order={order}
+                  postOfficeType
                 >
-                  Gửi bưu cục
-                </Text>
-              </ApproveOrderModal>
-            </HStack>
+                  <Text
+                    color="brand.500"
+                    fontSize="11px"
+                    cursor="pointer"
+                    _hover={{
+                      textDecoration: "underline",
+                    }}
+                  >
+                    Gửi bưu cục
+                  </Text>
+                </ApproveOrderModal>
+              </HStack>
+            )}
           </VStack>
         </HStack>
       </Td>
@@ -302,7 +314,13 @@ const MerchantOrders: NextPage<{ token: string; shopId: string }> = ({
         <Tbody>
           {!isOrdersLoading &&
             orders?.map((o, idx) => (
-              <OrderRow key={idx} order={o} token={token} shopId={shopId} />
+              <OrderRow
+                key={idx}
+                order={o}
+                token={token}
+                shopId={shopId}
+                disableActions={orderStatus !== OrderStatus.PENDING}
+              />
             ))}
         </Tbody>
       </Table>
