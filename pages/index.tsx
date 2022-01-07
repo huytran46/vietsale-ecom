@@ -31,6 +31,7 @@ import { fetchProducts, FETCH_PRODUCT_URI } from "services/product";
 import { Product } from "models/Product";
 import { ALLOWED_FETCH_MORE_TIME, PAGE_SIZE } from "constants/platform";
 import withSession, { NextSsrIronHandler } from "utils/session";
+import ModernMetaCard from "components/ModernMetaCard";
 
 const Home: NextPage = () => {
   const router = useRouter();
@@ -130,8 +131,9 @@ const Home: NextPage = () => {
             {data?.banners &&
               data.banners.map((banner, idx) => (
                 <SwiperSlide key={idx}>
-                  <Box bg="brand.500" w="full" h={300}>
+                  <Box borderRadius="md" bg="brand.500" w="full" h={300}>
                     <Image
+                      borderRadius="md"
                       src={banner.edges?.cover?.file_thumbnail}
                       alt="a-shop-in-vs"
                       w="full"
@@ -147,7 +149,7 @@ const Home: NextPage = () => {
       )}
 
       {/* Hot deals */}
-      <MetaCard
+      {/* <MetaCard
         title="Hot deals"
         titleBg="red.500"
         titleColor="white"
@@ -181,9 +183,40 @@ const Home: NextPage = () => {
               ))}
           </SimpleGrid>
         </>
-      </MetaCard>
+      </MetaCard> */}
 
-      <MetaCard title="Danh mục sản phẩm">
+      <ModernMetaCard
+        title="Hot deals"
+        bodyStyleProps={{
+          position: "relative",
+          bgGradient: "linear(to-b, brand.100, brand.300, brand.500)",
+          // border: "1px solid",
+          // borderColor: "gray.300",
+          borderBottomRadius: "md",
+          borderTopRightRadius: "md",
+        }}
+      >
+        <Box
+          bg={"url(/fire-gif.gif)"}
+          bgSize="cover"
+          bgPosition={"center"}
+          bgRepeat={"no-repeat"}
+          position="absolute"
+          top="-70px"
+          left="120px"
+          w="24px"
+          h="24px"
+          transform="rotate(25deg)"
+        />
+        <SimpleGrid px={3} gap={3} columns={[1, 2, 4, 6]}>
+          {data?.hot_deals &&
+            data?.hot_deals.map((prod, idx) => (
+              <ProductItem isHot key={idx} product={prod} />
+            ))}
+        </SimpleGrid>
+      </ModernMetaCard>
+
+      {/* <MetaCard title="Danh mục sản phẩm">
         <SimpleGrid columns={[4, 6, 8]} w="full">
           {productCategories.map((cate, idx) => (
             <Box
@@ -214,18 +247,64 @@ const Home: NextPage = () => {
             </Box>
           ))}
         </SimpleGrid>
-      </MetaCard>
+      </MetaCard> */}
+
+      <Box
+        w="full"
+        border="1px solid"
+        borderColor="brand.300"
+        borderRadius="md"
+        p={10}
+        bg="white"
+      >
+        <SimpleGrid columns={[4, 6, 8]} w="full">
+          {productCategories.map((cate, idx) => (
+            <Box
+              key={idx}
+              p={2}
+              d="flex"
+              flexDir="column"
+              alignItems="center"
+              justifyContent="center"
+              cursor="pointer"
+              onClick={async () =>
+                router.push(
+                  `/products?pc=${cate?.id}&pc_name=${cate?.category_name}`
+                )
+              }
+            >
+              <Avatar
+                size="md"
+                name={cate?.category_name}
+                src={cate?.edges?.icon?.file_thumbnail ?? "favicon.png"}
+                mb={2}
+                borderWidth="1px"
+                borderColor="brand.500"
+              />
+              <Text maxWidth="full" fontSize="xs" isTruncated>
+                {cate?.category_name}
+              </Text>
+            </Box>
+          ))}
+        </SimpleGrid>
+      </Box>
 
       {/* Highlight products */}
-      <MetaCard
+
+      {/* <MetaCard
         title="Sản phẩm nổi bật"
         titleBg="brand.500"
         titleColor="white"
         bodyProps={{
-          bgGradient: "linear(to-t, red.100, red.200, blue.300, blue.400)",
+          borderRadius: "md",
+          borderTopLeftRadius: "none",
           border: "1px solid",
           borderColor: "gray.200",
-          p: 3,
+          bgImage: "url(/highlight-bg.webp)",
+          bgSize: "contain",
+          bgColor: "rgb(222, 237, 214)",
+          bgPosition: "right center",
+          bgRepeat: "no-repeat",
         }}
         noBody
       >
@@ -235,10 +314,32 @@ const Home: NextPage = () => {
               <ProductItem key={idx} product={prod} />
             ))}
         </SimpleGrid>
-      </MetaCard>
+      </MetaCard> */}
+
+      <ModernMetaCard
+        title="Sản phẩm nổi bật"
+        bodyStyleProps={{
+          p: 3,
+          borderRadius: "md",
+          border: "1px solid",
+          borderColor: "gray.200",
+          bgImage: "url(/highlight-bg.webp)",
+          bgSize: "contain",
+          bgColor: "rgb(222, 237, 214)",
+          bgPosition: "right center",
+          bgRepeat: "no-repeat",
+        }}
+      >
+        <SimpleGrid gap={3} columns={[1, 2, 4, 6]}>
+          {data?.highlight_products &&
+            data?.highlight_products.map((prod, idx) => (
+              <ProductItem key={idx} product={prod} />
+            ))}
+        </SimpleGrid>
+      </ModernMetaCard>
 
       {/* All products */}
-      <MetaCard
+      {/* <MetaCard
         title="Tất cả sản phẩm"
         bodyProps={{
           bg: "white",
@@ -251,7 +352,32 @@ const Home: NextPage = () => {
               <ProductItem key={idx} product={prod} />
             ))}
         </SimpleGrid>
-      </MetaCard>
+      </MetaCard> */}
+
+      <ModernMetaCard
+        title="Tất cả sản phẩm"
+        headingCenter
+        bodyStyleProps={
+          {
+            // p: 3,
+            // borderRadius: "md",
+            // border: "1px solid",
+            // borderColor: "gray.200",
+            // bgImage: "url(/highlight-bg.webp)",
+            // bgSize: "contain",
+            // bgColor: "rgb(222, 237, 214)",
+            // bgPosition: "right center",
+            // bgRepeat: "no-repeat",
+          }
+        }
+      >
+        <SimpleGrid rowGap={3} columnGap={1} columns={[1, 2, 4, 6]}>
+          {productData &&
+            productData.map((prod, idx) => (
+              <ProductItem key={idx} product={prod} />
+            ))}
+        </SimpleGrid>
+      </ModernMetaCard>
 
       <VisibilitySensor onChange={triggerBottomState}>
         <Stack direction="row" h={2}>
@@ -283,7 +409,7 @@ const Home: NextPage = () => {
   );
 };
 
-const handler: NextSsrIronHandler = async function ({ req, res }) {
+const handler: NextSsrIronHandler = async function () {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(FETCH_HOME_URI, fetchHome);
   await queryClient.prefetchQuery(FETCH_PRODUCT_URI, () =>
