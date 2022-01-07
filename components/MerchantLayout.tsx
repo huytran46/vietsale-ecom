@@ -7,13 +7,7 @@ import {
   VStack,
   Text,
   Icon,
-  SimpleGrid,
   Box,
-  Center,
-  Stack,
-  StackDivider,
-  Spinner,
-  Badge,
   List,
   ListItem,
 } from "@chakra-ui/react";
@@ -21,9 +15,10 @@ import { MdKeyboardBackspace } from "react-icons/md";
 
 import MyLinkOverlay from "./common/MyLinkOverlay";
 import { useUser } from "context/UserProvider";
+import { MyImage } from "./common/MyImage";
 
 const SIDEBAR_WIDTH = "240px";
-const TOPBAR_HEIGHT = "48px";
+const TOPBAR_HEIGHT = "80px";
 const TOPBAR_ZINDEX = 2;
 const SIDEBAR_ZINDEX = 1;
 
@@ -64,9 +59,29 @@ const TopBar: React.FC = () => {
       boxShadow="md"
       zIndex={TOPBAR_ZINDEX}
     >
-      <MyLinkOverlay href="/" fontSize="xx-large" p={3} cursor="pointer">
+      <Head>
+        <title>Việt Sale - Kênh dành cho người bán</title>
+        <link rel="shortcut icon" href="/favicon.png" />
+      </Head>
+      {/* <MyLinkOverlay href="/" fontSize="xx-large" p={3} cursor="pointer">
         <Icon as={MdKeyboardBackspace} />
-      </MyLinkOverlay>
+      </MyLinkOverlay> */}
+      <Box w="full" h="full" d="flex" alignItems="center" p={0}>
+        <MyLinkOverlay href="/" ml={10} pr={10}>
+          <MyImage width="80px" height="80px" src="/favicon.png" />
+        </MyLinkOverlay>
+        <Text
+          as="h1"
+          color="brand.500"
+          fontWeight="bold"
+          textTransform="uppercase"
+        >
+          Việt Sale - Kênh người bán
+        </Text>
+        <MyLinkOverlay as="h1" href="/" ml={10} pr={10}>
+          Trang chủ
+        </MyLinkOverlay>
+      </Box>
     </HStack>
   );
 };
