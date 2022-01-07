@@ -26,6 +26,7 @@ const MyLinkOverlay: React.FC<Props> = ({
       position="relative"
       w="fit-content"
       h="fit-content"
+      _hover={{ textDecoration: "underline" }}
       {...props}
     >
       <NextLink href={href} passHref>
