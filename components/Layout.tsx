@@ -52,11 +52,10 @@ const MainHeader: React.FC = ({}) => {
 
   return (
     <Box
-      bgGradient="linear(to-b, brand.700, brand.300)"
+      // bg="brand.500"
+      bgGradient="linear(to-t, brand.300, brand.500)"
       color="white"
       height={headerBarHeight}
-      // position="fixed"
-      // top={0}
       w="full"
       zIndex={highestZIndex}
       py={2}
@@ -146,7 +145,13 @@ const MainHeader: React.FC = ({}) => {
           <HStack w="full" flex={3} alignItems="flex-start" spacing={2}>
             <Center flex={1}>
               <MyLinkOverlay href="/">
-                <MyImage flex={1} src="/favicon.png" width="60" height="60" />
+                <MyImage
+                  borderRadius="lg"
+                  flex={1}
+                  src="/favicon.png"
+                  width="64"
+                  height="64"
+                />
               </MyLinkOverlay>
             </Center>
             <Stack flex={15} direction="column">
@@ -207,8 +212,10 @@ const MainHeader: React.FC = ({}) => {
                 }}
                 fontSize="2xl"
                 size="md"
-                borderColor="brand.700"
-                bgGradient="linear(to-l, brand.300, brand.500)"
+                borderColor="white"
+                borderWidth="1px"
+                // bgGradient="linear(to-l, brand.100, brand.900)"
+                bg="brand.500"
               >
                 <TiShoppingCart />
                 <Badge bg="red.500" color="white">
@@ -223,10 +230,25 @@ const MainHeader: React.FC = ({}) => {
   );
 };
 
+// const b64ImgStr = `url("data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221440%22%20height%3D%22661.1%22%20viewBox%3D%220%200%201440%20661.1%22%3E%3Cstyle%20type%3D%22text%2Fcss%22%3Ecircle%2C%20ellipse%2C%20line%2C%20path%2C%20polygon%2C%20polyline%2C%20rect%2C%20text%20%7B%20fill%3A%20rgb%280%2C%20128%2C%2096%29%20%21important%3B%20%7D%3C%2Fstyle%3E%3Cpath%20fill%3D%22rgb%280%2C%20128%2C%2096%29%22%20d%3D%22M1440%20488c-19.3%204.3-39.2%208.6-60%2013-174.2%2036.5-228.8%20288-467%2076.2-153.6-136.6-424-22.8-660.4-5.8-130.2%209.3-252.6-75-252.6-75V0h1440%22%2F%3E%3C%2Fsvg%3E")`;
+
 const Layout: React.FC = ({ children }) => {
   const { isGlobalLoading } = useLayoutCtx();
   return (
-    <Box bg="gray.light" w="full" h="auto">
+    <Box
+      // bgImage={b64ImgStr}
+      // bgImage="url(/highlight-bg.webp)"
+      // bgPosition="left"
+      // bgColor="rgb(234, 255, 224)"
+      // bgRepeat="no-repeat"
+      // bgSize="contain"
+      // bg="gray.light"
+      // bgColor="white"
+      bgColor="#f8fff4"
+      w="full"
+      h="auto"
+      minH="100vh"
+    >
       <MainHeader />
       <Container maxW="container.xl" h="full" minH="100vh">
         {isGlobalLoading ? (
