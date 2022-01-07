@@ -1028,16 +1028,15 @@ const MerchantAddProducts: NextPage<{
 
         <HStack w="full" justifyContent="flex-end">
           <Button
-            bg="red.500"
-            borderColor="red.700"
+            bg="brand.500"
             _focus={{
               ring: 0,
             }}
             _hover={{
-              bg: "red.600",
+              bg: "brand.600",
             }}
             _active={{
-              bg: "red.700",
+              bg: "brand.700",
             }}
             onClick={handleSubmit as any}
             disabled={isSubmitting || !isValid}
