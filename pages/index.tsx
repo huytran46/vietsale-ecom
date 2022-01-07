@@ -32,6 +32,7 @@ import { Product } from "models/Product";
 import { ALLOWED_FETCH_MORE_TIME, PAGE_SIZE } from "constants/platform";
 import withSession, { NextSsrIronHandler } from "utils/session";
 import ModernMetaCard from "components/ModernMetaCard";
+import { goToUrl } from "utils";
 
 const Home: NextPage = () => {
   const router = useRouter();
@@ -131,15 +132,24 @@ const Home: NextPage = () => {
             {data?.banners &&
               data.banners.map((banner, idx) => (
                 <SwiperSlide key={idx}>
-                  <Box borderRadius="md" bg="brand.500" w="full" h={300}>
+                  <Box
+                    borderRadius="md"
+                    bg="brand.500"
+                    w="full"
+                    h={300}
+                    cursor={Boolean(banner.ctaUrl) ? "pointer" : "none"}
+                    border="1px solid"
+                    borderColor="brand.500"
+                  >
                     <Image
                       borderRadius="md"
-                      src={banner.edges?.cover?.file_thumbnail}
-                      alt="a-shop-in-vs"
+                      src={banner?.imgSrc}
+                      alt="vietsale-khuyen-mai"
                       w="full"
                       maxH="full"
                       maxW="full"
-                      objectFit="cover"
+                      objectFit="contain"
+                      onClick={() => goToUrl(banner.ctaUrl)}
                     />
                   </Box>
                 </SwiperSlide>
