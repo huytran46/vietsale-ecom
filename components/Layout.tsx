@@ -85,6 +85,9 @@ const MainHeader: React.FC = ({}) => {
                   Tải ứng dụng
                 </Text>
               </DownloadAppModal>
+              <MyLinkOverlay fontSize="xs" href="/policy">
+                Chính sách bảo mật
+              </MyLinkOverlay>
 
               {(!user || !user.is_merchant) && (
                 <MyLinkOverlay fontSize="xs" href="/register/merchant">

@@ -6,12 +6,10 @@ import {
   HStack,
   VStack,
   Text,
-  Icon,
   Box,
   List,
   ListItem,
 } from "@chakra-ui/react";
-import { MdKeyboardBackspace } from "react-icons/md";
 
 import MyLinkOverlay from "./common/MyLinkOverlay";
 import { useUser } from "context/UserProvider";
