@@ -20,7 +20,16 @@ const config: ThemeConfig = {
 
 const Button = {
   baseStyle: {
-    ringColor: "brand.100",
+    _focus: {
+      ringColor: "brand.300",
+      ring: 2,
+      bg: "brand.100",
+    },
+    _hover: {
+      bg: "brand.100",
+      ringColor: "brand.300",
+      ring: 1,
+    },
     // borderWidth: "1px",
     // boxShadow:
     //   "inset 0 0 0 1px rgb(255 255 255 / 5%), inset 0 1px 0 0 rgb(255 255 255 / 45%), inset 0 -1px 0 0 rgb(255 255 255 / 15%), 0 1px 0 0 rgb(255 255 255 / 15%)",

@@ -1,13 +1,13 @@
 export const brandRing = {
   borderRadius: "md",
   _focus: {
-    ringColor: "brand.100",
+    ringColor: "brand.300",
     ring: 2,
-    bg: "white",
+    bg: "brand.100",
   },
   _hover: {
-    bg: "white",
-    ringColor: "brand.100",
+    bg: "brand.100",
+    ringColor: "brand.300",
     ring: 1,
   },
 };
@@ -122,3 +122,8 @@ export const configHeader = (token: string) => ({
     Authorization: `Bearer ${token}`,
   },
 });
+
+export function goToUrl(url?: string) {
+  if (typeof window === "undefined" || !url) return;
+  window.location.href = url;
+}
