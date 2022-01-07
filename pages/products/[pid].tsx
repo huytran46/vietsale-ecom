@@ -60,6 +60,8 @@ import { useCartCtx } from "context/CartProvider";
 import MyLinkOverlay from "components/common/MyLinkOverlay";
 import withSession, { NextSsrIronHandler } from "utils/session";
 import { IronSessionKey } from "constants/session";
+import ModernMetaCard from "components/ModernMetaCard";
+import Empty from "components/common/Empty";
 
 const DEFAULT_QTY = 1;
 const MINIMUM_QTY = 1;
@@ -427,20 +429,21 @@ const ProductDetail: NextPage<{ token?: string }> = ({ token }) => {
                     w="full"
                     disabled={productDetail.quantity === amt}
                     leftIcon={<Icon as={FaShoppingCart} />}
-                    bg="red.500"
-                    _focus={{
-                      ringColor: "red.100",
-                      ring: 4,
-                      bg: "red.600",
-                    }}
-                    _active={{
-                      bg: "red.600",
-                    }}
-                    _hover={{
-                      bg: "red.600",
-                    }}
+                    bg="brand.500"
+                    borderColor="brand.700"
+                    {...brandRing}
+                    // _focus={{
+                    //   ringColor: "red.100",
+                    //   ring: 4,
+                    //   bg: "red.600",
+                    // }}
+                    // _active={{
+                    //   bg: "red.600",
+                    // }}
+                    // _hover={{
+                    //   bg: "red.600",
+                    // }}
                     onClick={handleAddToCart}
-                    borderColor="red.700"
                     textShadow="md"
                   >
                     Thêm vào giỏ
@@ -583,7 +586,7 @@ const ProductDetail: NextPage<{ token?: string }> = ({ token }) => {
         </AccordionItem>
       </Accordion>
 
-      <MetaCard
+      {/* <MetaCard
         title="Sản phẩm tương tự"
         bodyProps={{
           bg: "white",
@@ -603,7 +606,29 @@ const ProductDetail: NextPage<{ token?: string }> = ({ token }) => {
             <ProductItem key={idx} product={prod} />
           ))}
         </SimpleGrid>
-      </MetaCard>
+      </MetaCard> */}
+
+      <ModernMetaCard
+        title="Sản phẩm tương tự"
+        headingCenter
+        bodyStyleProps={{
+          bg: "white",
+        }}
+      >
+        <SimpleGrid rowGap={3} columnGap={1} columns={[1, 2, 4, 6]}>
+          {isRelativeLoading && (
+            <Spinner
+              colorScheme="brand"
+              color="brand.500"
+              speed="1s"
+              size="sm"
+            />
+          )}
+          {productRelatives?.map((prod, idx) => (
+            <ProductItem key={idx} product={prod} />
+          ))}
+        </SimpleGrid>
+      </ModernMetaCard>
     </VStack>
   );
 };
