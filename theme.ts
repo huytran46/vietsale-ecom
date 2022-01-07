@@ -20,6 +20,7 @@ const config: ThemeConfig = {
 
 const Button = {
   baseStyle: {
+    ringColor: "brand.100",
     // borderWidth: "1px",
     // boxShadow:
     //   "inset 0 0 0 1px rgb(255 255 255 / 5%), inset 0 1px 0 0 rgb(255 255 255 / 45%), inset 0 -1px 0 0 rgb(255 255 255 / 15%), 0 1px 0 0 rgb(255 255 255 / 15%)",
@@ -54,13 +55,13 @@ export const theme = extendTheme(
         // 700: "#0083F5",
         // 900: "#006DCC",
         25: "#82d5a5",
-        50: "#6dce96",
-        100: "#58c787",
-        300: "#43c078",
-        500: "#2eb969",
-        700: "#29a75f",
-        800: "#259454",
-        900: "#20824a",
+        50: "#ccff33",
+        100: "#9ef01a",
+        300: "#70e000",
+        500: "#38b000",
+        700: "#008000",
+        800: "#007200",
+        900: "#006400",
       },
     },
     fonts: {
