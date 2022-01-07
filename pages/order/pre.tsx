@@ -322,7 +322,7 @@ const Precheckout: NextPage<{ token: string }> = ({ token }) => {
           </VStack>
         </GridItem>
         <GridItem position="relative" colSpan={[8, 8, 2]}>
-          <VStack position="fixed" maxW="300px" spacing={3}>
+          <VStack position="absolute" maxW="300px" spacing={3}>
             {defaultAddress && (
               <Box
                 d="flex"
